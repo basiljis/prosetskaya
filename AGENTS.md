@@ -10,3 +10,5 @@
 <!-- LOVABLE:END -->
 
 - Keep the artist portfolio as a single editorial gallery experience; language and theme preferences remain browser-persisted because no backend is required.
+- Store sourced artwork metadata separately from gallery presentation, with local asset pointers and source links, so artist materials remain traceable and replaceable.
+- Use a shared artwork caption in the grid and fullscreen viewer to keep typography consistent; fullscreen focus and dismissal use Radix Dialog primitives.
