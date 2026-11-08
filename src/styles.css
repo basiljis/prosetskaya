@@ -198,7 +198,7 @@
 @media (max-width: 767px) {
   .gallery-shell { padding-inline: 20px; }
   .artist-title { font-size: 52px; }
-  .featured-stage { height: 340px; }
+  .featured-stage { height: 300px; }
   .featured-side { height: 150px; }
   .gallery-column:nth-child(3n + 2) { padding-top: 0; }
   .gallery-image { height: 300px; }

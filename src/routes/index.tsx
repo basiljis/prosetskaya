@@ -82,14 +82,14 @@ function Index() {
         </div>
       </header>
 
-      <section id="top" className="gallery-shell pb-12 pt-9 md:pb-16 md:pt-12">
+      <section id="top" className="gallery-shell pb-6 pt-6 md:pb-12 md:pt-10">
         <div className="mb-5 flex items-center justify-between text-[10px] uppercase text-muted-foreground"><span className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-primary" />{t.gallery}</span><span>{t.location}</span></div>
         <div className="flex flex-col items-start justify-between gap-5 md:flex-row md:items-end">
           <h1 className="artist-title font-sans"><span className="block">{t.firstName}</span><span>{t.lastName}<span className="text-primary">.</span></span></h1>
           <div className="pb-2 md:max-w-[220px] md:text-right"><p className="text-sm leading-6">{t.intro}</p><Button asChild variant="editorial" className="mt-3 h-auto p-0 text-[10px] uppercase"><a href="#works">{t.allWorks}<ArrowDown className="ml-2" /></a></Button></div>
         </div>
 
-        <div className="mt-10 grid grid-cols-[1fr_2fr_1fr] items-center gap-5 md:mt-12 md:grid-cols-[1fr_1.65fr_1fr] md:gap-14">
+        <div className="mt-6 grid grid-cols-[1fr_2fr_1fr] items-center gap-5 md:mt-10 md:grid-cols-[1fr_1.65fr_1fr] md:gap-14">
           <div className="hidden sm:block">{left && <Button variant="artwork" className="block w-full cursor-zoom-in" onClick={() => openWork(left.id)} aria-label={`${t.view}: ${left[lang]}`}><img className="featured-side" src={left.image} alt={left[lang]} /></Button>}<p className="mt-4 text-[10px] text-muted-foreground">01 / {t.categories.painting}</p></div>
           <div className="col-span-3 sm:col-span-1">
             {featured && <Button variant="artwork" className="featured-stage relative block w-full cursor-zoom-in" onClick={() => openWork(featured.id)} aria-label={`${t.view}: ${featured[lang]}`}>
@@ -139,7 +139,7 @@ function Index() {
         </div>
       </footer>
 
-      <Dialog.Root open={menuOpen} onOpenChange={setMenuOpen}><Dialog.Portal><Dialog.Content aria-describedby={undefined} className="fixed inset-0 z-[80] flex flex-col bg-background text-foreground"><div className="gallery-shell flex h-[76px] items-center justify-between border-b border-border"><Dialog.Title className="text-xs">{t.name}</Dialog.Title><Button variant="editorial" size="icon" onClick={() => setMenuOpen(false)} aria-label={t.close} title={t.close}><X /></Button></div><nav className="gallery-shell flex flex-1 flex-col justify-center">{navLinks.map((link, index) => <a key={link.href} href={link.href} onClick={() => setMenuOpen(false)} className="flex items-center justify-between gap-4 border-b border-border py-6 font-display text-5xl"><span><span className="mr-4 align-top font-sans text-[10px] text-primary">0{index + 1}</span>{link.label}</span><ArrowUpRight className="size-7" /></a>)}</nav><p className="gallery-shell pb-8 text-xs text-muted-foreground">{t.location}</p></Dialog.Content></Dialog.Portal></Dialog.Root>
+      <Dialog.Root open={menuOpen} onOpenChange={setMenuOpen}><Dialog.Portal><Dialog.Content aria-describedby={undefined} className="fixed inset-0 z-[80] flex flex-col bg-background text-foreground"><div className="gallery-shell flex h-[76px] items-center justify-between border-b border-border"><Dialog.Title className="text-xs">{t.name}</Dialog.Title><Button variant="editorial" size="icon" onClick={() => setMenuOpen(false)} aria-label={t.close} title={t.close}><X /></Button></div><nav className="gallery-shell flex flex-1 flex-col justify-center">{navLinks.map((link, index) => <a key={link.href} href={link.href} onClick={(event) => { event.preventDefault(); setMenuOpen(false); window.setTimeout(() => { document.querySelector(link.href)?.scrollIntoView({ behavior: "smooth" }); }, 100); }} className="flex items-center justify-between gap-4 border-b border-border py-6 font-display text-5xl"><span><span className="mr-4 align-top font-sans text-[10px] text-primary">0{index + 1}</span>{link.label}</span><ArrowUpRight className="size-7" /></a>)}</nav><p className="gallery-shell pb-8 text-xs text-muted-foreground">{t.location}</p></Dialog.Content></Dialog.Portal></Dialog.Root>
       {viewerIndex !== null && <ArtworkViewer works={artworks} index={viewerIndex} lang={lang} onChange={setViewerIndex} onClose={() => setViewerIndex(null)} />}
     </main>
   );
