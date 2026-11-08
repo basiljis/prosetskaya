@@ -1,0 +1,26 @@
+export const copy = {
+  ru: {
+    name: "Юлия Просецкая", firstName: "Юлия", lastName: "Просецкая", gallery: "Галерея художника",
+    location: "Москва, Россия", works: "Галерея", about: "О художнице", contact: "Контакты", menu: "Меню",
+    intro: "Живопись. Воображение. Цвет.", selected: "Избранные работы", collection: "Коллекция", allWorks: "Все работы",
+    practices: "Направления", categories: { all: "Все работы", painting: "Живопись", landscape: "Пейзажи", digital: "Цифровое искусство", graphics: "Графика", fluorescent: "Флуоресцентные работы" },
+    artistNote: "От живописного полотна к цифровому миру — природа, человек и пространство воображения.",
+    bio: "Юлия Просецкая родилась в Потсдаме, Германия, в 1985 году. Начала заниматься живописью с четырёх лет. В 2009 году окончила факультет живописи МГАХИ имени В. И. Сурикова.",
+    bioSecond: "Член Союза художников России, Московского союза художников и Творческого союза художников. Работы находятся в частных коллекциях России, США, Китая, Сингапура, Германии и Франции.",
+    education: "МГАХИ им. В. И. Сурикова", educationNote: "Факультет живописи", exhibition: "Новая Третьяковка", exhibitionNote: "«Москва — Санкт-Петербург»", project: "Лужники", projectNote: "Автор и исполнитель арт-проекта",
+    biography: "Биография и выставки", portrait: "Юлия Просецкая", enquiryTitle: "Для вашей коллекции.", enquiryText: "Приобретение работ, индивидуальные проекты и мастер-классы.", write: "Написать Юлии", address: "Москва, Малый Каковинский переулок, 3",
+    social: "Социальные сети", source: "Материалы: prosetskaya.ru", rights: "Юлия Просецкая", theme: "Сменить тему", language: "Switch to English", close: "Закрыть", previous: "Предыдущая работа", next: "Следующая работа", view: "Открыть работу", buy: "Узнать о работе", original: "На сайте художницы", background: "Фон", darkBg: "Тёмный фон", lightBg: "Светлый фон", grayBg: "Серый фон", count: "работ", viewAll: "Вся коллекция", signature: "художник",
+  },
+  en: {
+    name: "Yulia Prosetskaya", firstName: "Yulia", lastName: "Prosetskaya", gallery: "Artist’s gallery",
+    location: "Moscow, Russia", works: "Gallery", about: "The artist", contact: "Contact", menu: "Menu",
+    intro: "Painting. Imagination. Colour.", selected: "Selected works", collection: "Collection", allWorks: "All works",
+    practices: "Practices", categories: { all: "All works", painting: "Painting", landscape: "Landscapes", digital: "Digital art", graphics: "Graphics", fluorescent: "Fluorescent works" },
+    artistNote: "From the painted canvas to the digital world — nature, people and the space of imagination.",
+    bio: "Yulia Prosetskaya was born in Potsdam, Germany, in 1985. She began painting at the age of four. In 2009, she graduated from the painting faculty of the V. I. Surikov Moscow State Academic Art Institute.",
+    bioSecond: "A member of the Russian, Moscow and Creative artists’ unions. Her works are held in private collections in Russia, the USA, China, Singapore, Germany and France.",
+    education: "V. I. Surikov Art Institute", educationNote: "Painting faculty", exhibition: "New Tretyakov Gallery", exhibitionNote: "“Moscow — St Petersburg”", project: "Luzhniki", projectNote: "Art project designer and artist",
+    biography: "Biography & exhibitions", portrait: "Yulia Prosetskaya", enquiryTitle: "For your collection.", enquiryText: "Artwork enquiries, bespoke projects and masterclasses.", write: "Write to Yulia", address: "3 Maly Kakovinsky Lane, Moscow",
+    social: "Social", source: "Materials: prosetskaya.ru", rights: "Yulia Prosetskaya", theme: "Change theme", language: "Переключить на русский", close: "Close", previous: "Previous artwork", next: "Next artwork", view: "View artwork", buy: "Artwork enquiry", original: "Artist’s website", background: "Background", darkBg: "Dark background", lightBg: "Light background", grayBg: "Gray background", count: "works", viewAll: "Full collection", signature: "artist",
+  },
+} as const;
