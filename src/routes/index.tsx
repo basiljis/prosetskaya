@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUpRight, Menu, Moon, Sun, X, ZoomIn } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -135,6 +135,7 @@ function Index() {
           <div><p className="mb-3 text-[10px] uppercase text-muted-foreground">03 — {t.about}</p><h2 className="section-heading font-display">{t.name}</h2><figure className="mt-9 max-w-80"><img src={portraitAsset.url} alt={t.portrait} loading="lazy" className="aspect-[4/5] w-full object-cover" /><figcaption className="mt-3 text-[10px] text-muted-foreground">{t.portrait} · {t.location}</figcaption></figure></div>
           <div className="md:pt-12"><p className="font-display text-3xl leading-[1.35] md:text-4xl">{t.bio}</p><p className="mt-7 max-w-xl text-sm leading-7 text-muted-foreground">{t.bioSecond}</p>
             <div className="mt-10 border-t border-border">{[{ year: "2009", title: t.education, note: t.educationNote }, { year: "2021", title: t.project, note: t.projectNote }, { year: "2022", title: t.exhibition, note: t.exhibitionNote }].map((item) => <div key={item.year} className="grid grid-cols-[50px_1fr] gap-5 border-b border-border py-5"><span className="pt-1 text-xs text-primary">{item.year}</span><div><p className="text-sm">{item.title}</p><p className="mt-1 text-[11px] text-muted-foreground">{item.note}</p></div></div>)}</div>
+            <Link to="/cv" className="mt-7 inline-flex items-center gap-2 border-b border-foreground pb-2 text-xs">{lang === "ru" ? "Резюме (CV) и PDF" : "CV & PDF"}<ArrowUpRight className="size-4" /></Link>
           </div>
         </div>
       </section>
