@@ -9,7 +9,7 @@ export const copy = {
     bioSecond: "Член Союза художников России, Московского союза художников и Творческого союза художников. Работы находятся в частных коллекциях России, США, Китая, Сингапура, Германии и Франции.",
     education: "МГАХИ им. В. И. Сурикова", educationNote: "Факультет живописи", exhibition: "Новая Третьяковка", exhibitionNote: "«Москва — Санкт-Петербург»", project: "Лужники", projectNote: "Автор и исполнитель арт-проекта",
     biography: "Биография и выставки", portrait: "Юлия Просецкая", enquiryTitle: "Для вашей коллекции.", enquiryText: "Приобретение работ, индивидуальные проекты и мастер-классы.", write: "Написать Юлии", address: "Москва, Малый Каковинский переулок, 3",
-    social: "Социальные сети", source: "Материалы: prosetskaya.ru", rights: "Юлия Просецкая", theme: "Сменить тему", language: "Switch to English", close: "Закрыть", previous: "Предыдущая работа", next: "Следующая работа", view: "Открыть работу", buy: "Узнать о работе", original: "На сайте художницы", background: "Фон", darkBg: "Тёмный фон", lightBg: "Светлый фон", grayBg: "Серый фон", count: "работ", viewAll: "Вся коллекция", signature: "художник",
+    social: "Социальные сети", source: "", rights: "Юлия Просецкая", theme: "Сменить тему", language: "Switch to English", close: "Закрыть", previous: "Предыдущая работа", next: "Следующая работа", view: "Открыть работу", buy: "Узнать о работе", original: "На сайте художницы", background: "Фон", darkBg: "Тёмный фон", lightBg: "Светлый фон", grayBg: "Серый фон", count: "работ", viewAll: "Вся коллекция", signature: "художник",
   },
   en: {
     name: "Yulia Prosetskaya", firstName: "Yulia", lastName: "Prosetskaya", gallery: "Artist’s gallery",
@@ -21,6 +21,6 @@ export const copy = {
     bioSecond: "A member of the Russian, Moscow and Creative artists’ unions. Her works are held in private collections in Russia, the USA, China, Singapore, Germany and France.",
     education: "V. I. Surikov Art Institute", educationNote: "Painting faculty", exhibition: "New Tretyakov Gallery", exhibitionNote: "“Moscow — St Petersburg”", project: "Luzhniki", projectNote: "Art project designer and artist",
     biography: "Biography & exhibitions", portrait: "Yulia Prosetskaya", enquiryTitle: "For your collection.", enquiryText: "Artwork enquiries, bespoke projects and masterclasses.", write: "Write to Yulia", address: "3 Maly Kakovinsky Lane, Moscow",
-    social: "Social", source: "Materials: prosetskaya.ru", rights: "Yulia Prosetskaya", theme: "Change theme", language: "Переключить на русский", close: "Close", previous: "Previous artwork", next: "Next artwork", view: "View artwork", buy: "Artwork enquiry", original: "Artist’s website", background: "Background", darkBg: "Dark background", lightBg: "Light background", grayBg: "Gray background", count: "works", viewAll: "Full collection", signature: "artist",
+    social: "Social", source: "", rights: "Yulia Prosetskaya", theme: "Change theme", language: "Переключить на русский", close: "Close", previous: "Previous artwork", next: "Next artwork", view: "View artwork", buy: "Artwork enquiry", original: "Artist’s website", background: "Background", darkBg: "Dark background", lightBg: "Light background", grayBg: "Gray background", count: "works", viewAll: "Full collection", signature: "artist",
   },
 } as const;
