@@ -1,7 +1,10 @@
 import type { Artwork, Lang } from "@/lib/artworks";
 
 /** Wall width shown in the room preview, in centimetres. */
-export const ROOM_WALL_CM = 360;
+export const ROOMS = [
+  { id: "living", ru: "Гостиная", en: "Living room", wallCm: 470, bottomPct: 52 },
+  { id: "dining", ru: "Столовая", en: "Dining room", wallCm: 398, bottomPct: 46 },
+] as const;
 
 /** Real artwork width/height in cm, using the catalogue size and the photo's proportions. */
 export function artworkSizeCm(work: Pick<Artwork, "size" | "width" | "height">): { w: number; h: number } {
@@ -26,7 +29,7 @@ export function inquiryText(work: Pick<Artwork, "ru" | "en" | "year" | "size">, 
 
 export const boutique = {
   ru: {
-    room: "В интерьере", wall: "Картина", roomHint: "Масштаб по реальному размеру работы · стена 3,6 м",
+    room: "В интерьере", wall: "Картина", roomHint: "Масштаб по реальному размеру работы",
     original: "Оригинал · цена по запросу", print: "Авторский принт под заказ",
     inquire: "Узнать о покупке", inquiryTitle: "Запрос о работе", inquiryText: "Юлия ответит лично: наличие, цена, доставка, оформление в раму и примерка в интерьере.",
     yourName: "Ваше имя", message: "Вопрос или пожелание", messagePlaceholder: "Например: подойдёт ли работа для гостиной, нужна ли рама, доставка в Санкт-Петербург",
@@ -66,7 +69,7 @@ export const boutique = {
     legal: "ИП Просецкая Юлия Викторовна · ИНН 400489570194 · ОГРНИП 314774610501033",
   },
   en: {
-    room: "In a room", wall: "Artwork", roomHint: "Scaled to the real size of the work · 3.6 m wall",
+    room: "In a room", wall: "Artwork", roomHint: "Scaled to the real size of the work",
     original: "Original · price on request", print: "Signed print on order",
     inquire: "Enquire to buy", inquiryTitle: "Artwork enquiry", inquiryText: "Yulia replies personally: availability, price, delivery, framing and fitting it to your interior.",
     yourName: "Your name", message: "Question or wish", messagePlaceholder: "E.g. will it suit a living room, is framing needed, delivery to Berlin",
