@@ -7,7 +7,7 @@ export function RoomPreview({ work, lang }: { work: Artwork; lang: Lang }) {
   const pct = (cm: number) => `${(cm / ROOM_WALL_CM) * 100}%`;
   return (
     <div className="room-wall relative aspect-[16/9] w-full max-w-5xl overflow-hidden">
-      <div className="absolute left-1/2 -translate-x-1/2 shadow-2xl" style={{ width: pct(w), aspectRatio: `${w} / ${h}`, bottom: "47%" }}>
+      <div className="absolute left-1/2 -translate-x-1/2 shadow-2xl" style={{ width: pct(w), aspectRatio: `${w} / ${h}`, bottom: "38%" }}>
         <img src={work.image} alt={work[lang]} className="h-full w-full object-cover" />
       </div>
       <div className="room-sofa absolute bottom-[12%] left-1/2 h-[24%] -translate-x-1/2 rounded-t-2xl" style={{ width: pct(220) }} />
