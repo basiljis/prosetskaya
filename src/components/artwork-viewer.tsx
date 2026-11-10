@@ -19,7 +19,7 @@ const backgrounds = [
 export function ArtworkViewer({ works, index, lang, onChange, onClose }: {
   works: readonly Artwork[]; index: number; lang: Lang; onChange: (index: number) => void; onClose: () => void;
 }) {
-  const [background, setBackground] = useState(0);
+  const [background, setBackground] = useState(1);
   const [room, setRoom] = useState(false);
   const [inquiry, setInquiry] = useState(false);
   const b = boutique[lang];
