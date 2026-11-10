@@ -61,7 +61,6 @@ export function ArtworkViewer({ works, index, lang, onChange, onClose }: {
           <div id="artwork-details" className="grid shrink-0 gap-4 border-t border-current/15 px-5 py-6 md:grid-cols-[1fr_auto] md:items-center md:gap-16 md:px-10">
             <ArtworkCaption work={work} lang={lang} className="max-w-xl" />
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-              <a href={work.source} target="_blank" rel="noreferrer" className="text-[10px] opacity-60 hover:opacity-100">{t.original}</a>
               <span className="text-[10px] opacity-60">{availability(work) === "print" ? b.print : b.original}</span>
               <Button variant="artwork" onClick={() => setInquiry(true)} className="border border-current px-4 py-2 text-xs">{b.inquire}<ArrowUpRight /></Button>
             </div>
