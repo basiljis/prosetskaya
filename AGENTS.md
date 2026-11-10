@@ -12,3 +12,4 @@
 - Keep the artist portfolio as a single editorial gallery experience; language and theme preferences remain browser-persisted because no backend is required.
 - Store sourced artwork metadata separately from gallery presentation, with local asset pointers and source links, so artist materials remain traceable and replaceable.
 - Use a shared artwork caption in the grid and fullscreen viewer to keep typography consistent; fullscreen focus and dismissal use Radix Dialog primitives.
+- CV content lives in src/data/cv.json and drives both the /cv page and the prebuilt PDF asset; regenerate and re-upload the PDF whenever cv.json changes so they stay identical.
