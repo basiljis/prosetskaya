@@ -206,3 +206,7 @@
   .footer-name { font-size: 70px; }
 }
 @media (max-width: 380px) { .artist-title { font-size: 44px; } .featured-stage { height: 300px; } .footer-name { font-size: 58px; } }
+
+.room-wall { background: linear-gradient(180deg, oklch(0.93 0.012 80), oklch(0.89 0.015 75)); }
+.room-sofa { background: oklch(0.52 0.03 60); box-shadow: 0 -6px 0 0 oklch(0.46 0.03 60) inset; }
+.room-floor { background: oklch(0.72 0.03 65); }
