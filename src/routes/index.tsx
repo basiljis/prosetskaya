@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import * as Dialog from "@radix-ui/react-dialog";
-import { ArrowDown, ArrowUp, ArrowLeft, ArrowRight, ArrowUpRight, Menu, Moon, Sun, X, ZoomIn } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowLeft, ArrowRight, ArrowUpRight, Download, Menu, Moon, Sun, X, ZoomIn } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArtworkCaption } from "@/components/artwork-caption";
@@ -10,6 +10,8 @@ import { copy } from "@/lib/gallery-copy";
 import { filterArtworks, nextArtworkIndex } from "@/lib/gallery-navigation";
 import { InquiryDialog } from "@/components/inquiry-dialog";
 import { availability, boutique } from "@/lib/boutique";
+import { ContactDialog } from "@/components/contact-dialog";
+import cvPdf from "@/assets/prosetskaya-cv.pdf.asset.json";
 import portraitAsset from "@/assets/prosetskaya/portrait.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
@@ -71,7 +73,7 @@ function Index() {
     if (index >= 0) setViewerIndex(index);
   };
   const scrollToSection = (hash: string) => { document.querySelector(hash)?.scrollIntoView({ behavior: "smooth", block: "start" }); history.replaceState(null, "", hash); };
-  const navLinks = [{ label: t.works, href: "#works" }, { label: b.projectsLabel, href: "#projects" }, { label: t.about, href: "#about" }, { label: b.exhibitionsLabel, href: "#exhibitions" }, { label: b.buyingLabel, href: "#buying" }, { label: t.contact, href: "#contact" }];
+  const navLinks = [{ label: t.works, href: "#works" }, { label: b.projectsLabel, href: "#projects" }, { label: t.about, href: "#about" }, { label: b.buyingLabel, href: "#buying" }, { label: t.contact, href: "#contact" }];
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -136,18 +138,13 @@ function Index() {
           <div><p className="mb-3 text-[10px] uppercase text-muted-foreground">03 — {t.about}</p><h2 className="section-heading font-display">{t.name}</h2><figure className="mt-9 max-w-80"><img src={portraitAsset.url} alt={t.portrait} loading="lazy" className="aspect-[4/5] w-full object-cover" /><figcaption className="mt-3 text-[10px] text-muted-foreground">{t.portrait} · {t.location}</figcaption></figure></div>
           <div className="md:pt-12"><p className="font-display text-3xl leading-[1.35] md:text-4xl">{t.bio}</p><p className="mt-7 max-w-xl text-sm leading-7 text-muted-foreground">{t.bioSecond}</p>
             <div className="mt-10 border-t border-border">{[{ year: "2009", title: t.education, note: t.educationNote }, { year: "2021", title: t.project, note: t.projectNote }, { year: "2022", title: t.exhibition, note: t.exhibitionNote }].map((item) => <div key={item.year} className="grid grid-cols-[50px_1fr] gap-5 border-b border-border py-5"><span className="pt-1 text-xs text-primary">{item.year}</span><div><p className="text-sm">{item.title}</p><p className="mt-1 text-[11px] text-muted-foreground">{item.note}</p></div></div>)}</div>
-            <Link to="/cv" className="mt-7 inline-flex items-center gap-2 border-b border-foreground pb-2 text-xs">{lang === "ru" ? "Резюме (CV) и PDF" : "CV & PDF"}<ArrowUpRight className="size-4" /></Link>
+            <div className="mt-7 flex flex-wrap gap-6"><Link to="/cv" className="inline-flex items-center gap-2 border-b border-foreground pb-2 text-xs">{lang === "ru" ? "Подробнее" : "Read more"}<ArrowUpRight className="size-4" /></Link><a href={cvPdf.url} download="prosetskaya-cv.pdf" className="inline-flex items-center gap-2 border-b border-foreground pb-2 text-xs">{lang === "ru" ? "Скачать CV в PDF" : "Download CV (PDF)"}<Download className="size-4" /></a></div>
           </div>
         </div>
       </section>
 
-      <section id="exhibitions" className="gallery-shell py-20 md:py-28">
-        <div className="flex flex-wrap items-end justify-between gap-6"><div><p className="mb-3 text-[10px] uppercase text-muted-foreground">04 — {b.exhibitionsLabel}</p><h2 className="section-heading font-display">{b.exhibitionsTitle}</h2></div></div>
-        <div className="mt-10 border-t border-border">{b.exhibitions.map((e) => <div key={e.year + e.title} className="grid grid-cols-[64px_1fr] gap-5 border-b border-border py-5 md:grid-cols-[96px_1fr_1fr]"><span className="text-xs tabular-nums text-primary">{e.year}</span><span className="text-sm">{e.title}</span><span className="col-start-2 text-[11px] text-muted-foreground md:col-start-auto md:text-right">{e.place}</span></div>)}</div>
-      </section>
-
       <section id="buying" className="border-t border-border bg-muted/45 py-20 md:py-28">
-        <div className="gallery-shell"><p className="mb-3 text-[10px] uppercase text-muted-foreground">05 — {b.buyingLabel}</p><h2 className="section-heading font-display">{b.buyingTitle}</h2>
+        <div className="gallery-shell"><p className="mb-3 text-[10px] uppercase text-muted-foreground">04 — {b.buyingLabel}</p><h2 className="section-heading font-display">{b.buyingTitle}</h2>
           <ol className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">{b.steps.map((s, i) => <li key={s.title} className="border-t border-foreground pt-5"><span className="text-xs text-primary">0{i + 1}</span><p className="mt-3 font-display text-2xl">{s.title}</p><p className="mt-2 text-xs leading-6 text-muted-foreground">{s.note}</p></li>)}</ol>
           <div className="mt-14 grid gap-10 md:grid-cols-2"><div><h3 className="font-display text-2xl">{b.delivery}</h3><ul className="mt-4 border-t border-border">{b.deliveryItems.map((d) => <li key={d} className="border-b border-border py-3 text-xs leading-6">{d}</li>)}</ul></div><div><h3 className="font-display text-2xl">{b.requisites}</h3><p className="mt-2 text-[11px] text-muted-foreground">{b.legal}</p><ul className="mt-4 border-t border-border">{b.requisiteItems.map((d) => <li key={d} className="border-b border-border py-3 text-xs leading-6 tabular-nums">{d}</li>)}</ul></div></div>
         </div>
@@ -155,10 +152,10 @@ function Index() {
 
       <footer id="contact" className="overflow-hidden bg-foreground text-background">
         <div className="gallery-shell pb-7 pt-20 md:pt-24">
-          <div className="grid gap-12 md:grid-cols-[1.2fr_1fr]"><div><p className="mb-4 text-[10px] uppercase opacity-50">06 — {t.contact}</p><h2 className="section-heading font-display">{t.enquiryTitle}</h2><p className="mt-5 max-w-xs text-xs leading-6 opacity-60">{t.enquiryText}</p><a href={`mailto:${artist.email}`} className="mt-7 inline-flex items-center gap-8 border-b border-background/50 pb-2 text-sm">{t.write}<ArrowUpRight className="size-4" /></a></div>
+          <div className="grid gap-12 md:grid-cols-[1.2fr_1fr]"><div><p className="mb-4 text-[10px] uppercase opacity-50">05 — {t.contact}</p><h2 className="section-heading font-display">{t.enquiryTitle}</h2><p className="mt-5 max-w-xs text-xs leading-6 opacity-60">{t.enquiryText}</p><ContactDialog lang={lang}><button type="button" className="mt-7 inline-flex items-center gap-8 border-b border-background/50 pb-2 text-sm">{t.write}<ArrowUpRight className="size-4" /></button></ContactDialog></div>
             <div className="space-y-6 md:pt-9"><a href={`mailto:${artist.email}`} className="block break-all text-lg md:text-xl">{artist.email}</a><a href={artist.phoneHref} className="block text-lg">{artist.phone}</a><p className="text-xs opacity-60">{t.address}</p><div className="flex flex-wrap gap-7 pt-4 text-xs"><a href={artist.telegram} target="_blank" rel="noreferrer" className="flex items-center gap-1">Telegram<ArrowUpRight className="size-3" /></a><a href={artist.instagram} target="_blank" rel="noreferrer" className="flex items-center gap-1">Instagram<ArrowUpRight className="size-3" /></a><a href={artist.whatsapp} target="_blank" rel="noreferrer" className="flex items-center gap-1">WhatsApp<ArrowUpRight className="size-3" /></a></div></div>
           </div>
-          <div className="mt-16 flex flex-wrap justify-between gap-3 border-t border-background/20 pt-6 text-[10px] opacity-50"><span>© 2026 {t.rights} · {b.legal}</span></div>
+          <div className="mt-16 flex flex-wrap justify-between gap-3 border-t border-background/20 pt-6 text-[10px] opacity-50"><span>© 2026 {t.rights} · {b.legal}</span><span className="flex gap-5"><Link to="/privacy">{lang === "ru" ? "Политика конфиденциальности" : "Privacy policy"}</Link><Link to="/terms">{lang === "ru" ? "Пользовательское соглашение" : "Terms of use"}</Link></span></div>
           <p className="footer-name mt-10 font-display">{t.lastName}<span className="text-signal">.</span></p>
         </div>
       </footer>
