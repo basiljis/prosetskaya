@@ -49,7 +49,7 @@ export function ArtworkViewer({ works, index, lang, onChange, onClose }: {
               <span className="hidden text-[10px] uppercase opacity-60 sm:inline">{t.background}</span>
               {backgrounds.map((bg, i) => <Button key={bg.label} variant="artwork" size="icon" onClick={() => setBackground(i)} aria-label={t[bg.label]} aria-pressed={background === i} title={t[bg.label]} className={`size-7 rounded-full border border-current ${bg.swatch} ${background === i ? "outline outline-1 outline-offset-4" : ""}`} />)}
             </div>
-            <Button variant="artwork" onClick={() => setRoom(!room)} aria-pressed={room} className={`border px-3 py-1 text-[11px] ${room ? "border-current" : "border-transparent opacity-70"}`}>{b.room}</Button>
+            <Button variant="artwork" onClick={() => setRoom(!room)} aria-pressed={room} className={`rounded-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] shadow-lg transition ${room ? "bg-signal text-foreground ring-2 ring-signal" : "bg-primary text-primary-foreground hover:brightness-110"}`}>{b.room}</Button>
             <span className="hidden text-[11px] tabular-nums sm:inline opacity-60">{String(index + 1).padStart(2, "0")} / {String(works.length).padStart(2, "0")}</span>
             <Button variant="artwork" size="icon" onClick={onClose} aria-label={t.close} title={t.close}><X className="size-6" /></Button>
           </div>
