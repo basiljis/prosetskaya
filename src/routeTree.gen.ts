@@ -10,8 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BuyRouteImport } from './routes/buy'
 import { Route as CvRouteImport } from './routes/cv'
+import { Route as DeliveryRouteImport } from './routes/delivery'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as RequisitesRouteImport } from './routes/requisites'
 import { Route as TermsRouteImport } from './routes/terms'
 
 const IndexRoute = IndexRouteImport.update({
@@ -19,14 +22,29 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BuyRoute = BuyRouteImport.update({
+  id: '/buy',
+  path: '/buy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CvRoute = CvRouteImport.update({
   id: '/cv',
   path: '/cv',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DeliveryRoute = DeliveryRouteImport.update({
+  id: '/delivery',
+  path: '/delivery',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequisitesRoute = RequisitesRouteImport.update({
+  id: '/requisites',
+  path: '/requisites',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -37,35 +55,56 @@ const TermsRoute = TermsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/buy': typeof BuyRoute
   '/cv': typeof CvRoute
+  '/delivery': typeof DeliveryRoute
   '/privacy': typeof PrivacyRoute
+  '/requisites': typeof RequisitesRoute
   '/terms': typeof TermsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/buy': typeof BuyRoute
   '/cv': typeof CvRoute
+  '/delivery': typeof DeliveryRoute
   '/privacy': typeof PrivacyRoute
+  '/requisites': typeof RequisitesRoute
   '/terms': typeof TermsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/buy': typeof BuyRoute
   '/cv': typeof CvRoute
+  '/delivery': typeof DeliveryRoute
   '/privacy': typeof PrivacyRoute
+  '/requisites': typeof RequisitesRoute
   '/terms': typeof TermsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/cv' | '/privacy' | '/terms'
+  fullPaths:
+    '/' | '/buy' | '/cv' | '/delivery' | '/privacy' | '/requisites' | '/terms'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cv' | '/privacy' | '/terms'
-  id: '__root__' | '/' | '/cv' | '/privacy' | '/terms'
+  to: '/' | '/buy' | '/cv' | '/delivery' | '/privacy' | '/requisites' | '/terms'
+  id:
+    | '__root__'
+    | '/'
+    | '/buy'
+    | '/cv'
+    | '/delivery'
+    | '/privacy'
+    | '/requisites'
+    | '/terms'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BuyRoute: typeof BuyRoute
   CvRoute: typeof CvRoute
+  DeliveryRoute: typeof DeliveryRoute
   PrivacyRoute: typeof PrivacyRoute
+  RequisitesRoute: typeof RequisitesRoute
   TermsRoute: typeof TermsRoute
 }
 
@@ -78,6 +117,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/buy': {
+      id: '/buy'
+      path: '/buy'
+      fullPath: '/buy'
+      preLoaderRoute: typeof BuyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cv': {
       id: '/cv'
       path: '/cv'
@@ -85,11 +131,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CvRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/delivery': {
+      id: '/delivery'
+      path: '/delivery'
+      fullPath: '/delivery'
+      preLoaderRoute: typeof DeliveryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/requisites': {
+      id: '/requisites'
+      path: '/requisites'
+      fullPath: '/requisites'
+      preLoaderRoute: typeof RequisitesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -104,8 +164,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BuyRoute: BuyRoute,
   CvRoute: CvRoute,
+  DeliveryRoute: DeliveryRoute,
   PrivacyRoute: PrivacyRoute,
+  RequisitesRoute: RequisitesRoute,
   TermsRoute: TermsRoute,
 }
 export const routeTree = rootRouteImport
