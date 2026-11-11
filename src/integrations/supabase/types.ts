@@ -14,16 +14,151 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      artwork_prices: {
+        Row: {
+          artwork_id: string
+          price: number | null
+          updated_at: string
+        }
+        Insert: {
+          artwork_id: string
+          price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          artwork_id?: string
+          price?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          amount: number | null
+          artwork_id: string
+          artwork_title: string
+          comment: string
+          company: string
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          method: string
+          payment_id: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          artwork_id: string
+          artwork_title: string
+          comment?: string
+          company?: string
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          id?: string
+          method: string
+          payment_id?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          artwork_id?: string
+          artwork_title?: string
+          comment?: string
+          company?: string
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          method?: string
+          payment_id?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      payment_settings: {
+        Row: {
+          id: number
+          updated_at: string
+          yookassa_secret_key: string
+          yookassa_shop_id: string
+        }
+        Insert: {
+          id?: number
+          updated_at?: string
+          yookassa_secret_key?: string
+          yookassa_shop_id?: string
+        }
+        Update: {
+          id?: number
+          updated_at?: string
+          yookassa_secret_key?: string
+          yookassa_shop_id?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          id: number
+          online_payment_enabled: boolean
+          show_prices: boolean
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          online_payment_enabled?: boolean
+          show_prices?: boolean
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          online_payment_enabled?: boolean
+          show_prices?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      reserved_artworks: { Args: never; Returns: string[] }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +285,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
