@@ -13,3 +13,4 @@
 - Store sourced artwork metadata separately from gallery presentation, with local asset pointers and source links, so artist materials remain traceable and replaceable.
 - Use a shared artwork caption in the grid and fullscreen viewer to keep typography consistent; fullscreen focus and dismissal use Radix Dialog primitives.
 - CV content lives in src/data/cv.json and drives both the /cv page and the prebuilt PDF asset; regenerate and re-upload the PDF whenever cv.json changes so they stay identical.
+- Shop state (prices, price visibility, online-payment toggle, YooKassa credentials, orders) lives in Lovable Cloud and is managed from /admin; the first registered account becomes admin. YooKassa webhooks are verified by re-reading the payment from YooKassa, never trusting the body.
