@@ -41,7 +41,7 @@ function Admin() {
   if (!data) return <SimplePage title="Нет доступа"><p className="mt-8 text-sm">Эта страница только для администратора. <Link to="/account" className="border-b border-foreground">Мои заказы</Link></p></SimplePage>;
 
   const toggle = async (key: "show_prices" | "online_payment_enabled", value: boolean) => {
-    await supabase.from("site_settings").update({ [key]: value, updated_at: new Date().toISOString() }).eq("id", 1); refresh("Сохранено");
+    await supabase.from("site_settings").update(key === "show_prices" ? { show_prices: value } : { online_payment_enabled: value }).eq("id", 1); refresh("Сохранено");
   };
   const saveKassa = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); const f = new FormData(e.currentTarget);

@@ -12,6 +12,9 @@ import { InquiryDialog } from "@/components/inquiry-dialog";
 import { availability, boutique } from "@/lib/boutique";
 import { ContactDialog } from "@/components/contact-dialog";
 import cvPdf from "@/assets/prosetskaya-cv.pdf.asset.json";
+import { CheckoutDialog } from "@/components/checkout-dialog";
+import { useShop } from "@/hooks/use-shop";
+import { rub } from "@/lib/shop";
 import portraitAsset from "@/assets/prosetskaya/portrait.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
@@ -40,6 +43,9 @@ function Index() {
   const b = boutique[lang];
   const [inquiryId, setInquiryId] = useState<string | null>(null);
   const inquiryWork = artworks.find((w) => w.id === inquiryId);
+  const shop = useShop().data;
+  const [buyId, setBuyId] = useState<string | null>(null);
+  const buyWork = artworks.find((w) => w.id === buyId);
   const filtered = filterArtworks(artworks, category);
   const featured = featuredWorks[featuredIndex];
   const left = artworks.find((work) => work.id === "anniversary-bouquet");
@@ -73,7 +79,7 @@ function Index() {
     if (index >= 0) setViewerIndex(index);
   };
   const scrollToSection = (hash: string) => { document.querySelector(hash)?.scrollIntoView({ behavior: "smooth", block: "start" }); history.replaceState(null, "", hash); };
-  const navLinks = [{ label: t.works, href: "#works" }, { label: b.projectsLabel, href: "#projects" }, { label: t.about, href: "#about" }, { label: b.buyingLabel, href: "#buying" }, { label: t.contact, href: "#contact" }];
+  const navLinks = [{ label: t.works, href: "#works" }, { label: b.projectsLabel, href: "#projects" }, { label: t.about, href: "#about" }, { label: t.contact, href: "#contact" }];
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -123,7 +129,7 @@ function Index() {
               <span className="absolute bottom-3 right-3 grid size-9 place-items-center bg-background text-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"><ZoomIn /></span>
             </Button>
             <ArtworkCaption work={work} lang={lang} className="mt-5 border-t border-border pt-3" />
-            <div className="mt-3 flex items-center justify-between gap-3 text-[11px]"><span className="text-muted-foreground">{availability(work) === "print" ? b.print : b.original}</span><Button variant="editorial" onClick={() => setInquiryId(work.id)} className="h-auto border-b border-foreground px-0 pb-1 text-[11px]">{b.inquire}<ArrowUpRight /></Button></div>
+            <div className="mt-3 flex items-center justify-between gap-3 text-[11px]"><span className="text-muted-foreground">{shop?.reserved.has(work.id) ? (lang === "ru" ? "Продана / забронирована" : "Sold / reserved") : <>{availability(work) === "print" ? b.print : b.original}{shop?.showPrices && shop.prices[work.id] ? <b className="ml-2 font-medium text-foreground">{rub(shop.prices[work.id])}</b> : null}</>}</span>{!shop?.reserved.has(work.id) && <span className="flex gap-4"><Button variant="editorial" onClick={() => setInquiryId(work.id)} className="h-auto px-0 pb-1 text-[11px] text-muted-foreground">{lang === "ru" ? "Вопрос" : "Ask"}</Button><Button variant="editorial" onClick={() => setBuyId(work.id)} className="h-auto border-b border-foreground px-0 pb-1 text-[11px]">{lang === "ru" ? "Купить" : "Buy"}<ArrowUpRight /></Button></span>}</div>
           </article>)}
         </div>
       </section>
@@ -143,19 +149,12 @@ function Index() {
         </div>
       </section>
 
-      <section id="buying" className="border-t border-border bg-muted/45 py-20 md:py-28">
-        <div className="gallery-shell"><p className="mb-3 text-[10px] uppercase text-muted-foreground">04 — {b.buyingLabel}</p><h2 className="section-heading font-display">{b.buyingTitle}</h2>
-          <ol className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">{b.steps.map((s, i) => <li key={s.title} className="border-t border-foreground pt-5"><span className="text-xs text-primary">0{i + 1}</span><p className="mt-3 font-display text-2xl">{s.title}</p><p className="mt-2 text-xs leading-6 text-muted-foreground">{s.note}</p></li>)}</ol>
-          <div className="mt-14 grid gap-10 md:grid-cols-2"><div><h3 className="font-display text-2xl">{b.delivery}</h3><ul className="mt-4 border-t border-border">{b.deliveryItems.map((d) => <li key={d} className="border-b border-border py-3 text-xs leading-6">{d}</li>)}</ul></div><div><h3 className="font-display text-2xl">{b.requisites}</h3><p className="mt-2 text-[11px] text-muted-foreground">{b.legal}</p><ul className="mt-4 border-t border-border">{b.requisiteItems.map((d) => <li key={d} className="border-b border-border py-3 text-xs leading-6 tabular-nums">{d}</li>)}</ul></div></div>
-        </div>
-      </section>
-
       <footer id="contact" className="overflow-hidden bg-foreground text-background">
         <div className="gallery-shell pb-7 pt-20 md:pt-24">
           <div className="grid gap-12 md:grid-cols-[1.2fr_1fr]"><div><p className="mb-4 text-[10px] uppercase opacity-50">05 — {t.contact}</p><h2 className="section-heading font-display">{t.enquiryTitle}</h2><p className="mt-5 max-w-xs text-xs leading-6 opacity-60">{t.enquiryText}</p><ContactDialog lang={lang}><button type="button" className="mt-7 inline-flex items-center gap-8 border-b border-background/50 pb-2 text-sm">{t.write}<ArrowUpRight className="size-4" /></button></ContactDialog></div>
             <div className="space-y-6 md:pt-9"><a href={`mailto:${artist.email}`} className="block break-all text-lg md:text-xl">{artist.email}</a><a href={artist.phoneHref} className="block text-lg">{artist.phone}</a><p className="text-xs opacity-60">{t.address}</p><div className="flex flex-wrap gap-7 pt-4 text-xs"><a href={artist.telegram} target="_blank" rel="noreferrer" className="flex items-center gap-1">Telegram<ArrowUpRight className="size-3" /></a><a href={artist.instagram} target="_blank" rel="noreferrer" className="flex items-center gap-1">Instagram<ArrowUpRight className="size-3" /></a><a href={artist.whatsapp} target="_blank" rel="noreferrer" className="flex items-center gap-1">WhatsApp<ArrowUpRight className="size-3" /></a></div></div>
           </div>
-          <div className="mt-16 flex flex-wrap justify-between gap-3 border-t border-background/20 pt-6 text-[10px] opacity-50"><span>© 2026 {t.rights} · {b.legal}</span><span className="flex gap-5"><Link to="/privacy">{lang === "ru" ? "Политика конфиденциальности" : "Privacy policy"}</Link><Link to="/terms">{lang === "ru" ? "Пользовательское соглашение" : "Terms of use"}</Link></span></div>
+          <div className="mt-16 flex flex-wrap justify-between gap-3 border-t border-background/20 pt-6 text-[10px] opacity-50"><span>© 2026 {t.rights} · {b.legal}</span><span className="flex flex-wrap gap-5"><Link to="/buy">{lang === "ru" ? "Как купить" : "How to buy"}</Link><Link to="/delivery">{lang === "ru" ? "Доставка" : "Delivery"}</Link><Link to="/requisites">{lang === "ru" ? "Реквизиты" : "Bank details"}</Link><Link to="/account">{lang === "ru" ? "Личный кабинет" : "Account"}</Link><Link to="/privacy">{lang === "ru" ? "Политика конфиденциальности" : "Privacy policy"}</Link><Link to="/terms">{lang === "ru" ? "Пользовательское соглашение" : "Terms of use"}</Link></span></div>
           <p className="footer-name mt-10 font-display">{t.lastName}<span className="text-signal">.</span></p>
         </div>
       </footer>
@@ -166,6 +165,7 @@ function Index() {
         <Button variant="outline" size="icon" className="bg-background/90 backdrop-blur" onClick={() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" })} aria-label={lang === "ru" ? "В конец страницы" : "To bottom"} title={lang === "ru" ? "В конец страницы" : "To bottom"}><ArrowDown /></Button>
       </div>
       {inquiryWork && <InquiryDialog work={inquiryWork} lang={lang} onClose={() => setInquiryId(null)} />}
+      {buyWork && <CheckoutDialog work={buyWork} price={shop?.prices[buyWork.id] ?? null} online={!!shop?.online} onClose={() => setBuyId(null)} />}
       {viewerIndex !== null && <ArtworkViewer works={artworks} index={viewerIndex} lang={lang} onChange={setViewerIndex} onClose={() => setViewerIndex(null)} />}
     </main>
   );
