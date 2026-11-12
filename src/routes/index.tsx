@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import * as Dialog from "@radix-ui/react-dialog";
-import { ArrowDown, ArrowUp, ArrowLeft, ArrowRight, ArrowUpRight, Download, Menu, Moon, Sun, X, ZoomIn } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowLeft, ArrowRight, ArrowUpRight, Download, Menu, Moon, Sun, User, X, ZoomIn } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArtworkCaption } from "@/components/artwork-caption";
@@ -89,6 +89,7 @@ function Index() {
           <a href="#top" className="flex min-w-0 items-center gap-3" aria-label={t.name}><span className="font-display text-4xl font-medium">ЮП<span className="text-primary">.</span></span><span className="hidden border-l border-border pl-3 text-[10px] leading-4 sm:block">{t.gallery}<br />{t.location}</span></a>
           <nav className="hidden items-center gap-8 lg:flex" aria-label={t.menu}>{navLinks.map((link) => <Button key={link.href} asChild variant="editorial" className="h-auto p-0 text-xs"><a href={link.href} onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}>{link.label}</a></Button>)}</nav>
           <div className="flex items-center gap-2">
+            <Button asChild variant="editorial" className="h-9 gap-2 px-3 text-[11px] font-semibold uppercase"><Link to="/account" aria-label={lang === "ru" ? "Личный кабинет" : "Account"}><User className="size-4" /><span className="hidden sm:inline">{lang === "ru" ? "Кабинет" : "Account"}</span></Link></Button>
             <Button variant="editorial" onClick={() => setLang(lang === "ru" ? "en" : "ru")} aria-label={t.language} title={t.language} className="h-9 px-2 text-[11px] font-semibold uppercase">{lang}<span className="text-muted-foreground">/</span>{lang === "ru" ? "en" : "ru"}</Button>
             <Button variant="editorial" size="icon" onClick={() => setDark(!dark)} aria-label={t.theme} title={t.theme}>{dark ? <Sun /> : <Moon />}</Button>
             <Button variant="editorial" size="icon" onClick={() => setMenuOpen(true)} aria-label={t.menu} title={t.menu} className="lg:hidden"><Menu /></Button>
