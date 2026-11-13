@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArtworkCaption } from "@/components/artwork-caption";
 import { CollectionFilters } from "@/components/collection-filters";
+import { SectionMarker } from "@/components/section-marker";
 import { ArtworkViewer } from "@/components/artwork-viewer";
 import { artist, artworks, categories, featuredIds, type Category, type Lang } from "@/lib/artworks";
 import { copy } from "@/lib/gallery-copy";
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/")({
     { title: "Юлия Просецкая — галерея живописи и цифрового искусства" },
     { name: "description", content: "Галерея художницы Юлии Просецкой: живопись, пейзажи, цифровое искусство, графика и флуоресцентные работы. Биография и контакты художницы." },
     { property: "og:title", content: "Юлия Просецкая — галерея художника" },
-    { property: "og:description", content: "Избранная живопись, пейзажи, графика и цифровые работы Юлии Просецкой." },
+    { property: "og:description", content: "Полная коллекция живописи, пейзажей, графики и цифровых работ Юлии Просецкой." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },
   ] }),
@@ -122,7 +123,8 @@ function Index() {
       </section>
 
       <section id="works" className="gallery-shell pb-24 pt-5 md:pb-32 md:pt-8">
-        <div className="flex items-end justify-between gap-6"><div><p className="mb-3 text-[10px] uppercase text-muted-foreground">01 — {t.collection}</p><h2 className="section-heading font-display">{t.selected}<span className="ml-3 align-top font-sans text-sm text-primary">({String(filtered.length).padStart(2, "0")})</span></h2></div><p className="hidden max-w-60 text-xs leading-6 text-muted-foreground md:block">{t.artistNote}</p></div>
+        <SectionMarker number="01">{t.collection}</SectionMarker>
+        <div className="flex items-end justify-between gap-6"><div><h2 className="section-heading font-display">{t.allWorks}<span className="ml-3 align-top font-sans text-sm text-primary">({String(filtered.length).padStart(2, "0")})</span></h2></div><p className="hidden max-w-60 text-xs leading-6 text-muted-foreground md:block">{t.artistNote}</p></div>
         <div className={`mt-9 grid gap-y-12 ${shop?.collectionMenuPosition === "left" ? "lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-9" : ""}`}>
         <CollectionFilters position={shop?.collectionMenuPosition ?? "top"} category={category} lang={lang} onChange={(key) => { setCategory(key); document.getElementById("works")?.scrollIntoView({ behavior: "smooth" }); }} />
         <div className={`grid min-w-0 grid-cols-1 gap-x-9 gap-y-12 sm:grid-cols-2 ${shop?.collectionMenuPosition === "left" ? "2xl:grid-cols-3" : "lg:grid-cols-3"}`}>
@@ -139,13 +141,15 @@ function Index() {
       </section>
 
       <section id="projects" className="gallery-shell border-t border-border py-20 md:py-28">
-        <div className="grid gap-10 md:grid-cols-[0.8fr_1.2fr] md:gap-20"><div><p className="mb-3 text-[10px] uppercase text-muted-foreground">02 — {b.projectsLabel}</p><h2 className="section-heading font-display">{b.projectsTitle}</h2><p className="mt-5 max-w-sm text-sm leading-7 text-muted-foreground">{b.projectsText}</p><Button asChild variant="editorial" className="mt-6 h-auto border-b border-foreground px-0 pb-2 text-xs"><a href={artist.telegram} target="_blank" rel="noreferrer">{b.commission}<ArrowUpRight /></a></Button></div>
+        <SectionMarker number="02">{b.projectsLabel}</SectionMarker>
+        <div className="grid gap-10 md:grid-cols-[0.8fr_1.2fr] md:gap-20"><div><h2 className="section-heading font-display">{b.projectsTitle}</h2><p className="mt-5 max-w-sm text-sm leading-7 text-muted-foreground">{b.projectsText}</p><Button asChild variant="editorial" className="mt-6 h-auto border-b border-foreground px-0 pb-2 text-xs"><a href={artist.telegram} target="_blank" rel="noreferrer">{b.commission}<ArrowUpRight /></a></Button></div>
           <div className="border-t border-border">{b.projects.map((p) => <div key={p.title} className="grid grid-cols-[56px_1fr_auto] items-center gap-5 border-b border-border py-6"><span className="text-xs text-primary">{p.year}</span><span><span className="block font-display text-2xl">{p.title}</span><span className="mt-1 block text-[11px] text-muted-foreground">{p.note}</span></span><span /></div>)}</div></div>
       </section>
 
       <section id="about" className="border-t border-border bg-muted/45 py-20 md:py-28">
+        <div className="gallery-shell sticky top-[76px] z-30"><SectionMarker number="03">{t.about}</SectionMarker></div>
         <div className="gallery-shell grid gap-12 md:grid-cols-[0.8fr_1.2fr] md:gap-20">
-          <div><p className="mb-3 text-[10px] uppercase text-muted-foreground">03 — {t.about}</p><h2 className="section-heading font-display">{t.name}</h2><figure className="mt-9 max-w-80"><img src={portraitAsset.url} alt={t.portrait} loading="lazy" className="aspect-[4/5] w-full object-cover" /><figcaption className="mt-3 text-[10px] text-muted-foreground">{t.portrait} · {t.location}</figcaption></figure></div>
+          <div><h2 className="section-heading font-display">{t.name}</h2><figure className="mt-9 max-w-80"><img src={portraitAsset.url} alt={t.portrait} loading="lazy" className="aspect-[4/5] w-full object-cover" /><figcaption className="mt-3 text-[10px] text-muted-foreground">{t.portrait} · {t.location}</figcaption></figure></div>
           <div className="md:pt-12"><p className="font-display text-3xl leading-[1.35] md:text-4xl">{t.bio}</p><p className="mt-7 max-w-xl text-sm leading-7 text-muted-foreground">{t.bioSecond}</p>
             <div className="mt-10 border-t border-border">{[{ year: "2009", title: t.education, note: t.educationNote }, { year: "2021", title: t.project, note: t.projectNote }, { year: "2022", title: t.exhibition, note: t.exhibitionNote }].map((item) => <div key={item.year} className="grid grid-cols-[50px_1fr] gap-5 border-b border-border py-5"><span className="pt-1 text-xs text-primary">{item.year}</span><div><p className="text-sm">{item.title}</p><p className="mt-1 text-[11px] text-muted-foreground">{item.note}</p></div></div>)}</div>
             <div className="mt-7 flex flex-wrap gap-6"><Link to="/cv" className="inline-flex items-center gap-2 border-b border-foreground pb-2 text-xs">{lang === "ru" ? "Подробнее" : "Read more"}<ArrowUpRight className="size-4" /></Link><a href={cvPdf.url} download="prosetskaya-cv.pdf" className="inline-flex items-center gap-2 border-b border-foreground pb-2 text-xs">{lang === "ru" ? "Скачать CV в PDF" : "Download CV (PDF)"}<Download className="size-4" /></a></div>
@@ -153,9 +157,10 @@ function Index() {
         </div>
       </section>
 
-      <footer id="contact" className="overflow-hidden bg-foreground text-background">
+      <footer id="contact" className="bg-foreground text-background">
         <div className="gallery-shell pb-7 pt-20 md:pt-24">
-          <div className="grid gap-12 md:grid-cols-[1.2fr_1fr]"><div><p className="mb-4 text-[10px] uppercase opacity-50">05 — {t.contact}</p><h2 className="section-heading font-display">{t.enquiryTitle}</h2><p className="mt-5 max-w-xs text-xs leading-6 opacity-60">{t.enquiryText}</p><ContactDialog lang={lang}><button type="button" className="mt-7 inline-flex items-center gap-8 border-b border-background/50 pb-2 text-sm">{t.write}<ArrowUpRight className="size-4" /></button></ContactDialog></div>
+          <SectionMarker number="04" inverse>{t.contact}</SectionMarker>
+          <div className="grid gap-12 md:grid-cols-[1.2fr_1fr]"><div><h2 className="section-heading font-display">{t.enquiryTitle}</h2><p className="mt-5 max-w-xs text-xs leading-6 opacity-60">{t.enquiryText}</p><ContactDialog lang={lang}><button type="button" className="mt-7 inline-flex items-center gap-8 border-b border-background/50 pb-2 text-sm">{t.write}<ArrowUpRight className="size-4" /></button></ContactDialog></div>
             <div className="space-y-6 md:pt-9"><a href={`mailto:${artist.email}`} className="block break-all text-lg md:text-xl">{artist.email}</a><a href={artist.phoneHref} className="block text-lg">{artist.phone}</a><p className="text-xs opacity-60">{t.address}</p><div className="flex flex-wrap gap-7 pt-4 text-xs"><a href={artist.telegram} target="_blank" rel="noreferrer" className="flex items-center gap-1">Telegram<ArrowUpRight className="size-3" /></a><a href={artist.instagram} target="_blank" rel="noreferrer" className="flex items-center gap-1">Instagram<ArrowUpRight className="size-3" /></a><a href={artist.whatsapp} target="_blank" rel="noreferrer" className="flex items-center gap-1">WhatsApp<ArrowUpRight className="size-3" /></a></div></div>
           </div>
           <div className="mt-12 border-t border-background/20">
