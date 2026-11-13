@@ -4,6 +4,7 @@ import { ArrowDown, ArrowUp, ArrowLeft, ArrowRight, ArrowUpRight, Download, Menu
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArtworkCaption } from "@/components/artwork-caption";
+import { CollectionFilters } from "@/components/collection-filters";
 import { ArtworkViewer } from "@/components/artwork-viewer";
 import { artist, artworks, categories, featuredIds, type Category, type Lang } from "@/lib/artworks";
 import { copy } from "@/lib/gallery-copy";
@@ -122,8 +123,9 @@ function Index() {
 
       <section id="works" className="gallery-shell pb-24 pt-5 md:pb-32 md:pt-8">
         <div className="flex items-end justify-between gap-6"><div><p className="mb-3 text-[10px] uppercase text-muted-foreground">01 — {t.collection}</p><h2 className="section-heading font-display">{t.selected}<span className="ml-3 align-top font-sans text-sm text-primary">({String(filtered.length).padStart(2, "0")})</span></h2></div><p className="hidden max-w-60 text-xs leading-6 text-muted-foreground md:block">{t.artistNote}</p></div>
-        <div className="sticky top-[76px] z-30 mb-12 mt-9 flex flex-wrap gap-x-7 gap-y-2 border-y border-border bg-background/95 py-4 backdrop-blur-lg" role="group" aria-label={t.practices}>{categories.map((key) => <Button key={key} variant="editorial" onClick={() => { setCategory(key); document.getElementById("works")?.scrollIntoView({ behavior: "smooth" }); }} aria-pressed={category === key} className={`relative h-8 px-0 text-[11px] ${category === key ? "text-primary" : "text-muted-foreground"}`}>{category === key && <span className="size-1 rounded-full bg-primary" />}{t.categories[key]}</Button>)}</div>
-        <div className="grid grid-cols-1 gap-x-9 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={`mt-9 grid gap-y-12 ${shop?.collectionMenuPosition === "left" ? "lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-9" : ""}`}>
+        <CollectionFilters position={shop?.collectionMenuPosition ?? "top"} category={category} lang={lang} onChange={(key) => { setCategory(key); document.getElementById("works")?.scrollIntoView({ behavior: "smooth" }); }} />
+        <div className={`grid min-w-0 grid-cols-1 gap-x-9 gap-y-12 sm:grid-cols-2 ${shop?.collectionMenuPosition === "left" ? "2xl:grid-cols-3" : "lg:grid-cols-3"}`}>
           {filtered.map((work) => <article key={work.id} className="gallery-column min-w-0">
             <Button variant="artwork" className="group relative block w-full cursor-zoom-in overflow-hidden" onClick={() => openWork(work.id)} aria-label={`${t.view}: ${work[lang]}`}>
               <img src={work.image} alt={work[lang]} loading="lazy" className="gallery-image transition-transform duration-700 group-hover:scale-[1.015]" />
@@ -132,6 +134,7 @@ function Index() {
             <ArtworkCaption work={work} lang={lang} className="mt-5 border-t border-border pt-3" />
             <div className="mt-3 flex items-center justify-between gap-3 text-[11px]"><span className="text-muted-foreground">{shop?.reserved.has(work.id) ? (lang === "ru" ? "Продана / забронирована" : "Sold / reserved") : <>{availability(work) === "print" ? b.print : b.original}{shop?.showPrices && shop.prices[work.id] ? <b className="ml-2 font-medium text-foreground">{rub(shop.prices[work.id])}</b> : null}</>}</span>{!shop?.reserved.has(work.id) && <span className="flex gap-4"><Button variant="editorial" onClick={() => setInquiryId(work.id)} className="h-auto px-0 pb-1 text-[11px] text-muted-foreground">{lang === "ru" ? "Вопрос" : "Ask"}</Button><Button variant="editorial" onClick={() => setBuyId(work.id)} className="h-auto border-b border-foreground px-0 pb-1 text-[11px]">{lang === "ru" ? "Купить" : "Buy"}<ArrowUpRight /></Button></span>}</div>
           </article>)}
+        </div>
         </div>
       </section>
 

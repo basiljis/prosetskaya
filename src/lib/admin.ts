@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { collectionMenuPosition, type CollectionMenuPosition } from "@/lib/collection-layout";
 
 // Queries and writes still run as the caller: database policies enforce admin access.
 export async function loadAdminData() {
@@ -9,7 +10,7 @@ export async function loadAdminData() {
   if (roleError) throw new Error("Не удалось проверить права доступа.");
   if (!isAdmin) return null;
   const [settings, payment, prices, orders] = await Promise.all([
-    supabase.from("site_settings").select("show_prices, online_payment_enabled").eq("id", 1).single(),
+    supabase.from("site_settings").select("show_prices, online_payment_enabled, collection_menu_position").eq("id", 1).single(),
     supabase.from("payment_settings").select("yookassa_shop_id, yookassa_secret_key").eq("id", 1).single(),
     supabase.from("artwork_prices").select("artwork_id, price"),
     supabase.from("orders").select("*").order("created_at", { ascending: false }),
@@ -18,7 +19,7 @@ export async function loadAdminData() {
     throw new Error("Не удалось загрузить настройки. Попробуйте ещё раз.");
   }
   return {
-    settings: settings.data,
+    settings: { ...settings.data, collection_menu_position: collectionMenuPosition(settings.data.collection_menu_position) },
     payment: { shopId: payment.data.yookassa_shop_id, keySaved: Boolean(payment.data.yookassa_secret_key) },
     prices: Object.fromEntries((prices.data ?? []).map((row) => [row.artwork_id, row.price])) as Record<string, number | null>,
     orders: orders.data ?? [],
@@ -29,6 +30,11 @@ export async function saveAdminSetting(key: "show_prices" | "online_payment_enab
   const change = key === "show_prices" ? { show_prices: value } : { online_payment_enabled: value };
   const { data, error } = await supabase.from("site_settings").update({ ...change, updated_at: new Date().toISOString() }).eq("id", 1).select("id").single();
   if (error || !data) throw new Error("Настройка не сохранена. Попробуйте ещё раз.");
+}
+
+export async function saveCollectionMenuPosition(position: CollectionMenuPosition) {
+  const { data, error } = await supabase.from("site_settings").update({ collection_menu_position: position, updated_at: new Date().toISOString() }).eq("id", 1).select("id").single();
+  if (error || !data) throw new Error("Расположение меню не сохранено. Попробуйте ещё раз.");
 }
 
 export async function saveAdminPayment(shop: string, secret: string) {

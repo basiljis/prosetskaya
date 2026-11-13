@@ -16,3 +16,4 @@
 - Shop state (prices, price visibility, online-payment toggle, YooKassa credentials, orders) lives in Lovable Cloud and is managed from /admin; the first registered account becomes admin. YooKassa webhooks are verified by re-reading the payment from YooKassa, never trusting the body.
 - Keep login, signup, and recovery-request presentation in the existing public auth route with shared Button/Input components; this preserves the account flow while matching the gallery's visual system.
 - Keep admin queries and writes in src/lib/admin.ts using the authenticated browser client and existing role/RLS checks; cache only a saved-key indicator, not payment secrets, and surface failed saves instead of false success.
+- Persist collection filter placement in site_settings and share it through useShop; render the left sidebar only on wide screens so phone layouts retain usable full-width artwork.
