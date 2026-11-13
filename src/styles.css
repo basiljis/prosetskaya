@@ -161,7 +161,7 @@
     transition: background-color 500ms ease, color 500ms ease;
   }
 
-  html { scroll-behavior: smooth; scroll-padding-top: 6rem; }
+  html { scroll-behavior: smooth; scroll-padding-top: 120px; }
   button, a { -webkit-tap-highlight-color: transparent; }
   ::selection { background: var(--primary); color: var(--primary-foreground); }
 }
