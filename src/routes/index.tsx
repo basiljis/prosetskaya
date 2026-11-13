@@ -173,7 +173,6 @@ function Index() {
               <span className="min-w-0 max-w-xl text-[10px] leading-5 text-background/50 xl:col-start-1 xl:row-start-1">© 2026 {t.rights} · {b.legal}</span>
             </div>
           </div>
-          <p className="footer-name mt-10 font-display">{t.lastName}<span className="text-signal">.</span></p>
         </div>
       </footer>
 
