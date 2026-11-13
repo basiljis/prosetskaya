@@ -185,7 +185,6 @@
 .featured-main { height: 100%; width: 100%; object-fit: contain; }
 .featured-side { height: 290px; width: 100%; object-fit: contain; }
 .gallery-image { display: block; height: 350px; width: 100%; object-fit: contain; }
-.gallery-column:nth-child(3n + 2) { padding-top: 76px; }
 .preloader { animation: preload-out 1.4s ease forwards; }
 .viewer-surface { outline: none; }
 .viewer-image { max-width: 100%; max-height: 100%; object-fit: contain; }
@@ -200,7 +199,6 @@
   .artist-title { font-size: 52px; }
   .featured-stage { height: 300px; }
   .featured-side { height: 150px; }
-  .gallery-column:nth-child(3n + 2) { padding-top: 0; }
   .gallery-image { height: 300px; }
   .section-heading { font-size: 48px; }
   .footer-name { font-size: 70px; }
