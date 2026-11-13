@@ -1,0 +1,3 @@
+export function SectionMarker({ number, children, inverse = false }: { number: string; children: React.ReactNode; inverse?: boolean }) {
+  return <div className={`sticky top-[76px] z-30 mb-8 flex h-11 items-center border-b text-xs ${inverse ? "border-background/20 bg-foreground text-background" : "border-border bg-background text-foreground"}`}><span className={`mr-2 ${inverse ? "text-background/60" : "text-muted-foreground"}`}>{number} —</span>{children}</div>;
+}
