@@ -4,6 +4,7 @@ import { ArrowDown, ArrowUp, ArrowLeft, ArrowRight, ArrowUpRight, Download, Menu
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArtworkCaption } from "@/components/artwork-caption";
+import { CollectionFilters } from "@/components/collection-filters";
 import { ArtworkViewer } from "@/components/artwork-viewer";
 import { artist, artworks, categories, featuredIds, type Category, type Lang } from "@/lib/artworks";
 import { copy } from "@/lib/gallery-copy";
@@ -122,8 +123,9 @@ function Index() {
 
       <section id="works" className="gallery-shell pb-24 pt-5 md:pb-32 md:pt-8">
         <div className="flex items-end justify-between gap-6"><div><p className="mb-3 text-[10px] uppercase text-muted-foreground">01 — {t.collection}</p><h2 className="section-heading font-display">{t.selected}<span className="ml-3 align-top font-sans text-sm text-primary">({String(filtered.length).padStart(2, "0")})</span></h2></div><p className="hidden max-w-60 text-xs leading-6 text-muted-foreground md:block">{t.artistNote}</p></div>
-        <div className="sticky top-[76px] z-30 mb-12 mt-9 flex flex-wrap gap-x-7 gap-y-2 border-y border-border bg-background/95 py-4 backdrop-blur-lg" role="group" aria-label={t.practices}>{categories.map((key) => <Button key={key} variant="editorial" onClick={() => { setCategory(key); document.getElementById("works")?.scrollIntoView({ behavior: "smooth" }); }} aria-pressed={category === key} className={`relative h-8 px-0 text-[11px] ${category === key ? "text-primary" : "text-muted-foreground"}`}>{category === key && <span className="size-1 rounded-full bg-primary" />}{t.categories[key]}</Button>)}</div>
-        <div className="grid grid-cols-1 gap-x-9 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={`mt-9 grid gap-y-12 ${shop?.collectionMenuPosition === "left" ? "lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-9" : ""}`}>
+        <CollectionFilters position={shop?.collectionMenuPosition ?? "top"} category={category} lang={lang} onChange={(key) => { setCategory(key); document.getElementById("works")?.scrollIntoView({ behavior: "smooth" }); }} />
+        <div className={`grid min-w-0 grid-cols-1 gap-x-9 gap-y-12 sm:grid-cols-2 ${shop?.collectionMenuPosition === "left" ? "2xl:grid-cols-3" : "lg:grid-cols-3"}`}>
           {filtered.map((work) => <article key={work.id} className="gallery-column min-w-0">
             <Button variant="artwork" className="group relative block w-full cursor-zoom-in overflow-hidden" onClick={() => openWork(work.id)} aria-label={`${t.view}: ${work[lang]}`}>
               <img src={work.image} alt={work[lang]} loading="lazy" className="gallery-image transition-transform duration-700 group-hover:scale-[1.015]" />
@@ -132,6 +134,7 @@ function Index() {
             <ArtworkCaption work={work} lang={lang} className="mt-5 border-t border-border pt-3" />
             <div className="mt-3 flex items-center justify-between gap-3 text-[11px]"><span className="text-muted-foreground">{shop?.reserved.has(work.id) ? (lang === "ru" ? "Продана / забронирована" : "Sold / reserved") : <>{availability(work) === "print" ? b.print : b.original}{shop?.showPrices && shop.prices[work.id] ? <b className="ml-2 font-medium text-foreground">{rub(shop.prices[work.id])}</b> : null}</>}</span>{!shop?.reserved.has(work.id) && <span className="flex gap-4"><Button variant="editorial" onClick={() => setInquiryId(work.id)} className="h-auto px-0 pb-1 text-[11px] text-muted-foreground">{lang === "ru" ? "Вопрос" : "Ask"}</Button><Button variant="editorial" onClick={() => setBuyId(work.id)} className="h-auto border-b border-foreground px-0 pb-1 text-[11px]">{lang === "ru" ? "Купить" : "Buy"}<ArrowUpRight /></Button></span>}</div>
           </article>)}
+        </div>
         </div>
       </section>
 
@@ -176,7 +179,27 @@ function Index() {
         </div>
       </footer>
 
-      <Dialog.Root open={menuOpen} onOpenChange={setMenuOpen}><Dialog.Portal><Dialog.Content aria-describedby={undefined} className="fixed inset-0 z-[80] flex flex-col bg-background text-foreground"><div className="gallery-shell flex h-[76px] items-center justify-between border-b border-border"><Dialog.Title className="text-xs">{t.name}</Dialog.Title><Button variant="editorial" size="icon" onClick={() => setMenuOpen(false)} aria-label={t.close} title={t.close}><X /></Button></div><nav className="gallery-shell flex flex-1 flex-col justify-center">{navLinks.map((link, index) => <a key={link.href} href={link.href} onClick={(event) => { event.preventDefault(); setMenuOpen(false); window.setTimeout(() => { scrollToSection(link.href); }, 100); }} className="flex items-center justify-between gap-4 border-b border-border py-6 font-display text-5xl"><span><span className="mr-4 align-top font-sans text-[10px] text-primary">0{index + 1}</span>{link.label}</span><ArrowUpRight className="size-7" /></a>)}</nav><p className="gallery-shell pb-8 text-xs text-muted-foreground">{t.location}</p></Dialog.Content></Dialog.Portal></Dialog.Root>
+      <Dialog.Root open={menuOpen} onOpenChange={setMenuOpen}>
+        <Dialog.Portal>
+          <Dialog.Content aria-describedby={undefined} className="fixed inset-0 z-[80] flex flex-col bg-background text-foreground">
+            <div className="shrink-0 border-b border-border">
+              <div className="gallery-shell grid min-h-[76px] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-4">
+                <Dialog.Title className="min-w-0 font-sans text-xl font-medium leading-tight sm:text-2xl">{t.name}</Dialog.Title>
+                <div className="flex shrink-0 items-center gap-2 sm:gap-4"><span className="text-xs text-muted-foreground sm:text-sm">{t.menu}</span><Button variant="editorial" size="icon" onClick={() => setMenuOpen(false)} aria-label={t.close} title={t.close}><X /></Button></div>
+              </div>
+            </div>
+            <nav aria-label={t.menu} className="gallery-shell flex min-h-0 flex-1 flex-col justify-center overflow-y-auto py-6">
+              {navLinks.map((link, index) => <Button key={link.href} asChild variant="editorial" className="h-auto shrink-0 justify-start rounded-none border-b border-border px-0 py-5 font-display text-3xl sm:py-6 sm:text-5xl"><a href={link.href} onClick={(event) => { event.preventDefault(); setMenuOpen(false); window.setTimeout(() => { scrollToSection(link.href); }, 100); }} className="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-3 sm:gap-4"><span className="self-start pt-1 font-sans text-[10px] text-primary">0{index + 1}</span><span className="min-w-0 whitespace-normal">{link.label}</span><ArrowUpRight className="size-6 shrink-0 sm:size-7" /></a></Button>)}
+            </nav>
+            <div className="shrink-0 border-t border-border">
+              <div className="gallery-shell grid gap-4 py-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:py-6">
+                <Button asChild variant="editorial" className="h-11 w-fit max-w-full justify-start px-0 text-sm"><Link to="/account" onClick={() => setMenuOpen(false)}><User className="shrink-0" /><span className="min-w-0 whitespace-normal">{lang === "ru" ? "Вход в личный кабинет" : "My account"}</span><ArrowUpRight className="shrink-0" /></Link></Button>
+                <p className="text-xs leading-5 text-muted-foreground">© 2026 {t.rights}</p>
+              </div>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
       <div className="fixed bottom-5 right-4 z-40 flex flex-col gap-2">
         <Button variant="outline" size="icon" className="bg-background/90 backdrop-blur" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} aria-label={lang === "ru" ? "В начало страницы" : "To top"} title={lang === "ru" ? "В начало страницы" : "To top"}><ArrowUp /></Button>
         <Button variant="outline" size="icon" className="bg-background/90 backdrop-blur" onClick={() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" })} aria-label={lang === "ru" ? "В конец страницы" : "To bottom"} title={lang === "ru" ? "В конец страницы" : "To bottom"}><ArrowDown /></Button>

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
-import { ArrowUpRight, CheckCircle2, CreditCard, Image, Loader2, LockKeyhole, Package, RefreshCw, Save, Search, Settings } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, CreditCard, Image, Loader2, LockKeyhole, Package, PanelLeft, PanelTop, RefreshCw, Save, Search, Settings } from "lucide-react";
 import { SimplePage } from "@/components/simple-page";
 import { AdminPriceEditor } from "@/components/admin-price-editor";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { artworks } from "@/lib/artworks";
 import { methodLabel, rub, statusLabel } from "@/lib/shop";
-import { loadAdminData, saveAdminOrderStatus, saveAdminPayment, saveAdminSetting } from "@/lib/admin";
+import { loadAdminData, saveAdminOrderStatus, saveAdminPayment, saveAdminSetting, saveCollectionMenuPosition } from "@/lib/admin";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [
@@ -92,6 +92,13 @@ function Admin() {
           })}</ul>}
         </TabsContent>
         <TabsContent value="settings" className="mt-8">
+          <section className="mb-10 border-b border-border pb-8">
+            <h2 className="font-display text-3xl">Меню коллекции</h2>
+            <div role="group" aria-label="Расположение меню коллекции" className="mt-5 inline-grid max-w-full grid-cols-2 border border-border p-1">
+              <Button variant={data.settings.collection_menu_position === "top" ? "secondary" : "editorial"} disabled={busy} aria-pressed={data.settings.collection_menu_position === "top"} onClick={() => run(() => saveCollectionMenuPosition("top"), "Меню коллекции расположено сверху")} className="h-11 rounded-sm px-5"><PanelTop />Сверху</Button>
+              <Button variant={data.settings.collection_menu_position === "left" ? "secondary" : "editorial"} disabled={busy} aria-pressed={data.settings.collection_menu_position === "left"} onClick={() => run(() => saveCollectionMenuPosition("left"), "Меню коллекции расположено слева")} className="h-11 rounded-sm px-5"><PanelLeft />Слева</Button>
+            </div>
+          </section>
           <div className="grid gap-12 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-16">
             <section><h2 className="font-display text-3xl">Показ на сайте</h2><div className="mt-6 flex items-center justify-between gap-5 border-y border-border py-5"><label htmlFor="show-prices" className="text-sm">Показывать цены</label><Switch id="show-prices" checked={data.settings.show_prices} disabled={busy} onCheckedChange={(value) => run(() => saveAdminSetting("show_prices", value), "Показ цен обновлён")} /></div><div className="flex items-center justify-between gap-5 border-b border-border py-5"><label htmlFor="online-payment" className="text-sm">Онлайн-оплата</label><Switch id="online-payment" checked={data.settings.online_payment_enabled} disabled={busy} onCheckedChange={(value) => run(() => saveAdminSetting("online_payment_enabled", value), "Настройка оплаты обновлена")} /></div><p className="mt-5 flex items-center gap-2 text-xs text-muted-foreground"><span className={`size-2 rounded-full ${data.payment.shopId && data.payment.keySaved ? "bg-signal" : "bg-muted-foreground"}`} />{data.payment.shopId && data.payment.keySaved ? "Данные ЮKassa сохранены" : "Данные ЮKassa не заполнены"}</p></section>
             <form onSubmit={saveKassa}><h2 className="font-display text-3xl">ЮKassa</h2><div className="mt-6"><label htmlFor="kassa-shop" className="text-xs font-medium">Идентификатор магазина (shopId)</label><Input id="kassa-shop" name="shop" defaultValue={data.payment.shopId} maxLength={50} disabled={busy} className="mt-2 h-11 bg-card shadow-none" /></div><div className="mt-5"><label htmlFor="kassa-secret" className="text-xs font-medium">Секретный ключ</label><Input id="kassa-secret" name="secret" type="password" autoComplete="new-password" maxLength={200} disabled={busy} placeholder={data.payment.keySaved ? "Сохранён" : "Не указан"} className="mt-2 h-11 bg-card shadow-none" /></div><div className="mt-6 border-t border-border pt-5"><p className="text-xs font-medium">Адрес уведомлений</p><code className="mt-2 block break-all text-xs leading-6 text-muted-foreground">{webhook}</code><p className="mt-1 text-xs text-muted-foreground">payment.succeeded · payment.canceled</p></div><Button type="submit" disabled={busy} className="mt-6 h-11 w-full sm:w-auto">{busy ? <Loader2 className="animate-spin" /> : <Save />}Сохранить</Button></form>

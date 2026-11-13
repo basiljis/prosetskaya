@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { loadAdminData, saveAdminPayment, saveAdminPrice, saveAdminSetting } from "./admin";
+import { loadAdminData, saveAdminPayment, saveAdminPrice, saveAdminSetting, saveCollectionMenuPosition } from "./admin";
 
 const mocks = vi.hoisted(() => ({ getUser: vi.fn(), rpc: vi.fn(), from: vi.fn() }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth: { getUser: mocks.getUser }, rpc: mocks.rpc, from: mocks.from } }));
@@ -22,7 +22,7 @@ describe("Admin access and persistence", () => {
     mocks.getUser.mockResolvedValue({ data: { user: { id: "owner" } }, error: null });
     mocks.rpc.mockResolvedValue({ data: true, error: null });
     const responses: Record<string, unknown> = {
-      site_settings: { show_prices: false, online_payment_enabled: false },
+      site_settings: { show_prices: false, online_payment_enabled: false, collection_menu_position: "left" },
       payment_settings: { yookassa_shop_id: "shop", yookassa_secret_key: "test-fixture-not-a-credential" },
       artwork_prices: [{ artwork_id: "reflection", price: 120000 }], orders: [],
     };
@@ -34,6 +34,7 @@ describe("Admin access and persistence", () => {
     });
     const result = await loadAdminData();
     expect(result?.prices["reflection"]).toBe(120000);
+    expect(result?.settings.collection_menu_position).toBe("left");
     expect(result?.payment).toEqual({ shopId: "shop", keySaved: true });
     expect(JSON.stringify(result)).not.toContain("test-fixture-not-a-credential");
     expect(mocks.from).toHaveBeenCalledTimes(4);
@@ -55,5 +56,13 @@ describe("Admin access and persistence", () => {
     chain.upsert.mockReturnValue(chain); chain.select.mockReturnValue(chain); mocks.from.mockReturnValue(chain);
     await saveAdminPrice("reflection", null);
     expect(chain.upsert).toHaveBeenCalledWith(expect.objectContaining({ artwork_id: "reflection", price: null }));
+  });
+  it.each(["top", "left"] as const)("saves collection placement %s without changing payment or price visibility", async (position) => {
+    const chain = { update: vi.fn(), eq: vi.fn(), select: vi.fn(), single: vi.fn().mockResolvedValue({ data: { id: 1 }, error: null }) };
+    chain.update.mockReturnValue(chain); chain.eq.mockReturnValue(chain); chain.select.mockReturnValue(chain); mocks.from.mockReturnValue(chain);
+    await saveCollectionMenuPosition(position);
+    expect(mocks.from).toHaveBeenCalledWith("site_settings");
+    expect(chain.eq).toHaveBeenCalledWith("id", 1);
+    expect(chain.update).toHaveBeenCalledWith({ collection_menu_position: position, updated_at: expect.any(String) });
   });
 });

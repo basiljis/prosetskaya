@@ -106,18 +106,21 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          collection_menu_position: string
           id: number
           online_payment_enabled: boolean
           show_prices: boolean
           updated_at: string
         }
         Insert: {
+          collection_menu_position?: string
           id?: number
           online_payment_enabled?: boolean
           show_prices?: boolean
           updated_at?: string
         }
         Update: {
+          collection_menu_position?: string
           id?: number
           online_payment_enabled?: boolean
           show_prices?: boolean
