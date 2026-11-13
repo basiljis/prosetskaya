@@ -155,7 +155,24 @@ function Index() {
           <div className="grid gap-12 md:grid-cols-[1.2fr_1fr]"><div><p className="mb-4 text-[10px] uppercase opacity-50">05 — {t.contact}</p><h2 className="section-heading font-display">{t.enquiryTitle}</h2><p className="mt-5 max-w-xs text-xs leading-6 opacity-60">{t.enquiryText}</p><ContactDialog lang={lang}><button type="button" className="mt-7 inline-flex items-center gap-8 border-b border-background/50 pb-2 text-sm">{t.write}<ArrowUpRight className="size-4" /></button></ContactDialog></div>
             <div className="space-y-6 md:pt-9"><a href={`mailto:${artist.email}`} className="block break-all text-lg md:text-xl">{artist.email}</a><a href={artist.phoneHref} className="block text-lg">{artist.phone}</a><p className="text-xs opacity-60">{t.address}</p><div className="flex flex-wrap gap-7 pt-4 text-xs"><a href={artist.telegram} target="_blank" rel="noreferrer" className="flex items-center gap-1">Telegram<ArrowUpRight className="size-3" /></a><a href={artist.instagram} target="_blank" rel="noreferrer" className="flex items-center gap-1">Instagram<ArrowUpRight className="size-3" /></a><a href={artist.whatsapp} target="_blank" rel="noreferrer" className="flex items-center gap-1">WhatsApp<ArrowUpRight className="size-3" /></a></div></div>
           </div>
-          <div className="mt-16 flex flex-wrap items-center justify-between gap-4 border-t border-background/20 pt-6 text-[10px]"><span className="opacity-50">© 2026 {t.rights} · {b.legal}</span><div className="flex min-w-0 flex-1 items-center justify-end gap-3"><nav aria-label={lang === "ru" ? "Информация" : "Information"} className="flex flex-wrap gap-x-5 gap-y-3 opacity-60"><Link to="/buy">{lang === "ru" ? "Как купить" : "How to buy"}</Link><Link to="/delivery">{lang === "ru" ? "Доставка" : "Delivery"}</Link><Link to="/requisites">{lang === "ru" ? "Реквизиты" : "Bank details"}</Link><Link to="/account">{lang === "ru" ? "Личный кабинет" : "Account"}</Link><Link to="/privacy">{lang === "ru" ? "Политика конфиденциальности" : "Privacy policy"}</Link><Link to="/terms">{lang === "ru" ? "Пользовательское соглашение" : "Terms of use"}</Link></nav><Button asChild variant="editorial" size="icon" className="size-10 shrink-0 text-background/70 hover:text-background"><Link to="/admin" onClick={() => sessionStorage.setItem("after-login", "/admin")} aria-label={lang === "ru" ? "Административная панель" : "Administration"} title={lang === "ru" ? "Административная панель" : "Administration"}><Settings className="size-4" /></Link></Button></div></div>
+          <div className="mt-16 border-t border-background/20 pt-8">
+            <div className="grid gap-7 text-xs leading-6 sm:grid-cols-2 sm:gap-10 md:ml-auto md:max-w-[640px]">
+              <nav aria-label={lang === "ru" ? "Информация" : "Information"} className="flex flex-col items-start gap-2 text-background/80">
+                <Link to="/buy" className="hover:text-background">{lang === "ru" ? "Как купить" : "How to buy"}</Link>
+                <Link to="/delivery" className="hover:text-background">{lang === "ru" ? "Доставка" : "Delivery"}</Link>
+                <Link to="/requisites" className="hover:text-background">{lang === "ru" ? "Реквизиты" : "Bank details"}</Link>
+                <Link to="/account" className="hover:text-background">{lang === "ru" ? "Личный кабинет" : "Account"}</Link>
+              </nav>
+              <nav aria-label={lang === "ru" ? "Правовая информация" : "Legal information"} className="flex flex-col items-start gap-3 border-t border-background/20 pt-6 text-background/65 sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0">
+                <Link to="/privacy" className="hover:text-background">{lang === "ru" ? "Политика конфиденциальности" : "Privacy policy"}</Link>
+                <Link to="/terms" className="hover:text-background">{lang === "ru" ? "Пользовательское соглашение" : "Terms of use"}</Link>
+              </nav>
+            </div>
+            <div className="mt-8 flex items-center justify-between gap-5 border-t border-background/20 pt-5">
+              <span className="max-w-xl text-[10px] leading-5 text-background/50">© 2026 {t.rights} · {b.legal}</span>
+              <Button asChild variant="editorial" size="icon" className="size-10 shrink-0 text-background/70 hover:text-background"><Link to="/admin" onClick={() => sessionStorage.setItem("after-login", "/admin")} aria-label={lang === "ru" ? "Административная панель" : "Administration"} title={lang === "ru" ? "Административная панель" : "Administration"}><Settings className="size-4" /></Link></Button>
+            </div>
+          </div>
           <p className="footer-name mt-10 font-display">{t.lastName}<span className="text-signal">.</span></p>
         </div>
       </footer>
