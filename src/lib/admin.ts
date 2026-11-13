@@ -26,7 +26,8 @@ export async function loadAdminData() {
 }
 
 export async function saveAdminSetting(key: "show_prices" | "online_payment_enabled", value: boolean) {
-  const { data, error } = await supabase.from("site_settings").update({ [key]: value, updated_at: new Date().toISOString() }).eq("id", 1).select("id").single();
+  const change = key === "show_prices" ? { show_prices: value } : { online_payment_enabled: value };
+  const { data, error } = await supabase.from("site_settings").update({ ...change, updated_at: new Date().toISOString() }).eq("id", 1).select("id").single();
   if (error || !data) throw new Error("Настройка не сохранена. Попробуйте ещё раз.");
 }
 

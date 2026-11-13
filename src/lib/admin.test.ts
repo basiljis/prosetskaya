@@ -33,7 +33,7 @@ describe("Admin access and persistence", () => {
       return chain;
     });
     const result = await loadAdminData();
-    expect(result?.prices.reflection).toBe(120000);
+    expect(result?.prices["reflection"]).toBe(120000);
     expect(result?.payment).toEqual({ shopId: "shop", keySaved: true });
     expect(JSON.stringify(result)).not.toContain("test-fixture-not-a-credential");
     expect(mocks.from).toHaveBeenCalledTimes(4);
