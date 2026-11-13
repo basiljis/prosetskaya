@@ -176,7 +176,27 @@ function Index() {
         </div>
       </footer>
 
-      <Dialog.Root open={menuOpen} onOpenChange={setMenuOpen}><Dialog.Portal><Dialog.Content aria-describedby={undefined} className="fixed inset-0 z-[80] flex flex-col bg-background text-foreground"><div className="gallery-shell flex h-[76px] items-center justify-between border-b border-border"><Dialog.Title className="text-xs">{t.name}</Dialog.Title><Button variant="editorial" size="icon" onClick={() => setMenuOpen(false)} aria-label={t.close} title={t.close}><X /></Button></div><nav className="gallery-shell flex flex-1 flex-col justify-center">{navLinks.map((link, index) => <a key={link.href} href={link.href} onClick={(event) => { event.preventDefault(); setMenuOpen(false); window.setTimeout(() => { scrollToSection(link.href); }, 100); }} className="flex items-center justify-between gap-4 border-b border-border py-6 font-display text-5xl"><span><span className="mr-4 align-top font-sans text-[10px] text-primary">0{index + 1}</span>{link.label}</span><ArrowUpRight className="size-7" /></a>)}</nav><p className="gallery-shell pb-8 text-xs text-muted-foreground">{t.location}</p></Dialog.Content></Dialog.Portal></Dialog.Root>
+      <Dialog.Root open={menuOpen} onOpenChange={setMenuOpen}>
+        <Dialog.Portal>
+          <Dialog.Content aria-describedby={undefined} className="fixed inset-0 z-[80] flex flex-col bg-background text-foreground">
+            <div className="shrink-0 border-b border-border">
+              <div className="gallery-shell grid min-h-[76px] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-4">
+                <Dialog.Title className="min-w-0 font-sans text-xl font-medium leading-tight sm:text-2xl">{t.name}</Dialog.Title>
+                <div className="flex shrink-0 items-center gap-2 sm:gap-4"><span className="text-xs text-muted-foreground sm:text-sm">{t.menu}</span><Button variant="editorial" size="icon" onClick={() => setMenuOpen(false)} aria-label={t.close} title={t.close}><X /></Button></div>
+              </div>
+            </div>
+            <nav aria-label={t.menu} className="gallery-shell flex min-h-0 flex-1 flex-col justify-center overflow-y-auto py-6">
+              {navLinks.map((link, index) => <Button key={link.href} asChild variant="editorial" className="h-auto shrink-0 justify-start rounded-none border-b border-border px-0 py-5 font-display text-3xl sm:py-6 sm:text-5xl"><a href={link.href} onClick={(event) => { event.preventDefault(); setMenuOpen(false); window.setTimeout(() => { scrollToSection(link.href); }, 100); }} className="grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-3 sm:gap-4"><span className="self-start pt-1 font-sans text-[10px] text-primary">0{index + 1}</span><span className="min-w-0 whitespace-normal">{link.label}</span><ArrowUpRight className="size-6 shrink-0 sm:size-7" /></a></Button>)}
+            </nav>
+            <div className="shrink-0 border-t border-border">
+              <div className="gallery-shell grid gap-4 py-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:py-6">
+                <Button asChild variant="editorial" className="h-11 w-fit max-w-full justify-start px-0 text-sm"><Link to="/account" onClick={() => setMenuOpen(false)}><User className="shrink-0" /><span className="min-w-0 whitespace-normal">{lang === "ru" ? "Вход в личный кабинет" : "My account"}</span><ArrowUpRight className="shrink-0" /></Link></Button>
+                <p className="text-xs leading-5 text-muted-foreground">© 2026 {t.rights}</p>
+              </div>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
       <div className="fixed bottom-5 right-4 z-40 flex flex-col gap-2">
         <Button variant="outline" size="icon" className="bg-background/90 backdrop-blur" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} aria-label={lang === "ru" ? "В начало страницы" : "To top"} title={lang === "ru" ? "В начало страницы" : "To top"}><ArrowUp /></Button>
         <Button variant="outline" size="icon" className="bg-background/90 backdrop-blur" onClick={() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" })} aria-label={lang === "ru" ? "В конец страницы" : "To bottom"} title={lang === "ru" ? "В конец страницы" : "To bottom"}><ArrowDown /></Button>
