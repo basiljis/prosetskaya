@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { artworks } from "@/lib/artworks";
 import { ArtworkCaption } from "@/components/artwork-caption";
 
+const featured = artworks.find((work) => work.id === "reflection");
+
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [
     { title: "Вход в личный кабинет — Юлия Просецкая" },
@@ -15,11 +17,13 @@ export const Route = createFileRoute("/auth")({
     { property: "og:description", content: "Вход и регистрация покупателя." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
+    ...(featured?.image.startsWith("https://") ? [
+      { property: "og:image", content: featured.image },
+      { name: "twitter:image", content: featured.image },
+    ] : []),
   ] }),
   component: AuthPage,
 });
-
-const featured = artworks.find((work) => work.id === "reflection");
 
 function AuthPage() {
   const navigate = useNavigate();
