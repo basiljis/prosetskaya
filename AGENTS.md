@@ -15,3 +15,4 @@
 - CV content lives in src/data/cv.json and drives both the /cv page and the prebuilt PDF asset; regenerate and re-upload the PDF whenever cv.json changes so they stay identical.
 - Shop state (prices, price visibility, online-payment toggle, YooKassa credentials, orders) lives in Lovable Cloud and is managed from /admin; the first registered account becomes admin. YooKassa webhooks are verified by re-reading the payment from YooKassa, never trusting the body.
 - Keep login, signup, and recovery-request presentation in the existing public auth route with shared Button/Input components; this preserves the account flow while matching the gallery's visual system.
+- Keep admin queries and writes in src/lib/admin.ts using the authenticated browser client and existing role/RLS checks; cache only a saved-key indicator, not payment secrets, and surface failed saves instead of false success.
