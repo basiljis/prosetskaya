@@ -1,17 +1,24 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { ArrowUpRight, CheckCircle2, CreditCard, Image, Loader2, LockKeyhole, Package, RefreshCw, Save, Search, Settings } from "lucide-react";
 import { SimplePage } from "@/components/simple-page";
+import { AdminPriceEditor } from "@/components/admin-price-editor";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { artworks } from "@/lib/artworks";
 import { methodLabel, rub, statusLabel } from "@/lib/shop";
+import { loadAdminData, saveAdminOrderStatus, saveAdminPayment, saveAdminSetting } from "@/lib/admin";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [
     { title: "Админ-панель — Юлия Просецкая" },
     { name: "description", content: "Управление ценами, оплатой и заказами." },
-    { property: "og:title", content: "Админ-панель" },
-    { property: "og:description", content: "Управление сайтом." },
+    { property: "og:title", content: "Админ-панель — Юлия Просецкая" },
+    { property: "og:description", content: "Управление ценами картин, заказами и оплатой в галерее Юлии Просецкой." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
     { name: "robots", content: "noindex" },
@@ -19,71 +26,82 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: Admin,
 });
 
-const input = "w-full border-b border-border bg-transparent py-2 text-sm outline-none focus:border-foreground";
-
 function Admin() {
   const qc = useQueryClient();
   const [note, setNote] = useState("");
-  const { data, isLoading } = useQuery({ queryKey: ["admin"], queryFn: async () => {
-    const { data: u } = await supabase.auth.getUser();
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: u.user!.id, _role: "admin" });
-    if (!isAdmin) return null;
-    const [s, p, pr, o] = await Promise.all([
-      supabase.from("site_settings").select("*").eq("id", 1).single(),
-      supabase.from("payment_settings").select("*").eq("id", 1).single(),
-      supabase.from("artwork_prices").select("*"),
-      supabase.from("orders").select("*").order("created_at", { ascending: false }),
-    ]);
-    return { settings: s.data!, pay: p.data!, prices: Object.fromEntries((pr.data ?? []).map((r) => [r.artwork_id, r.price])), orders: o.data ?? [] };
-  } });
-  const refresh = (m: string) => { setNote(m); qc.invalidateQueries({ queryKey: ["admin"] }); };
-  if (isLoading) return <SimplePage title="Админ-панель"><p className="mt-8 text-sm">Загрузка…</p></SimplePage>;
-  if (!data) return <SimplePage title="Нет доступа"><p className="mt-8 text-sm">Эта страница только для администратора. <Link to="/account" className="border-b border-foreground">Мои заказы</Link></p></SimplePage>;
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [search, setSearch] = useState("");
+  const [orderFilter, setOrderFilter] = useState("all");
+  const [webhook, setWebhook] = useState("");
+  const { data, isLoading, isError, refetch } = useQuery({ queryKey: ["admin"], queryFn: loadAdminData, retry: 1 });
+  useEffect(() => { setWebhook(`${window.location.origin}/api/public/yookassa`); }, []);
+  const refresh = (message: string) => {
+    setNote(message); setError("");
+    void Promise.all(["admin", "shop", "account"].map((key) => qc.invalidateQueries({ queryKey: [key] })));
+  };
+  const run = async (action: () => Promise<void>, message: string) => {
+    setBusy(true); setNote(""); setError("");
+    try { await action(); refresh(message); }
+    catch (err) { setError(err instanceof Error ? err.message : "Изменения не сохранены."); }
+    finally { setBusy(false); }
+  };
+  const saveKassa = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const values = new FormData(form);
+    await run(async () => { await saveAdminPayment(String(values.get("shop") ?? ""), String(values.get("secret") ?? "")); form.reset(); }, "Данные ЮKassa сохранены");
+  };
+  if (isLoading) return <SimplePage title="Админ-панель" wide><p role="status" className="mt-10 flex items-center gap-3 text-sm text-muted-foreground"><Loader2 className="size-5 animate-spin" />Загружаем настройки…</p></SimplePage>;
+  if (isError) return <SimplePage title="Админ-панель" wide><p role="alert" className="mt-8 text-sm text-destructive">Не удалось загрузить настройки.</p><Button variant="outline" className="mt-5" onClick={() => refetch()}><RefreshCw />Попробовать снова</Button></SimplePage>;
+  if (!data) return <SimplePage title="Нет доступа"><LockKeyhole className="mt-8 size-8 text-muted-foreground" /><p className="mt-5 text-sm leading-7 text-muted-foreground">Управление галереей доступно только администратору.</p><Button asChild variant="outline" className="mt-6"><Link to="/account">Мой кабинет<ArrowUpRight /></Link></Button></SimplePage>;
 
-  const toggle = async (key: "show_prices" | "online_payment_enabled", value: boolean) => {
-    await supabase.from("site_settings").update(key === "show_prices" ? { show_prices: value } : { online_payment_enabled: value }).eq("id", 1); refresh("Сохранено");
-  };
-  const saveKassa = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); const f = new FormData(e.currentTarget);
-    const secret = String(f.get("secret") ?? "").trim();
-    await supabase.from("payment_settings").update({ yookassa_shop_id: String(f.get("shop") ?? "").trim().slice(0, 50), ...(secret ? { yookassa_secret_key: secret.slice(0, 200) } : {}), updated_at: new Date().toISOString() }).eq("id", 1);
-    refresh("Данные ЮKassa сохранены");
-  };
-  const savePrice = async (id: string, v: string) => {
-    const n = v.trim() === "" ? null : Math.max(0, Math.round(Number(v.replace(/\s/g, ""))));
-    if (n !== null && Number.isNaN(n)) return;
-    await supabase.from("artwork_prices").upsert({ artwork_id: id, price: n, updated_at: new Date().toISOString() }); refresh("Цена сохранена");
-  };
-  const setStatus = async (id: string, status: string) => { await supabase.from("orders").update({ status }).eq("id", id); refresh("Статус заказа обновлён"); };
-  const webhook = typeof window !== "undefined" ? `${window.location.origin}/api/public/yookassa` : "";
+  const visibleWorks = artworks.filter((work) => work.ru.toLowerCase().includes(search.trim().toLowerCase()));
+  const activeOrders = data.orders.filter((order) => order.status !== "cancelled" && order.status !== "completed");
+  const visibleOrders = data.orders.filter((order) => orderFilter === "all" || order.status === orderFilter);
+  const pricedCount = artworks.filter((work) => data.prices[work.id] != null).length;
 
   return (
-    <SimplePage title="Админ-панель" kicker="Управление сайтом" wide>
-      {note && <p className="mt-4 text-xs text-primary">{note}</p>}
-      <section className="mt-10 grid gap-8 border-t border-border pt-8 md:grid-cols-2">
-        <div><h2 className="font-display text-2xl">Показ на сайте</h2>
-          <label className="mt-5 flex items-center gap-3 text-sm"><input type="checkbox" checked={data.settings.show_prices} onChange={(e) => toggle("show_prices", e.target.checked)} />Показывать цены посетителям</label>
-          <label className="mt-3 flex items-center gap-3 text-sm"><input type="checkbox" checked={data.settings.online_payment_enabled} onChange={(e) => toggle("online_payment_enabled", e.target.checked)} />Включить онлайн-оплату (ЮKassa)</label>
-          <p className="mt-3 text-[11px] leading-5 text-muted-foreground">Онлайн-оплата доступна только для работ с указанной ценой.</p>
-        </div>
-        <form onSubmit={saveKassa} className="space-y-4"><h2 className="font-display text-2xl">ЮKassa</h2>
-          <label className="block text-[10px] uppercase text-muted-foreground">shopId<input name="shop" defaultValue={data.pay.yookassa_shop_id} className={input} /></label>
-          <label className="block text-[10px] uppercase text-muted-foreground">Секретный ключ {data.pay.yookassa_secret_key ? "(сохранён — оставьте пустым, чтобы не менять)" : "(не указан)"}<input name="secret" type="password" autoComplete="off" className={input} /></label>
-          <p className="text-[11px] leading-5 text-muted-foreground">В личном кабинете ЮKassa укажите адрес для уведомлений: <span className="break-all text-foreground">{webhook}</span> (события payment.succeeded и payment.canceled).</p>
-          <button className="bg-foreground px-6 py-2.5 text-xs uppercase tracking-[0.15em] text-background">Сохранить</button>
-        </form>
-      </section>
-      <section className="mt-12 border-t border-border pt-8"><h2 className="font-display text-2xl">Цены, ₽</h2>
-        <ul className="mt-4 grid gap-x-8 md:grid-cols-2">{artworks.map((w) => <li key={w.id} className="grid grid-cols-[1fr_120px] items-center gap-4 border-b border-border py-2 text-sm"><span>{w.ru} <span className="text-[11px] text-muted-foreground">{w.size}</span></span><input defaultValue={data.prices[w.id] ?? ""} onBlur={(e) => savePrice(w.id, e.target.value)} inputMode="numeric" placeholder="по запросу" className={input + " text-right"} /></li>)}</ul>
-      </section>
-      <section className="mt-12 border-t border-border pt-8"><h2 className="font-display text-2xl">Заказы</h2>
-        {data.orders.length === 0 && <p className="mt-4 text-sm text-muted-foreground">Заказов пока нет.</p>}
-        <ul className="mt-4">{data.orders.map((o) => <li key={o.id} className="grid gap-3 border-b border-border py-4 text-sm md:grid-cols-[1.2fr_1.5fr_200px]">
-          <div><p className="font-display text-xl">{o.artwork_title}</p><p className="text-[11px] text-muted-foreground">{new Date(o.created_at).toLocaleString("ru-RU")} · {methodLabel[o.method]} · {rub(o.amount)}</p></div>
-          <div className="text-xs leading-5">{o.customer_name}{o.company && ` · ${o.company}`}<br />{o.customer_phone} · {o.customer_email}{o.comment && <><br /><span className="text-muted-foreground">{o.comment}</span></>}</div>
-          <select value={o.status} onChange={(e) => setStatus(o.id, e.target.value)} className="h-9 border border-border bg-background px-2 text-xs">{Object.entries(statusLabel).map(([k, v]) => <option key={k} value={k}>{v.split(" — ")[0]}</option>)}</select>
-        </li>)}</ul>
-      </section>
+    <SimplePage title="Управление галереей" kicker="Юлия Просецкая / Администратор" wide>
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3"><span className="flex items-center gap-2 text-xs text-muted-foreground"><LockKeyhole className="size-4" />Закрытый кабинет</span><Button asChild variant="editorial" className="px-0 text-xs"><Link to="/">Открыть сайт<ArrowUpRight /></Link></Button></div>
+      <div className="mt-8 grid grid-cols-2 gap-x-5 border-y border-border py-6 md:grid-cols-4">
+        <Summary icon={<Image />} label="Работ в галерее" value={String(artworks.length)} />
+        <Summary icon={<Package />} label="Активных заказов" value={String(activeOrders.length)} />
+        <Summary icon={<Settings />} label="Указаны цены" value={`${pricedCount} / ${artworks.length}`} />
+        <Summary icon={<CreditCard />} label="Онлайн-оплата" value={data.settings.online_payment_enabled ? "Включена" : "Выключена"} />
+      </div>
+      {(note || error) && <p role={error ? "alert" : "status"} className={`mt-5 flex items-center gap-2 text-sm leading-6 ${error ? "text-destructive" : "text-primary"}`}>{!error && <CheckCircle2 className="size-4 shrink-0" />}{error || note}</p>}
+      <Tabs defaultValue="works" className="mt-8">
+        <TabsList aria-label="Разделы управления" className="grid h-auto w-full grid-cols-3 rounded-none border-b border-border bg-transparent p-0">
+          {[{ value: "works", label: "Картины", icon: Image }, { value: "orders", label: "Заказы", icon: Package }, { value: "settings", label: "Настройки", icon: Settings }].map((tab) => <TabsTrigger key={tab.value} value={tab.value} className="h-12 gap-2 rounded-none border-b-2 border-transparent px-2 text-xs data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none sm:text-sm"><tab.icon className="size-4" />{tab.label}</TabsTrigger>)}
+        </TabsList>
+        <TabsContent value="works" className="mt-8">
+          <div className="flex flex-wrap items-center justify-between gap-5"><h2 className="font-display text-3xl">Картины и цены</h2><div className="relative w-full sm:w-72"><Search className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Поиск картины" placeholder="Найти картину" className="h-11 bg-card pl-10 shadow-none" /></div></div>
+          <ul className="mt-6 border-t border-border">{visibleWorks.map((work) => <AdminPriceEditor key={work.id} work={work} price={data.prices[work.id] ?? null} onSaved={() => refresh("Цена сохранена")} />)}</ul>
+          {visibleWorks.length === 0 && <p className="py-12 text-center text-sm text-muted-foreground">Картины не найдены.</p>}
+        </TabsContent>
+        <TabsContent value="orders" className="mt-8">
+          <div className="flex flex-wrap items-center justify-between gap-4"><h2 className="font-display text-3xl">Заказы <span className="font-sans text-sm text-muted-foreground">({data.orders.length})</span></h2><Select value={orderFilter} onValueChange={setOrderFilter}><SelectTrigger aria-label="Фильтр заказов" className="h-11 w-full bg-card sm:w-52"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Все заказы</SelectItem>{Object.entries(statusLabel).map(([key, value]) => <SelectItem key={key} value={key}>{value.split(" — ")[0]}</SelectItem>)}</SelectContent></Select></div>
+          {visibleOrders.length === 0 ? <div className="mt-8 border-y border-border py-16 text-center"><Package className="mx-auto size-8 text-muted-foreground" /><p className="mt-4 text-sm text-muted-foreground">{data.orders.length === 0 ? "Заказов пока нет" : "Нет заказов с этим статусом"}</p></div> : <ul className="mt-6 border-t border-border">{visibleOrders.map((order) => {
+            const work = artworks.find((item) => item.id === order.artwork_id);
+            return <li key={order.id} className="grid gap-5 border-b border-border py-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_180px]">
+              <div className="flex min-w-0 gap-4">{work && <img src={work.image} alt={order.artwork_title} className="h-20 w-16 shrink-0 bg-muted/40 object-contain" />}<div className="min-w-0"><p className="text-sm font-medium">{order.artwork_title}</p><p className="mt-2 text-xs leading-5 text-muted-foreground">{new Date(order.created_at).toLocaleDateString("ru-RU")} · {methodLabel[order.method]}</p><p className="mt-1 text-sm">{rub(order.amount)}</p></div></div>
+              <div className="min-w-0 text-xs leading-6"><p className="font-medium">{order.customer_name}</p>{order.company && <p>{order.company}</p>}<a href={`tel:${order.customer_phone}`} className="block">{order.customer_phone}</a><a href={`mailto:${order.customer_email}`} className="block break-all text-muted-foreground">{order.customer_email}</a>{order.comment && <p className="mt-2 break-words text-muted-foreground">{order.comment}</p>}</div>
+              <Select value={order.status} disabled={busy} onValueChange={(status) => run(() => saveAdminOrderStatus(order.id, status), "Статус заказа обновлён")}><SelectTrigger aria-label={`Статус заказа: ${order.artwork_title}`} className="h-11 bg-card"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(statusLabel).map(([key, value]) => <SelectItem key={key} value={key}>{value.split(" — ")[0]}</SelectItem>)}</SelectContent></Select>
+            </li>;
+          })}</ul>}
+        </TabsContent>
+        <TabsContent value="settings" className="mt-8">
+          <div className="grid gap-12 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-16">
+            <section><h2 className="font-display text-3xl">Показ на сайте</h2><div className="mt-6 flex items-center justify-between gap-5 border-y border-border py-5"><label htmlFor="show-prices" className="text-sm">Показывать цены</label><Switch id="show-prices" checked={data.settings.show_prices} disabled={busy} onCheckedChange={(value) => run(() => saveAdminSetting("show_prices", value), "Показ цен обновлён")} /></div><div className="flex items-center justify-between gap-5 border-b border-border py-5"><label htmlFor="online-payment" className="text-sm">Онлайн-оплата</label><Switch id="online-payment" checked={data.settings.online_payment_enabled} disabled={busy} onCheckedChange={(value) => run(() => saveAdminSetting("online_payment_enabled", value), "Настройка оплаты обновлена")} /></div><p className="mt-5 flex items-center gap-2 text-xs text-muted-foreground"><span className={`size-2 rounded-full ${data.payment.shopId && data.payment.keySaved ? "bg-signal" : "bg-muted-foreground"}`} />{data.payment.shopId && data.payment.keySaved ? "Данные ЮKassa сохранены" : "Данные ЮKassa не заполнены"}</p></section>
+            <form onSubmit={saveKassa}><h2 className="font-display text-3xl">ЮKassa</h2><div className="mt-6"><label htmlFor="kassa-shop" className="text-xs font-medium">Идентификатор магазина (shopId)</label><Input id="kassa-shop" name="shop" defaultValue={data.payment.shopId} maxLength={50} disabled={busy} className="mt-2 h-11 bg-card shadow-none" /></div><div className="mt-5"><label htmlFor="kassa-secret" className="text-xs font-medium">Секретный ключ</label><Input id="kassa-secret" name="secret" type="password" autoComplete="new-password" maxLength={200} disabled={busy} placeholder={data.payment.keySaved ? "Сохранён" : "Не указан"} className="mt-2 h-11 bg-card shadow-none" /></div><div className="mt-6 border-t border-border pt-5"><p className="text-xs font-medium">Адрес уведомлений</p><code className="mt-2 block break-all text-xs leading-6 text-muted-foreground">{webhook}</code><p className="mt-1 text-xs text-muted-foreground">payment.succeeded · payment.canceled</p></div><Button type="submit" disabled={busy} className="mt-6 h-11 w-full sm:w-auto">{busy ? <Loader2 className="animate-spin" /> : <Save />}Сохранить</Button></form>
+          </div>
+        </TabsContent>
+      </Tabs>
     </SimplePage>
   );
+}
+
+function Summary({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+  return <div className="min-w-0 py-3"><span className="flex items-center gap-2 text-[11px] text-muted-foreground">{icon}{label}</span><p className="mt-3 break-words text-xl font-medium sm:text-2xl">{value}</p></div>;
 }
