@@ -2230,7 +2230,8 @@
       }
     ],
     "titleProvided": true,
-    "assetFile": "work-27ba98f0405f.jpg.asset.json"
+    "assetFile": "work-27ba98f0405f.jpg.asset.json",
+    "sourceAvailability": "private"
   },
   {
     "id": "work-0a30dbcdbf29",
@@ -3380,7 +3381,8 @@
       }
     ],
     "titleProvided": true,
-    "assetFile": "work-3f07d84fdd34.jpg.asset.json"
+    "assetFile": "work-3f07d84fdd34.jpg.asset.json",
+    "sourceAvailability": "private"
   },
   {
     "id": "work-0a0fd915dc30",
@@ -3576,7 +3578,8 @@
       }
     ],
     "titleProvided": false,
-    "assetFile": "work-f42508ca2360.jpg.asset.json"
+    "assetFile": "work-f42508ca2360.jpg.asset.json",
+    "sourceAvailability": "sold"
   },
   {
     "id": "work-f7a25d26885f",
@@ -3604,7 +3607,8 @@
       }
     ],
     "titleProvided": true,
-    "assetFile": "work-f7a25d26885f.jpg.asset.json"
+    "assetFile": "work-f7a25d26885f.jpg.asset.json",
+    "sourceAvailability": "sold"
   },
   {
     "id": "work-a2cc39b8625b",
@@ -3772,7 +3776,8 @@
       }
     ],
     "titleProvided": true,
-    "assetFile": "work-34a41edbe9d3.jpg.asset.json"
+    "assetFile": "work-34a41edbe9d3.jpg.asset.json",
+    "sourceAvailability": "museum"
   },
   {
     "id": "work-bb8ca3b06d43",
@@ -4052,7 +4057,8 @@
       }
     ],
     "titleProvided": true,
-    "assetFile": "work-b6e6807ab7b2.jpg.asset.json"
+    "assetFile": "work-b6e6807ab7b2.jpg.asset.json",
+    "sourceAvailability": "private"
   },
   {
     "id": "work-47c9743eb39c",
@@ -4192,7 +4198,8 @@
       }
     ],
     "titleProvided": true,
-    "assetFile": "work-70227aba4283.jpg.asset.json"
+    "assetFile": "work-70227aba4283.jpg.asset.json",
+    "sourceAvailability": "private"
   },
   {
     "id": "work-d9fd80203790",
@@ -4276,7 +4283,8 @@
       }
     ],
     "titleProvided": false,
-    "assetFile": "work-3499f8e34e77.jpg.asset.json"
+    "assetFile": "work-3499f8e34e77.jpg.asset.json",
+    "sourceAvailability": "museum"
   },
   {
     "id": "work-784d993e0ade",
@@ -4500,7 +4508,8 @@
       }
     ],
     "titleProvided": false,
-    "assetFile": "work-b8ac5eb53ffb.jpg.asset.json"
+    "assetFile": "work-b8ac5eb53ffb.jpg.asset.json",
+    "sourceAvailability": "sold"
   },
   {
     "id": "work-5bb5b40e4a3b",
@@ -4528,7 +4537,8 @@
       }
     ],
     "titleProvided": false,
-    "assetFile": "work-5bb5b40e4a3b.jpg.asset.json"
+    "assetFile": "work-5bb5b40e4a3b.jpg.asset.json",
+    "sourceAvailability": "sold"
   },
   {
     "id": "work-102d46de5291",
@@ -5821,7 +5831,8 @@
       }
     ],
     "titleProvided": true,
-    "assetFile": "work-9086cb7f4634.jpg.asset.json"
+    "assetFile": "work-9086cb7f4634.jpg.asset.json",
+    "sourceAvailability": "museum"
   },
   {
     "id": "work-fef3f7467176",
@@ -5905,7 +5916,8 @@
       }
     ],
     "titleProvided": false,
-    "assetFile": "work-1d60a0f4eb58.jpg.asset.json"
+    "assetFile": "work-1d60a0f4eb58.jpg.asset.json",
+    "sourceAvailability": "sold"
   },
   {
     "id": "work-c85a9b26513f",
