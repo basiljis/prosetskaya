@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, ArrowUpRight, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArtworkCaption } from "@/components/artwork-caption";
-import { type Artwork, type Lang } from "@/lib/artworks";
+import { canPurchaseArtwork, type Artwork, type Lang } from "@/lib/artworks";
 import { copy } from "@/lib/gallery-copy";
 import { nextArtworkIndex } from "@/lib/gallery-navigation";
 import { availability, boutique } from "@/lib/boutique";
@@ -61,8 +61,8 @@ export function ArtworkViewer({ works, index, lang, onChange, onClose }: {
           <div id="artwork-details" className="grid shrink-0 gap-4 border-t border-current/15 px-5 py-6 md:grid-cols-[1fr_auto] md:items-center md:gap-16 md:px-10">
             <ArtworkCaption work={work} lang={lang} className="max-w-xl" />
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-              <span className="text-[10px] opacity-60">{availability(work) === "print" ? b.print : b.original}</span>
-              <Button variant="artwork" onClick={() => setInquiry(true)} className="border border-current px-4 py-2 text-xs">{b.inquire}<ArrowUpRight /></Button>
+              <span className="text-[10px] opacity-60">{canPurchaseArtwork(work) ? (availability(work) === "print" ? b.print : b.original) : work.catalogueOnly ? (lang === "ru" ? "Авторский проект" : "Artist project") : work.sourceAvailability === "museum" ? (lang === "ru" ? "В музейной коллекции" : "In a museum collection") : work.sourceAvailability === "private" ? (lang === "ru" ? "В частной коллекции" : "In a private collection") : (lang === "ru" ? "Продана" : "Sold")}</span>
+              <Button variant="artwork" onClick={() => setInquiry(true)} className="border border-current px-4 py-2 text-xs">{canPurchaseArtwork(work) ? b.inquire : lang === "ru" ? "Написать Юлии" : "Write to Yulia"}<ArrowUpRight /></Button>
             </div>
           </div>
           {inquiry && <InquiryDialog work={work} lang={lang} onClose={() => setInquiry(false)} />}

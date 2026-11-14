@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { ArtworkCaption } from "@/components/artwork-caption";
 import { CollectionFilters } from "@/components/collection-filters";
 import { SectionMarker } from "@/components/section-marker";
+import { ArtistMark } from "@/components/artist-mark";
 import { ArtworkViewer } from "@/components/artwork-viewer";
-import { artist, artworks, categories, featuredIds, type Category, type Lang } from "@/lib/artworks";
+import { artist, artworks, canPurchaseArtwork, featuredIds, type Category, type Lang } from "@/lib/artworks";
 import { copy } from "@/lib/gallery-copy";
 import { filterArtworks, nextArtworkIndex } from "@/lib/gallery-navigation";
 import { InquiryDialog } from "@/components/inquiry-dialog";
@@ -85,10 +86,10 @@ function Index() {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      {ready && <div className="preloader pointer-events-none fixed inset-0 z-[100] flex flex-col items-center justify-center bg-foreground text-background" aria-hidden="true"><p className="px-5 text-center text-2xl font-medium">{t.name}</p><p className="mt-4 text-xs opacity-60">{t.signature}</p></div>}
+      {ready && <div className="preloader pointer-events-none fixed inset-0 z-[100] flex flex-col items-center justify-center gap-7 bg-background text-foreground" aria-hidden="true"><ArtistMark className="h-32 w-24" alt="" /><ArtistMark kind="signature" className="h-20 w-64 max-w-[75%]" alt="" /><p className="px-5 text-center text-xl font-medium">{t.name}</p><p className="text-xs text-muted-foreground">{t.signature}</p></div>}
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-lg">
         <div className="gallery-shell flex h-[76px] items-center justify-between gap-4">
-          <a href="#top" className="flex min-w-0 items-center gap-3" aria-label={t.name}><span className="font-display text-4xl font-medium">ЮП<span className="text-primary">.</span></span><span className="hidden border-l border-border pl-3 text-[10px] leading-4 sm:block">{t.gallery}<br />{t.location}</span></a>
+          <a href="#top" className="flex min-w-0 items-center gap-3" aria-label={t.name}><ArtistMark className="h-14 w-10 shrink-0" alt="" /><span className="hidden border-l border-border pl-3 text-[10px] leading-4 sm:block">{t.gallery}<br />{t.location}</span></a>
           <nav className="hidden items-center gap-8 lg:flex" aria-label={t.menu}>{navLinks.map((link) => <Button key={link.href} asChild variant="editorial" className="h-auto p-0 text-xs"><a href={link.href} onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}>{link.label}</a></Button>)}</nav>
           <div className="flex items-center gap-2">
             <Button asChild variant="editorial" className="h-9 gap-2 px-3 text-[11px] font-semibold uppercase"><Link to="/account" aria-label={lang === "ru" ? "Личный кабинет" : "Account"}><User className="size-4" /><span className="hidden sm:inline">{lang === "ru" ? "Кабинет" : "Account"}</span></Link></Button>
@@ -134,7 +135,7 @@ function Index() {
               <span className="absolute bottom-3 right-3 grid size-9 place-items-center bg-background text-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"><ZoomIn /></span>
             </Button>
             <ArtworkCaption work={work} lang={lang} className="mt-5 border-t border-border pt-3" />
-            <div className="mt-3 flex items-center justify-between gap-3 text-[11px]"><span className="text-muted-foreground">{shop?.reserved.has(work.id) ? (lang === "ru" ? "Продана / забронирована" : "Sold / reserved") : <>{availability(work) === "print" ? b.print : b.original}{shop?.showPrices && shop.prices[work.id] ? <b className="ml-2 font-medium text-foreground">{rub(shop.prices[work.id])}</b> : null}</>}</span>{!shop?.reserved.has(work.id) && <span className="flex gap-4"><Button variant="editorial" onClick={() => setInquiryId(work.id)} className="h-auto px-0 pb-1 text-[11px] text-muted-foreground">{lang === "ru" ? "Вопрос" : "Ask"}</Button><Button variant="editorial" onClick={() => setBuyId(work.id)} className="h-auto border-b border-foreground px-0 pb-1 text-[11px]">{lang === "ru" ? "Купить" : "Buy"}<ArrowUpRight /></Button></span>}</div>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-[11px]"><span className="text-muted-foreground">{work.catalogueOnly ? (lang === "ru" ? "Авторский проект" : "Artist project") : work.sourceAvailability === "museum" ? (lang === "ru" ? "В музейной коллекции" : "In a museum collection") : work.sourceAvailability === "private" ? (lang === "ru" ? "В частной коллекции" : "In a private collection") : work.sourceAvailability === "sold" || shop?.reserved.has(work.id) ? (lang === "ru" ? "Продана / забронирована" : "Sold / reserved") : <>{availability(work) === "print" ? b.print : b.original}{shop?.showPrices && shop.prices[work.id] ? <b className="ml-2 font-medium text-foreground">{rub(shop.prices[work.id])}</b> : null}</>}</span><span className="flex gap-4"><Button variant="editorial" onClick={() => setInquiryId(work.id)} className="h-auto px-0 pb-1 text-[11px] text-muted-foreground">{lang === "ru" ? "Вопрос" : "Ask"}</Button>{canPurchaseArtwork(work) && !shop?.reserved.has(work.id) && <Button variant="editorial" onClick={() => setBuyId(work.id)} className="h-auto border-b border-foreground px-0 pb-1 text-[11px]">{lang === "ru" ? "Купить" : "Buy"}<ArrowUpRight /></Button>}</span></div>
           </article>)}
         </div>
         </div>
@@ -147,12 +148,13 @@ function Index() {
       </section>
 
       <section id="about" className="border-t border-border bg-muted/45 py-20 md:py-28">
-        <div className="gallery-shell sticky top-[76px] z-30"><SectionMarker number="03">{t.about}</SectionMarker></div>
+        <SectionMarker number="03" fullWidth>{t.about}</SectionMarker>
         <div className="gallery-shell grid gap-12 md:grid-cols-[0.8fr_1.2fr] md:gap-20">
           <div><h2 className="section-heading font-display">{t.name}</h2><figure className="mt-9 max-w-80"><img src={portraitAsset.url} alt={t.portrait} loading="lazy" className="aspect-[4/5] w-full object-cover" /><figcaption className="mt-3 text-[10px] text-muted-foreground">{t.portrait} · {t.location}</figcaption></figure></div>
           <div className="md:pt-12"><p className="font-display text-3xl leading-[1.35] md:text-4xl">{t.bio}</p><p className="mt-7 max-w-xl text-sm leading-7 text-muted-foreground">{t.bioSecond}</p>
             <div className="mt-10 border-t border-border">{[{ year: "2009", title: t.education, note: t.educationNote }, { year: "2021", title: t.project, note: t.projectNote }, { year: "2022", title: t.exhibition, note: t.exhibitionNote }].map((item) => <div key={item.year} className="grid grid-cols-[50px_1fr] gap-5 border-b border-border py-5"><span className="pt-1 text-xs text-primary">{item.year}</span><div><p className="text-sm">{item.title}</p><p className="mt-1 text-[11px] text-muted-foreground">{item.note}</p></div></div>)}</div>
             <div className="mt-7 flex flex-wrap gap-6"><Link to="/cv" className="inline-flex items-center gap-2 border-b border-foreground pb-2 text-xs">{lang === "ru" ? "Подробнее" : "Read more"}<ArrowUpRight className="size-4" /></Link><a href={cvPdf.url} download="prosetskaya-cv.pdf" className="inline-flex items-center gap-2 border-b border-foreground pb-2 text-xs">{lang === "ru" ? "Скачать CV в PDF" : "Download CV (PDF)"}<Download className="size-4" /></a></div>
+            <ArtistMark kind="signature" className="mt-10 h-20 w-60 max-w-full" alt={lang === "ru" ? "Подпись Юлии Просецкой" : "Yulia Prosetskaya’s signature"} />
           </div>
         </div>
       </section>
@@ -189,7 +191,7 @@ function Index() {
           <Dialog.Content aria-describedby={undefined} className="fixed inset-0 z-[80] flex flex-col bg-background text-foreground">
             <div className="shrink-0 border-b border-border">
               <div className="gallery-shell grid min-h-[76px] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-4">
-                <Dialog.Title className="min-w-0 font-sans text-xl font-medium leading-tight sm:text-2xl">{t.name}</Dialog.Title>
+                <div className="flex min-w-0 items-center gap-3"><ArtistMark className="hidden h-12 w-9 shrink-0 sm:block" alt="" /><Dialog.Title className="min-w-0 font-sans text-xl font-medium leading-tight sm:text-2xl">{t.name}</Dialog.Title></div>
                 <div className="flex shrink-0 items-center gap-2 sm:gap-4"><span className="text-xs text-muted-foreground sm:text-sm">{t.menu}</span><Button variant="editorial" size="icon" onClick={() => setMenuOpen(false)} aria-label={t.close} title={t.close}><X /></Button></div>
               </div>
             </div>
