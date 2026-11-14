@@ -17,3 +17,5 @@
 - Keep login, signup, and recovery-request presentation in the existing public auth route with shared Button/Input components; this preserves the account flow while matching the gallery's visual system.
 - Keep admin queries and writes in src/lib/admin.ts using the authenticated browser client and existing role/RLS checks; cache only a saved-key indicator, not payment secrets, and surface failed saves instead of false success.
 - Persist collection filter placement in site_settings and share it through useShop; render the left sidebar only on wide screens so phone layouts retain usable full-width artwork.
+- Keep the complete source catalogue in a separate data module with stable artwork IDs, all collection memberships, provenance and local CDN asset pointers; deduplicate repeated images without removing their category memberships.
+- Use section-scoped sticky markers below the fixed header and offset sticky collection filters beneath them so section titles and controls never overlap.
