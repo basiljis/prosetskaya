@@ -5,15 +5,15 @@ import { filterArtworks } from "./gallery-navigation";
 
 describe("Complete source catalogue", () => {
   it("includes every image from all fourteen source collections, not only the selected works", () => {
-    expect(artworks).toHaveLength(425);
-    expect(new Set(artworks.map((work) => work.id)).size).toBe(425);
+    expect(artworks).toHaveLength(428);
+    expect(new Set(artworks.map((work) => work.id)).size).toBe(428);
     expect(filterArtworks(artworks, "painting")).toHaveLength(63);
-    expect(filterArtworks(artworks, "landscape")).toHaveLength(179);
-    expect(filterArtworks(artworks, "digital")).toHaveLength(50);
+    expect(filterArtworks(artworks, "landscape")).toHaveLength(180);
+    expect(filterArtworks(artworks, "digital")).toHaveLength(51);
     expect(filterArtworks(artworks, "graphics")).toHaveLength(30);
     expect(filterArtworks(artworks, "fluorescent")).toHaveLength(5);
     expect(filterArtworks(artworks, "studies")).toHaveLength(56);
-    expect(filterArtworks(artworks, "illustrations")).toHaveLength(12);
+    expect(filterArtworks(artworks, "illustrations")).toHaveLength(13);
     expect(filterArtworks(artworks, "logos")).toHaveLength(8);
     expect(filterArtworks(artworks, "projects")).toHaveLength(47);
     expect(new Set(catalogue.flatMap((work) => work.sources.map((source) => source.page))).size).toBe(14);

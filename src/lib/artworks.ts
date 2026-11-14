@@ -1,5 +1,6 @@
 import catalogue from "@/data/artworks.json";
 import { artworkImages } from "@/lib/artwork-assets";
+import { artworkCovers } from "@/lib/artwork-covers";
 
 export type Lang = "ru" | "en";
 export type Category = "all" | "painting" | "landscape" | "digital" | "graphics" | "fluorescent" | "studies" | "illustrations" | "logos" | "projects";
@@ -12,11 +13,11 @@ export interface Artwork {
 }
 
 type CatalogueArtwork = Omit<Artwork, "image">;
-export const artworks: readonly Artwork[] = (catalogue as readonly CatalogueArtwork[]).map((work) => {
+export const artworks: readonly Artwork[] = [...(catalogue as readonly CatalogueArtwork[]).map((work) => {
   const image = artworkImages[work.id];
   if (!image) throw new Error(`Artwork image missing: ${work.id}`);
   return { ...work, image };
-});
+}), ...(artworkCovers as readonly Artwork[])];
 
 export const artist = {
   email: "prosetskaya.juliya@gmail.com",
