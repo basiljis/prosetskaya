@@ -1,0 +1,86 @@
+[
+  {
+    "id": "work-399af691b9bc",
+    "ru": "Цифровая композиция",
+    "en": "Digital composition",
+    "category": "digital",
+    "categories": [
+      "digital"
+    ],
+    "year": "",
+    "size": "",
+    "mediumRu": "Цифровое искусство",
+    "mediumEn": "Digital art",
+    "width": 1920,
+    "height": 1279,
+    "source": "https://prosetskaya.ru/nova-galereya",
+    "sourceImage": "https://prosetskaya.ru/d/digital_art.jpg",
+    "sourceFilename": "digital_art.jpg",
+    "sourceCaption": "Цифровое искусство",
+    "sources": [
+      {
+        "page": "https://prosetskaya.ru/nova-galereya",
+        "image": "https://prosetskaya.ru/d/digital_art.jpg",
+        "caption": "Цифровое искусство"
+      }
+    ],
+    "titleProvided": false,
+    "assetFile": "work-399af691b9bc.jpg.asset.json"
+  },
+  {
+    "id": "work-b00681bb6aa1",
+    "ru": "Иллюстрация · № 001",
+    "en": "Illustration · No. 001",
+    "category": "illustrations",
+    "categories": [
+      "illustrations"
+    ],
+    "year": "",
+    "size": "",
+    "mediumRu": "Иллюстрация",
+    "mediumEn": "Illustration",
+    "width": 1920,
+    "height": 1329,
+    "source": "https://prosetskaya.ru/nova-galereya",
+    "sourceImage": "https://prosetskaya.ru/d/img_8637.jpg",
+    "sourceFilename": "img_8637.jpg",
+    "sourceCaption": "Иллюстрации",
+    "sources": [
+      {
+        "page": "https://prosetskaya.ru/nova-galereya",
+        "image": "https://prosetskaya.ru/d/img_8637.jpg",
+        "caption": "Иллюстрации"
+      }
+    ],
+    "titleProvided": false,
+    "assetFile": "work-b00681bb6aa1.jpg.asset.json"
+  },
+  {
+    "id": "work-3ec9b0398e05",
+    "ru": "Лодочная станция",
+    "en": "Boat station",
+    "category": "landscape",
+    "categories": [
+      "landscape"
+    ],
+    "year": "2019",
+    "size": "40 × 50",
+    "mediumRu": "Холст, масло",
+    "mediumEn": "Oil on canvas",
+    "width": 1920,
+    "height": 1541,
+    "source": "https://prosetskaya.ru/nova-galereya",
+    "sourceImage": "https://prosetskaya.ru/d/lodochnaya_stanciya_hm_40h50_2019g.jpg",
+    "sourceFilename": "lodochnaya_stanciya_hm_40h50_2019g.jpg",
+    "sourceCaption": "Пейзажи",
+    "sources": [
+      {
+        "page": "https://prosetskaya.ru/nova-galereya",
+        "image": "https://prosetskaya.ru/d/lodochnaya_stanciya_hm_40h50_2019g.jpg",
+        "caption": "Пейзажи"
+      }
+    ],
+    "titleProvided": true,
+    "assetFile": "work-3ec9b0398e05.jpg.asset.json"
+  }
+]
