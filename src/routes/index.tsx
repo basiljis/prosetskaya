@@ -86,7 +86,7 @@ function Index() {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      {ready && <div className="preloader pointer-events-none fixed inset-0 z-[100] flex flex-col items-center justify-center gap-7 bg-background text-foreground" aria-hidden="true"><ArtistMark className="h-32 w-24" alt="" /><ArtistMark kind="signature" className="h-20 w-64 max-w-[75%]" alt="" /><p className="px-5 text-center text-xl font-medium">{t.name}</p><p className="text-xs text-muted-foreground">{t.signature}</p></div>}
+      {ready && <div className="preloader pointer-events-none fixed inset-0 z-[100] flex flex-col items-center justify-center gap-7 bg-background text-foreground" aria-hidden="true"><ArtistMark kind="signature" className="h-20 w-64 max-w-[75%]" alt="" /><p className="px-5 text-center text-xl font-medium">{t.name}</p><p className="text-xs text-muted-foreground">{t.signature}</p></div>}
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-lg">
         <div className="gallery-shell flex h-[76px] items-center justify-between gap-4">
           <a href="#top" className="flex min-w-0 items-center gap-3" aria-label={t.name}><ArtistMark className="h-14 w-10 shrink-0" alt="" /><span className="hidden border-l border-border pl-3 text-[10px] leading-4 sm:block">{t.gallery}<br />{t.location}</span></a>
