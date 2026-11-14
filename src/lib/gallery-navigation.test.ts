@@ -13,4 +13,9 @@ describe("Artwork navigation", () => {
     expect(filterArtworks(works, "landscape")).toEqual([works[1]]);
     expect(filterArtworks(works, "all")).toEqual(works);
   });
+  it("includes a work in each source collection without duplicating it in all works", () => {
+    const works = [{ id: "shared-study", category: "landscape", categories: ["landscape", "studies"] }, { id: "painting", category: "painting", categories: ["painting"] }];
+    expect(filterArtworks(works, "studies").map((work) => work.id)).toEqual(["shared-study"]);
+    expect(filterArtworks(works, "all")).toHaveLength(2);
+  });
 });
