@@ -12,8 +12,10 @@ export function rowToArtwork(r: ArtworkRow): Artwork {
   const availability = r.source_availability === "sold" || r.source_availability === "private" || r.source_availability === "museum" ? r.source_availability : undefined;
   return {
     id: r.id, image: r.image_url, source: r.source, ru: r.title_ru, en: r.title_en || r.title_ru,
-    category: r.category as Artwork["category"], categories: (r.categories.length ? r.categories : [r.category]) as Artwork["categories"],
+    category: r.category as Artwork["category"], categories: (r.categories.length ? r.categories : [r.category]) as NonNullable<Artwork["categories"]>,
     year: r.year, size: r.size, mediumRu: r.medium_ru, mediumEn: r.medium_en || r.medium_ru,
-    width: r.width, height: r.height, catalogueOnly: r.catalogue_only || undefined, sourceAvailability: availability,
+    width: r.width, height: r.height,
+    ...(r.catalogue_only ? { catalogueOnly: true } : {}),
+    ...(availability ? { sourceAvailability: availability } : {}),
   };
 }
