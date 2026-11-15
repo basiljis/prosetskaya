@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { artworks } from "@/lib/artworks";
+import { artworks as staticArtworks } from "@/lib/artworks";
 import { methodLabel, rub, statusLabel } from "@/lib/shop";
-import { loadAdminData, saveAdminOrderStatus, saveAdminPayment, saveAdminSetting, saveCollectionMenuPosition } from "@/lib/admin";
+import { loadAdminArtworks, loadAdminData, saveAdminOrderStatus, saveAdminPayment, saveAdminSetting, saveCollectionMenuPosition } from "@/lib/admin";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [
@@ -35,10 +35,12 @@ function Admin() {
   const [orderFilter, setOrderFilter] = useState("all");
   const [webhook, setWebhook] = useState("");
   const { data, isLoading, isError, refetch } = useQuery({ queryKey: ["admin"], queryFn: loadAdminData, retry: 1 });
+  const rows = useQuery({ queryKey: ["admin-artworks"], queryFn: loadAdminArtworks, enabled: !!data }).data ?? [];
+  const [limit, setLimit] = useState(40);
   useEffect(() => { setWebhook(`${window.location.origin}/api/public/yookassa`); }, []);
   const refresh = (message: string) => {
     setNote(message); setError("");
-    void Promise.all(["admin", "shop", "account"].map((key) => qc.invalidateQueries({ queryKey: [key] })));
+    void Promise.all(["admin", "admin-artworks", "artworks", "shop", "account"].map((key) => qc.invalidateQueries({ queryKey: [key] })));
   };
   const run = async (action: () => Promise<void>, message: string) => {
     setBusy(true); setNote(""); setError("");
@@ -56,7 +58,8 @@ function Admin() {
   if (isError) return <SimplePage title="Админ-панель" wide><p role="alert" className="mt-8 text-sm text-destructive">Не удалось загрузить настройки.</p><Button variant="outline" className="mt-5" onClick={() => refetch()}><RefreshCw />Попробовать снова</Button></SimplePage>;
   if (!data) return <SimplePage title="Нет доступа"><LockKeyhole className="mt-8 size-8 text-muted-foreground" /><p className="mt-5 text-sm leading-7 text-muted-foreground">Управление галереей доступно только администратору.</p><Button asChild variant="outline" className="mt-6"><Link to="/account">Мой кабинет<ArrowUpRight /></Link></Button></SimplePage>;
 
-  const visibleWorks = artworks.filter((work) => work.ru.toLowerCase().includes(search.trim().toLowerCase()));
+  const artworks = rows;
+  const visibleWorks = rows.filter((work) => work.title_ru.toLowerCase().includes(search.trim().toLowerCase()));
   const activeOrders = data.orders.filter((order) => order.status !== "cancelled" && order.status !== "completed");
   const visibleOrders = data.orders.filter((order) => orderFilter === "all" || order.status === orderFilter);
   const pricedCount = artworks.filter((work) => data.prices[work.id] != null).length;
@@ -76,14 +79,15 @@ function Admin() {
           {[{ value: "works", label: "Картины", icon: Image }, { value: "orders", label: "Заказы", icon: Package }, { value: "settings", label: "Настройки", icon: Settings }].map((tab) => <TabsTrigger key={tab.value} value={tab.value} className="h-12 gap-2 rounded-none border-b-2 border-transparent px-2 text-xs data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none sm:text-sm"><tab.icon className="size-4" />{tab.label}</TabsTrigger>)}
         </TabsList>
         <TabsContent value="works" className="mt-8">
-          <div className="flex flex-wrap items-center justify-between gap-5"><h2 className="font-display text-3xl">Картины и цены</h2><div className="relative w-full sm:w-72"><Search className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Поиск картины" placeholder="Найти картину" className="h-11 bg-card pl-10 shadow-none" /></div></div>
-          <ul className="mt-6 border-t border-border">{visibleWorks.map((work) => <AdminPriceEditor key={work.id} work={work} price={data.prices[work.id] ?? null} onSaved={() => refresh("Цена сохранена")} />)}</ul>
+          <div className="flex flex-wrap items-center justify-between gap-5"><h2 className="font-display text-3xl">Картины и цены <span className="font-sans text-sm text-muted-foreground">({rows.length})</span></h2><div className="relative w-full sm:w-72"><Search className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Поиск картины" placeholder="Найти картину" className="h-11 bg-card pl-10 shadow-none" /></div></div>
+          <ul className="mt-6 border-t border-border">{visibleWorks.slice(0, limit).map((work) => <AdminPriceEditor key={work.id} work={work} price={data.prices[work.id] ?? null} onSaved={refresh} />)}</ul>
+          {visibleWorks.length > limit && <Button variant="outline" className="mt-6 w-full" onClick={() => setLimit(limit + 40)}>Показать ещё ({visibleWorks.length - limit})</Button>}
           {visibleWorks.length === 0 && <p className="py-12 text-center text-sm text-muted-foreground">Картины не найдены.</p>}
         </TabsContent>
         <TabsContent value="orders" className="mt-8">
           <div className="flex flex-wrap items-center justify-between gap-4"><h2 className="font-display text-3xl">Заказы <span className="font-sans text-sm text-muted-foreground">({data.orders.length})</span></h2><Select value={orderFilter} onValueChange={setOrderFilter}><SelectTrigger aria-label="Фильтр заказов" className="h-11 w-full bg-card sm:w-52"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Все заказы</SelectItem>{Object.entries(statusLabel).map(([key, value]) => <SelectItem key={key} value={key}>{value.split(" — ")[0]}</SelectItem>)}</SelectContent></Select></div>
           {visibleOrders.length === 0 ? <div className="mt-8 border-y border-border py-16 text-center"><Package className="mx-auto size-8 text-muted-foreground" /><p className="mt-4 text-sm text-muted-foreground">{data.orders.length === 0 ? "Заказов пока нет" : "Нет заказов с этим статусом"}</p></div> : <ul className="mt-6 border-t border-border">{visibleOrders.map((order) => {
-            const work = artworks.find((item) => item.id === order.artwork_id);
+            const work = staticArtworks.find((item) => item.id === order.artwork_id) ?? rows.map((r) => ({ id: r.id, image: r.image_url })).find((item) => item.id === order.artwork_id);
             return <li key={order.id} className="grid gap-5 border-b border-border py-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_180px]">
               <div className="flex min-w-0 gap-4">{work && <img src={work.image} alt={order.artwork_title} className="h-20 w-16 shrink-0 bg-muted/40 object-contain" />}<div className="min-w-0"><p className="text-sm font-medium">{order.artwork_title}</p><p className="mt-2 text-xs leading-5 text-muted-foreground">{new Date(order.created_at).toLocaleDateString("ru-RU")} · {methodLabel[order.method]}</p><p className="mt-1 text-sm">{rub(order.amount)}</p></div></div>
               <div className="min-w-0 text-xs leading-6"><p className="font-medium">{order.customer_name}</p>{order.company && <p>{order.company}</p>}<a href={`tel:${order.customer_phone}`} className="block">{order.customer_phone}</a><a href={`mailto:${order.customer_email}`} className="block break-all text-muted-foreground">{order.customer_email}</a>{order.comment && <p className="mt-2 break-words text-muted-foreground">{order.comment}</p>}</div>
