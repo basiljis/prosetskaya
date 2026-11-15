@@ -55,3 +55,20 @@ export async function saveAdminOrderStatus(id: string, status: string) {
   const { data, error } = await supabase.from("orders").update({ status }).eq("id", id).select("id").single();
   if (error || !data) throw new Error("Статус не сохранён. Попробуйте ещё раз.");
 }
+export async function loadAdminArtworks() {
+  const { data, error } = await supabase.from("artworks").select("*").order("sort_order");
+  if (error) throw new Error("Не удалось загрузить картины.");
+  return data as import("@/lib/artwork-rows").ArtworkRow[];
+}
+
+export type ArtworkPatch = Partial<Pick<import("@/lib/artwork-rows").ArtworkRow, "title_ru" | "title_en" | "category" | "year" | "size" | "medium_ru" | "medium_en" | "hidden" | "source_availability" | "sort_order">>;
+
+export async function saveAdminArtwork(id: string, patch: ArtworkPatch) {
+  const { data, error } = await supabase.from("artworks").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", id).select("id").single();
+  if (error || !data) throw new Error("Картина не сохранена. Попробуйте ещё раз.");
+}
+
+export async function deleteAdminArtwork(id: string) {
+  const { error } = await supabase.from("artworks").delete().eq("id", id);
+  if (error) throw new Error("Картина не удалена. Попробуйте ещё раз.");
+}
