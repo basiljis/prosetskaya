@@ -3,6 +3,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { ArrowUpRight, CheckCircle2, CreditCard, Image, Loader2, LockKeyhole, Package, PanelLeft, PanelTop, RefreshCw, Save, Search, Settings } from "lucide-react";
 import { SimplePage } from "@/components/simple-page";
+import { AdminDirections } from "@/components/admin-directions";
+import { Pager } from "@/components/pager";
+import { pageCount, pageSlice, resolveDirections } from "@/lib/directions";
 import { AdminPriceEditor } from "@/components/admin-price-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { artworks as staticArtworks } from "@/lib/artworks";
 import { methodLabel, rub, statusLabel } from "@/lib/shop";
-import { loadAdminArtworks, loadAdminData, saveAdminOrderStatus, saveAdminPayment, saveAdminSetting, saveCollectionMenuPosition } from "@/lib/admin";
+import { loadAdminArtworks, loadAdminData, saveAdminOrderStatus, saveAdminPayment, saveAdminSetting, saveCollectionMenuPosition, saveCollectionDirections } from "@/lib/admin";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [
@@ -36,7 +39,7 @@ function Admin() {
   const [webhook, setWebhook] = useState("");
   const { data, isLoading, isError, refetch } = useQuery({ queryKey: ["admin"], queryFn: loadAdminData, retry: 1 });
   const rows = useQuery({ queryKey: ["admin-artworks"], queryFn: loadAdminArtworks, enabled: !!data }).data ?? [];
-  const [limit, setLimit] = useState(40);
+  const [page, setPage] = useState(1);
   useEffect(() => { setWebhook(`${window.location.origin}/api/public/yookassa`); }, []);
   const refresh = (message: string) => {
     setNote(message); setError("");
@@ -79,9 +82,9 @@ function Admin() {
           {[{ value: "works", label: "Картины", icon: Image }, { value: "orders", label: "Заказы", icon: Package }, { value: "settings", label: "Настройки", icon: Settings }].map((tab) => <TabsTrigger key={tab.value} value={tab.value} className="h-12 gap-2 rounded-none border-b-2 border-transparent px-2 text-xs data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none sm:text-sm"><tab.icon className="size-4" />{tab.label}</TabsTrigger>)}
         </TabsList>
         <TabsContent value="works" className="mt-8">
-          <div className="flex flex-wrap items-center justify-between gap-5"><h2 className="font-display text-3xl">Картины и цены <span className="font-sans text-sm text-muted-foreground">({rows.length})</span></h2><div className="relative w-full sm:w-72"><Search className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Поиск картины" placeholder="Найти картину" className="h-11 bg-card pl-10 shadow-none" /></div></div>
-          <ul className="mt-6 border-t border-border">{visibleWorks.slice(0, limit).map((work) => <AdminPriceEditor key={work.id} work={work} price={data.prices[work.id] ?? null} onSaved={refresh} />)}</ul>
-          {visibleWorks.length > limit && <Button variant="outline" className="mt-6 w-full" onClick={() => setLimit(limit + 40)}>Показать ещё ({visibleWorks.length - limit})</Button>}
+          <div className="flex flex-wrap items-center justify-between gap-5"><h2 className="font-display text-3xl">Картины и цены <span className="font-sans text-sm text-muted-foreground">({rows.length})</span></h2><div className="relative w-full sm:w-72"><Search className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground" /><Input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} aria-label="Поиск картины" placeholder="Найти картину" className="h-11 bg-card pl-10 shadow-none" /></div></div>
+          <ul className="mt-6 border-t border-border">{pageSlice(visibleWorks, page, 40).map((work) => <AdminPriceEditor key={work.id} work={work} price={data.prices[work.id] ?? null} onSaved={refresh} />)}</ul>
+          <Pager page={Math.min(page, pageCount(visibleWorks.length, 40))} pages={pageCount(visibleWorks.length, 40)} label="Страницы картин" onChange={(n) => { setPage(n); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
           {visibleWorks.length === 0 && <p className="py-12 text-center text-sm text-muted-foreground">Картины не найдены.</p>}
         </TabsContent>
         <TabsContent value="orders" className="mt-8">
@@ -96,6 +99,7 @@ function Admin() {
           })}</ul>}
         </TabsContent>
         <TabsContent value="settings" className="mt-8">
+          <AdminDirections initial={resolveDirections(data.settings.collection_directions)} busy={busy} onSave={(d) => run(() => saveCollectionDirections(d), "Направления сохранены")} />
           <section className="mb-10 border-b border-border pb-8">
             <h2 className="font-display text-3xl">Меню коллекции</h2>
             <div role="group" aria-label="Расположение меню коллекции" className="mt-5 inline-grid max-w-full grid-cols-2 border border-border p-1">
