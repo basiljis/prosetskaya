@@ -44,6 +44,7 @@ function Index() {
   const [category, setCategory] = useState<Category>("all");
   const [featuredIndex, setFeaturedIndex] = useState(0);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  const [project, setProject] = useState<{ source: string; photo: boolean; index: number } | null>(null);
   const t = copy[lang];
   const b = boutique[lang];
   const [inquiryId, setInquiryId] = useState<string | null>(null);
@@ -152,7 +153,7 @@ function Index() {
       <section id="projects" className="gallery-shell border-t border-border py-10 md:py-16">
         <SectionMarker number="02">{b.projectsLabel}</SectionMarker>
         <div className="grid gap-10 md:grid-cols-[0.8fr_1.2fr] md:gap-20"><div><h2 className="section-heading font-display">{b.projectsTitle}</h2><p className="mt-5 max-w-sm text-sm leading-7 text-muted-foreground">{b.projectsText}</p><Button asChild variant="editorial" className="mt-6 h-auto border-b border-foreground px-0 pb-2 text-xs"><a href={artist.telegram} target="_blank" rel="noreferrer">{b.commission}<ArrowUpRight /></a></Button></div>
-          <div className="border-t border-border">{b.projects.map((p) => <div key={p.title} className="grid grid-cols-[56px_1fr_auto] items-center gap-5 border-b border-border py-6"><span className="text-xs text-primary">{p.year}</span><span><span className="block font-display text-2xl">{p.title}</span><span className="mt-1 block text-[11px] text-muted-foreground">{p.note}</span></span><span /></div>)}</div></div>
+          <div className="space-y-8">{(["painting", "photo"] as const).map((kind) => <div key={kind}><h3 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">{b.projectKinds[kind]}</h3><div className="border-t border-border">{b.projects.filter((p) => p.kind === kind).map((p) => { const count = artworks.filter((w) => w.source.endsWith(`/${p.source}`)).length; return <button key={p.title} type="button" disabled={!count} onClick={() => setProject({ source: p.source, photo: kind === "photo", index: 0 })} className="group grid w-full grid-cols-[56px_1fr_auto] items-center gap-5 border-b border-border py-5 text-left disabled:opacity-60"><span className="text-xs text-primary">{p.year}</span><span><span className="block font-display text-2xl transition group-hover:text-primary">{p.title}</span><span className="mt-1 block text-[11px] leading-5 text-muted-foreground">{p.note}</span></span><span className="flex items-center gap-1 whitespace-nowrap text-[11px] uppercase tracking-[0.12em] text-muted-foreground group-hover:text-primary">{b.projectOpen} · {count} {b.projectWorks}<ArrowUpRight className="size-3.5" /></span></button>; })}</div></div>)}</div></div>
       </section>
 
       <section id="about" className="border-t border-border bg-muted/45 py-10 md:py-16">
@@ -221,6 +222,7 @@ function Index() {
       </div>
       {inquiryWork && <InquiryDialog work={inquiryWork} lang={lang} onClose={() => setInquiryId(null)} />}
       {buyWork && <CheckoutDialog work={buyWork} price={shop?.prices[buyWork.id] ?? null} online={!!shop?.online} onClose={() => setBuyId(null)} />}
+      {project && <ArtworkViewer works={artworks.filter((w) => w.source.endsWith(`/${project.source}`))} index={project.index} lang={lang} viewOnly={project.photo} onChange={(index) => setProject({ ...project, index })} onClose={() => setProject(null)} />}
       {viewerIndex !== null && <ArtworkViewer works={artworks} index={viewerIndex} lang={lang} onChange={setViewerIndex} onClose={() => setViewerIndex(null)} />}
     </main>
   );
