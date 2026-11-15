@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { ArrowUpRight, CheckCircle2, CreditCard, Image, Loader2, LockKeyhole, Package, PanelLeft, PanelTop, RefreshCw, Save, Search, Settings } from "lucide-react";
 import { SimplePage } from "@/components/simple-page";
 import { AdminDirections } from "@/components/admin-directions";
+import { AdminProjects } from "@/components/admin-projects";
 import { Pager } from "@/components/pager";
 import { pageCount, pageSlice, resolveDirections } from "@/lib/directions";
 import { AdminPriceEditor } from "@/components/admin-price-editor";
@@ -14,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { artworks as staticArtworks } from "@/lib/artworks";
 import { methodLabel, rub, statusLabel } from "@/lib/shop";
-import { loadAdminArtworks, loadAdminData, saveAdminOrderStatus, saveAdminPayment, saveAdminSetting, saveCollectionMenuPosition, saveCollectionDirections } from "@/lib/admin";
+import { loadAdminArtworks, loadAdminData, loadAdminProjects, saveAdminOrderStatus, saveAdminPayment, saveAdminSetting, saveCollectionMenuPosition, saveCollectionDirections } from "@/lib/admin";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [
@@ -39,11 +40,13 @@ function Admin() {
   const [webhook, setWebhook] = useState("");
   const { data, isLoading, isError, refetch } = useQuery({ queryKey: ["admin"], queryFn: loadAdminData, retry: 1 });
   const rows = useQuery({ queryKey: ["admin-artworks"], queryFn: loadAdminArtworks, enabled: !!data }).data ?? [];
+  const projectQuery = useQuery({ queryKey: ["admin-projects"], queryFn: loadAdminProjects, enabled: !!data });
+  const projects = projectQuery.data ?? [];
   const [page, setPage] = useState(1);
   useEffect(() => { setWebhook(`${window.location.origin}/api/public/yookassa`); }, []);
   const refresh = (message: string) => {
     setNote(message); setError("");
-    void Promise.all(["admin", "admin-artworks", "artworks", "shop", "account"].map((key) => qc.invalidateQueries({ queryKey: [key] })));
+    void Promise.all(["admin", "admin-artworks", "admin-projects", "projects", "public-projects", "artworks", "shop", "account"].map((key) => qc.invalidateQueries({ queryKey: [key] })));
   };
   const run = async (action: () => Promise<void>, message: string) => {
     setBusy(true); setNote(""); setError("");
@@ -78,14 +81,17 @@ function Admin() {
       </div>
       {(note || error) && <p role={error ? "alert" : "status"} className={`mt-5 flex items-center gap-2 text-sm leading-6 ${error ? "text-destructive" : "text-primary"}`}>{!error && <CheckCircle2 className="size-4 shrink-0" />}{error || note}</p>}
       <Tabs defaultValue="works" className="mt-8">
-        <TabsList aria-label="Разделы управления" className="grid h-auto w-full grid-cols-3 rounded-none border-b border-border bg-transparent p-0">
-          {[{ value: "works", label: "Картины", icon: Image }, { value: "orders", label: "Заказы", icon: Package }, { value: "settings", label: "Настройки", icon: Settings }].map((tab) => <TabsTrigger key={tab.value} value={tab.value} className="h-12 gap-2 rounded-none border-b-2 border-transparent px-2 text-xs data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none sm:text-sm"><tab.icon className="size-4" />{tab.label}</TabsTrigger>)}
+        <TabsList aria-label="Разделы управления" className="grid h-auto w-full grid-cols-2 rounded-none border-b border-border bg-transparent p-0 sm:grid-cols-4">
+          {[{ value: "works", label: "Картины", icon: Image }, { value: "projects", label: "Спецпроекты", icon: PanelTop }, { value: "orders", label: "Заказы", icon: Package }, { value: "settings", label: "Настройки", icon: Settings }].map((tab) => <TabsTrigger key={tab.value} value={tab.value} className="h-12 gap-2 rounded-none border-b-2 border-transparent px-2 text-xs data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none sm:text-sm"><tab.icon className="size-4" />{tab.label}</TabsTrigger>)}
         </TabsList>
         <TabsContent value="works" className="mt-8">
           <div className="flex flex-wrap items-center justify-between gap-5"><h2 className="font-display text-3xl">Картины и цены <span className="font-sans text-sm text-muted-foreground">({rows.length})</span></h2><div className="relative w-full sm:w-72"><Search className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground" /><Input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} aria-label="Поиск картины" placeholder="Найти картину" className="h-11 bg-card pl-10 shadow-none" /></div></div>
-          <ul className="mt-6 border-t border-border">{pageSlice(visibleWorks, page, 40).map((work) => <AdminPriceEditor key={work.id} work={work} price={data.prices[work.id] ?? null} onSaved={refresh} />)}</ul>
+          <ul className="mt-6 border-t border-border">{pageSlice(visibleWorks, page, 40).map((work) => <AdminPriceEditor key={work.id} work={work} price={data.prices[work.id] ?? null} projects={projects} onSaved={refresh} />)}</ul>
           <Pager page={Math.min(page, pageCount(visibleWorks.length, 40))} pages={pageCount(visibleWorks.length, 40)} label="Страницы картин" onChange={(n) => { setPage(n); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
           {visibleWorks.length === 0 && <p className="py-12 text-center text-sm text-muted-foreground">Картины не найдены.</p>}
+        </TabsContent>
+        <TabsContent value="projects" className="mt-8">
+          {projectQuery.isLoading ? <p role="status" className="text-sm text-muted-foreground">Загружаем спецпроекты…</p> : projectQuery.isError ? <div><p role="alert" className="text-sm text-destructive">Не удалось загрузить спецпроекты.</p><Button variant="outline" onClick={() => projectQuery.refetch()} className="mt-4"><RefreshCw />Повторить</Button></div> : <AdminProjects projects={projects} works={rows} onSaved={refresh} />}
         </TabsContent>
         <TabsContent value="orders" className="mt-8">
           <div className="flex flex-wrap items-center justify-between gap-4"><h2 className="font-display text-3xl">Заказы <span className="font-sans text-sm text-muted-foreground">({data.orders.length})</span></h2><Select value={orderFilter} onValueChange={setOrderFilter}><SelectTrigger aria-label="Фильтр заказов" className="h-11 w-full bg-card sm:w-52"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Все заказы</SelectItem>{Object.entries(statusLabel).map(([key, value]) => <SelectItem key={key} value={key}>{value.split(" — ")[0]}</SelectItem>)}</SelectContent></Select></div>
