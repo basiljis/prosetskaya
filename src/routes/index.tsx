@@ -8,7 +8,7 @@ import { CollectionFilters } from "@/components/collection-filters";
 import { SectionMarker } from "@/components/section-marker";
 import { ArtistMark } from "@/components/artist-mark";
 import { ArtworkViewer } from "@/components/artwork-viewer";
-import { artist, artworks, canPurchaseArtwork, featuredIds, type Category, type Lang } from "@/lib/artworks";
+import { artist, artworks as staticArtworks, canPurchaseArtwork, featuredIds, type Category, type Lang } from "@/lib/artworks";
 import { copy } from "@/lib/gallery-copy";
 import { filterArtworks, nextArtworkIndex } from "@/lib/gallery-navigation";
 import { InquiryDialog } from "@/components/inquiry-dialog";
@@ -18,6 +18,7 @@ import cvPdf from "@/assets/prosetskaya-cv.pdf.asset.json";
 import { CheckoutDialog } from "@/components/checkout-dialog";
 import { useShop } from "@/hooks/use-shop";
 import { rub } from "@/lib/shop";
+import { useArtworks } from "@/hooks/use-artworks";
 import portraitAsset from "@/assets/prosetskaya/portrait.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
@@ -32,9 +33,10 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const featuredWorks = featuredIds.map((id) => artworks.find((work) => work.id === id)).filter((work) => work !== undefined);
+const featuredWorks = featuredIds.map((id) => staticArtworks.find((work) => work.id === id)).filter((work) => work !== undefined);
 
 function Index() {
+  const artworks = useArtworks();
   const [lang, setLang] = useState<Lang>("ru");
   const [dark, setDark] = useState(false);
   const [ready, setReady] = useState(false);
@@ -81,15 +83,21 @@ function Index() {
     const index = artworks.findIndex((work) => work.id === id);
     if (index >= 0) setViewerIndex(index);
   };
-  const scrollToSection = (hash: string) => { document.querySelector(hash)?.scrollIntoView({ behavior: "smooth", block: "start" }); history.replaceState(null, "", hash); };
+  const smoothTo = (top: number) => {
+    const start = window.scrollY; const end = Math.max(0, Math.min(top, document.documentElement.scrollHeight - window.innerHeight)); const t0 = performance.now();
+    const duration = Math.min(1100, 450 + Math.abs(end - start) / 8);
+    const step = (now: number) => { const p = Math.min(1, (now - t0) / duration); const e = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2; window.scrollTo(0, start + (end - start) * e); if (p < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  };
+  const scrollToSection = (hash: string) => { const el = document.querySelector(hash); if (el) smoothTo(el.getBoundingClientRect().top + window.scrollY - 76); history.replaceState(null, "", hash); };
   const navLinks = [{ label: t.works, href: "#works" }, { label: b.projectsLabel, href: "#projects" }, { label: t.about, href: "#about" }, { label: t.contact, href: "#contact" }];
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      {ready && <div className="preloader pointer-events-none fixed inset-0 z-[100] flex flex-col items-center justify-center gap-7 bg-background text-foreground" aria-hidden="true"><ArtistMark kind="signature" className="h-20 w-64 max-w-[75%]" alt="" /><p className="px-5 text-center text-xl font-medium">{t.name}</p><p className="text-xs text-muted-foreground">{t.signature}</p></div>}
+      {ready && <div className="preloader pointer-events-none fixed inset-0 z-[100] flex flex-col items-center justify-center gap-6 bg-background text-foreground md:gap-8" aria-hidden="true"><ArtistMark kind="signature" className="animate-reveal h-32 w-[30rem] max-w-[86%] md:h-48 md:w-[44rem]" alt="" /><p className="animate-reveal px-5 text-center font-sans text-4xl font-medium uppercase tracking-[0.14em] md:text-6xl">{t.name}</p><p className="animate-reveal text-[11px] uppercase tracking-[0.35em] text-primary md:text-sm">{t.signature}</p></div>}
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-lg">
         <div className="gallery-shell flex h-[76px] items-center justify-between gap-4">
-          <a href="#top" className="flex min-w-0 items-center gap-3" aria-label={t.name}><ArtistMark className="h-14 w-10 shrink-0" alt="" /><span className="hidden border-l border-border pl-3 text-[10px] leading-4 sm:block">{t.gallery}<br />{t.location}</span></a>
+          <a href="#top" onClick={(e) => { e.preventDefault(); smoothTo(0); }} className="flex min-w-0 items-center gap-3" aria-label={t.name}><ArtistMark className="h-14 w-10 shrink-0" alt="" /><span className="hidden border-l border-border pl-3 text-[10px] leading-4 sm:block">{t.gallery}<br />{t.location}</span></a>
           <nav className="hidden items-center gap-8 lg:flex" aria-label={t.menu}>{navLinks.map((link) => <Button key={link.href} asChild variant="editorial" className="h-auto p-0 text-xs"><a href={link.href} onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}>{link.label}</a></Button>)}</nav>
           <div className="flex items-center gap-2">
             <Button asChild variant="editorial" className="h-9 gap-2 px-3 text-[11px] font-semibold uppercase"><Link to="/account" aria-label={lang === "ru" ? "Личный кабинет" : "Account"}><User className="size-4" /><span className="hidden sm:inline">{lang === "ru" ? "Кабинет" : "Account"}</span></Link></Button>
@@ -100,7 +108,7 @@ function Index() {
         </div>
       </header>
 
-      <section id="top" className="gallery-shell pb-6 pt-6 md:pb-12 md:pt-10">
+      <section id="top" className="gallery-shell pb-4 pt-6 md:pb-8 md:pt-10">
         <div className="mb-5 flex items-center justify-between text-[10px] uppercase text-muted-foreground"><span className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-primary" />{t.gallery}</span><span>{t.location}</span></div>
         <div className="flex flex-col items-start justify-between gap-5 md:flex-row md:items-end">
           <h1 className="artist-title font-sans"><span className="block">{t.firstName}</span><span>{t.lastName}<span className="text-primary">.</span></span></h1>
@@ -123,12 +131,12 @@ function Index() {
         </div>
       </section>
 
-      <section id="works" className="gallery-shell pb-24 pt-5 md:pb-32 md:pt-8">
+      <section id="works" className="gallery-shell pb-12 pt-4 md:pb-16 md:pt-6">
         <SectionMarker number="01">{t.collection}</SectionMarker>
         <div className="flex items-end justify-between gap-6"><div><h2 className="section-heading font-display">{t.allWorks}<span className="ml-3 align-top font-sans text-sm text-primary">({String(filtered.length).padStart(2, "0")})</span></h2></div><p className="hidden max-w-60 text-xs leading-6 text-muted-foreground md:block">{t.artistNote}</p></div>
-        <div className={`mt-9 grid gap-y-12 ${shop?.collectionMenuPosition === "left" ? "lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-9" : ""}`}>
-        <CollectionFilters position={shop?.collectionMenuPosition ?? "top"} category={category} lang={lang} onChange={(key) => { setCategory(key); document.getElementById("works")?.scrollIntoView({ behavior: "smooth" }); }} />
-        <div className={`grid min-w-0 grid-cols-1 gap-x-9 gap-y-12 sm:grid-cols-2 ${shop?.collectionMenuPosition === "left" ? "2xl:grid-cols-3" : "lg:grid-cols-3"}`}>
+        <div className={`mt-5 grid gap-y-8 ${shop?.collectionMenuPosition === "left" ? "lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-9" : ""}`}>
+        <CollectionFilters position={shop?.collectionMenuPosition ?? "top"} category={category} lang={lang} onChange={(key) => { setCategory(key); scrollToSection("#works"); }} />
+        <div className={`grid min-w-0 grid-cols-1 gap-x-9 gap-y-10 sm:grid-cols-2 ${shop?.collectionMenuPosition === "left" ? "2xl:grid-cols-3" : "lg:grid-cols-3"}`}>
           {filtered.map((work) => <article key={work.id} className="gallery-column min-w-0">
             <Button variant="artwork" className="group relative block w-full cursor-zoom-in overflow-hidden" onClick={() => openWork(work.id)} aria-label={`${t.view}: ${work[lang]}`}>
               <img src={work.image} alt={work[lang]} loading="lazy" className="gallery-image transition-transform duration-700 group-hover:scale-[1.015]" />
@@ -141,13 +149,13 @@ function Index() {
         </div>
       </section>
 
-      <section id="projects" className="gallery-shell border-t border-border py-20 md:py-28">
+      <section id="projects" className="gallery-shell border-t border-border py-10 md:py-16">
         <SectionMarker number="02">{b.projectsLabel}</SectionMarker>
         <div className="grid gap-10 md:grid-cols-[0.8fr_1.2fr] md:gap-20"><div><h2 className="section-heading font-display">{b.projectsTitle}</h2><p className="mt-5 max-w-sm text-sm leading-7 text-muted-foreground">{b.projectsText}</p><Button asChild variant="editorial" className="mt-6 h-auto border-b border-foreground px-0 pb-2 text-xs"><a href={artist.telegram} target="_blank" rel="noreferrer">{b.commission}<ArrowUpRight /></a></Button></div>
           <div className="border-t border-border">{b.projects.map((p) => <div key={p.title} className="grid grid-cols-[56px_1fr_auto] items-center gap-5 border-b border-border py-6"><span className="text-xs text-primary">{p.year}</span><span><span className="block font-display text-2xl">{p.title}</span><span className="mt-1 block text-[11px] text-muted-foreground">{p.note}</span></span><span /></div>)}</div></div>
       </section>
 
-      <section id="about" className="border-t border-border bg-muted/45 py-20 md:py-28">
+      <section id="about" className="border-t border-border bg-muted/45 py-10 md:py-16">
         <SectionMarker number="03" fullWidth>{t.about}</SectionMarker>
         <div className="gallery-shell grid gap-12 md:grid-cols-[0.8fr_1.2fr] md:gap-20">
           <div><h2 className="section-heading font-display">{t.name}</h2><figure className="mt-9 max-w-80"><img src={portraitAsset.url} alt={t.portrait} loading="lazy" className="aspect-[4/5] w-full object-cover" /><figcaption className="mt-3 text-[10px] text-muted-foreground">{t.portrait} · {t.location}</figcaption></figure></div>
@@ -159,28 +167,28 @@ function Index() {
         </div>
       </section>
 
-      <footer id="contact" className="bg-foreground text-background">
-        <div className="gallery-shell pb-7 pt-20 md:pt-24">
+      <footer id="contact" className="bg-footer text-footer-foreground">
+        <div className="gallery-shell pb-7 pt-10 md:pt-14">
           <SectionMarker number="04" inverse>{t.contact}</SectionMarker>
-          <div className="grid gap-12 md:grid-cols-[1.2fr_1fr]"><div><h2 className="section-heading font-display">{t.enquiryTitle}</h2><p className="mt-5 max-w-xs text-xs leading-6 opacity-60">{t.enquiryText}</p><ContactDialog lang={lang}><button type="button" className="mt-7 inline-flex items-center gap-8 border-b border-background/50 pb-2 text-sm">{t.write}<ArrowUpRight className="size-4" /></button></ContactDialog></div>
+          <div className="grid gap-12 md:grid-cols-[1.2fr_1fr]"><div><h2 className="section-heading font-display">{t.enquiryTitle}</h2><p className="mt-5 max-w-xs text-xs leading-6 opacity-60">{t.enquiryText}</p><ContactDialog lang={lang}><button type="button" className="mt-7 inline-flex items-center gap-8 border-b border-footer-foreground/50 pb-2 text-sm">{t.write}<ArrowUpRight className="size-4" /></button></ContactDialog></div>
             <div className="space-y-6 md:pt-9"><a href={`mailto:${artist.email}`} className="block break-all text-lg md:text-xl">{artist.email}</a><a href={artist.phoneHref} className="block text-lg">{artist.phone}</a><p className="text-xs opacity-60">{t.address}</p><div className="flex flex-wrap gap-7 pt-4 text-xs"><a href={artist.telegram} target="_blank" rel="noreferrer" className="flex items-center gap-1">Telegram<ArrowUpRight className="size-3" /></a><a href={artist.instagram} target="_blank" rel="noreferrer" className="flex items-center gap-1">Instagram<ArrowUpRight className="size-3" /></a><a href={artist.whatsapp} target="_blank" rel="noreferrer" className="flex items-center gap-1">WhatsApp<ArrowUpRight className="size-3" /></a></div></div>
           </div>
-          <div className="mt-12 border-t border-background/20">
+          <div className="mt-10 border-t border-footer-foreground/20">
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-5">
-              <nav aria-label={lang === "ru" ? "Информация" : "Information"} className="grid min-w-0 grid-cols-2 gap-x-6 gap-y-1 text-xs leading-6 text-background/85 sm:flex sm:flex-wrap sm:gap-x-8">
-                <Link to="/buy" className="py-1 hover:text-background">{lang === "ru" ? "Как купить" : "How to buy"}</Link>
-                <Link to="/delivery" className="py-1 hover:text-background">{lang === "ru" ? "Доставка" : "Delivery"}</Link>
-                <Link to="/requisites" className="py-1 hover:text-background">{lang === "ru" ? "Реквизиты" : "Bank details"}</Link>
-                <Link to="/account" className="py-1 hover:text-background">{lang === "ru" ? "Личный кабинет" : "Account"}</Link>
+              <nav aria-label={lang === "ru" ? "Информация" : "Information"} className="grid min-w-0 grid-cols-2 gap-x-6 gap-y-1 text-xs leading-6 text-footer-foreground/85 sm:flex sm:flex-wrap sm:gap-x-8">
+                <Link to="/buy" className="py-1 hover:text-footer-foreground">{lang === "ru" ? "Как купить" : "How to buy"}</Link>
+                <Link to="/delivery" className="py-1 hover:text-footer-foreground">{lang === "ru" ? "Доставка" : "Delivery"}</Link>
+                <Link to="/requisites" className="py-1 hover:text-footer-foreground">{lang === "ru" ? "Реквизиты" : "Bank details"}</Link>
+                <Link to="/account" className="py-1 hover:text-footer-foreground">{lang === "ru" ? "Личный кабинет" : "Account"}</Link>
               </nav>
-              <Button asChild variant="editorial" size="icon" className="size-10 shrink-0 text-background/70 hover:text-background"><Link to="/admin" onClick={() => sessionStorage.setItem("after-login", "/admin")} aria-label={lang === "ru" ? "Административная панель" : "Administration"} title={lang === "ru" ? "Административная панель" : "Administration"}><Settings className="size-4" /></Link></Button>
+              <Button asChild variant="editorial" size="icon" className="size-10 shrink-0 text-footer-foreground/70 hover:text-footer-foreground"><Link to="/admin" onClick={() => sessionStorage.setItem("after-login", "/admin")} aria-label={lang === "ru" ? "Административная панель" : "Administration"} title={lang === "ru" ? "Административная панель" : "Administration"}><Settings className="size-4" /></Link></Button>
             </div>
-            <div className="grid gap-5 border-t border-background/15 pt-5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start xl:gap-8">
-              <nav aria-label={lang === "ru" ? "Правовая информация" : "Legal information"} className="flex min-w-0 flex-wrap gap-x-7 gap-y-2 text-[11px] leading-6 text-background/65 xl:col-start-2 xl:row-start-1">
-                <Link to="/privacy" className="hover:text-background">{lang === "ru" ? "Политика конфиденциальности" : "Privacy policy"}</Link>
-                <Link to="/terms" className="hover:text-background">{lang === "ru" ? "Пользовательское соглашение" : "Terms of use"}</Link>
+            <div className="grid gap-5 border-t border-footer-foreground/15 pt-5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start xl:gap-8">
+              <nav aria-label={lang === "ru" ? "Правовая информация" : "Legal information"} className="flex min-w-0 flex-wrap gap-x-7 gap-y-2 text-[11px] leading-6 text-footer-foreground/65 xl:col-start-2 xl:row-start-1">
+                <Link to="/privacy" className="hover:text-footer-foreground">{lang === "ru" ? "Политика конфиденциальности" : "Privacy policy"}</Link>
+                <Link to="/terms" className="hover:text-footer-foreground">{lang === "ru" ? "Пользовательское соглашение" : "Terms of use"}</Link>
               </nav>
-              <span className="min-w-0 max-w-xl text-[10px] leading-5 text-background/50 xl:col-start-1 xl:row-start-1">© 2026 {t.rights} · {b.legal}</span>
+              <span className="min-w-0 max-w-xl text-[10px] leading-5 text-footer-foreground/50 xl:col-start-1 xl:row-start-1">© 2026 {t.rights} · {b.legal}</span>
             </div>
           </div>
         </div>
@@ -208,8 +216,8 @@ function Index() {
         </Dialog.Portal>
       </Dialog.Root>
       <div className="fixed bottom-5 right-4 z-40 flex flex-col gap-2">
-        <Button variant="outline" size="icon" className="bg-background/90 backdrop-blur" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} aria-label={lang === "ru" ? "В начало страницы" : "To top"} title={lang === "ru" ? "В начало страницы" : "To top"}><ArrowUp /></Button>
-        <Button variant="outline" size="icon" className="bg-background/90 backdrop-blur" onClick={() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" })} aria-label={lang === "ru" ? "В конец страницы" : "To bottom"} title={lang === "ru" ? "В конец страницы" : "To bottom"}><ArrowDown /></Button>
+        <Button variant="outline" size="icon" className="bg-background/90 backdrop-blur" onClick={() => smoothTo(0)} aria-label={lang === "ru" ? "В начало страницы" : "To top"} title={lang === "ru" ? "В начало страницы" : "To top"}><ArrowUp /></Button>
+        <Button variant="outline" size="icon" className="bg-background/90 backdrop-blur" onClick={() => smoothTo(document.documentElement.scrollHeight)} aria-label={lang === "ru" ? "В конец страницы" : "To bottom"} title={lang === "ru" ? "В конец страницы" : "To bottom"}><ArrowDown /></Button>
       </div>
       {inquiryWork && <InquiryDialog work={inquiryWork} lang={lang} onClose={() => setInquiryId(null)} />}
       {buyWork && <CheckoutDialog work={buyWork} price={shop?.prices[buyWork.id] ?? null} online={!!shop?.online} onClose={() => setBuyId(null)} />}
