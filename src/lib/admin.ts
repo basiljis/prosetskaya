@@ -10,7 +10,7 @@ export async function loadAdminData() {
   if (roleError) throw new Error("Не удалось проверить права доступа.");
   if (!isAdmin) return null;
   const [settings, payment, prices, orders] = await Promise.all([
-    supabase.from("site_settings").select("show_prices, online_payment_enabled, collection_menu_position").eq("id", 1).single(),
+    supabase.from("site_settings").select("show_prices, online_payment_enabled, collection_menu_position, collection_directions").eq("id", 1).single(),
     supabase.from("payment_settings").select("yookassa_shop_id, yookassa_secret_key").eq("id", 1).single(),
     supabase.from("artwork_prices").select("artwork_id, price"),
     supabase.from("orders").select("*").order("created_at", { ascending: false }),
@@ -35,6 +35,11 @@ export async function saveAdminSetting(key: "show_prices" | "online_payment_enab
 export async function saveCollectionMenuPosition(position: CollectionMenuPosition) {
   const { data, error } = await supabase.from("site_settings").update({ collection_menu_position: position, updated_at: new Date().toISOString() }).eq("id", 1).select("id").single();
   if (error || !data) throw new Error("Расположение меню не сохранено. Попробуйте ещё раз.");
+}
+
+export async function saveCollectionDirections(directions: { key: string; ru: string; en: string; hidden: boolean }[]) {
+  const { data, error } = await supabase.from("site_settings").update({ collection_directions: directions, updated_at: new Date().toISOString() }).eq("id", 1).select("id").single();
+  if (error || !data) throw new Error("Направления не сохранены. Попробуйте ещё раз.");
 }
 
 export async function saveAdminPayment(shop: string, secret: string) {

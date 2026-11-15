@@ -19,6 +19,8 @@ import { CheckoutDialog } from "@/components/checkout-dialog";
 import { useShop } from "@/hooks/use-shop";
 import { rub } from "@/lib/shop";
 import { useArtworks } from "@/hooks/use-artworks";
+import { Pager } from "@/components/pager";
+import { isProjectWork, pageCount, pageSlice, resolveDirections, searchWorks } from "@/lib/directions";
 import portraitAsset from "@/assets/prosetskaya/portrait.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
@@ -44,7 +46,7 @@ function Index() {
   const [category, setCategory] = useState<Category>("all");
   const [featuredIndex, setFeaturedIndex] = useState(0);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
-  const [project, setProject] = useState<{ source: string; photo: boolean; index: number } | null>(null);
+  const [project, setProject] = useState<{ source: string; photo: boolean; index: number; id?: string } | null>(null);
   const t = copy[lang];
   const b = boutique[lang];
   const [inquiryId, setInquiryId] = useState<string | null>(null);
@@ -52,7 +54,19 @@ function Index() {
   const shop = useShop().data;
   const [buyId, setBuyId] = useState<string | null>(null);
   const buyWork = artworks.find((w) => w.id === buyId);
-  const filtered = filterArtworks(artworks, category);
+  const directions = shop?.directions ?? resolveDirections([]);
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [projectKind, setProjectKind] = useState<"all" | "painting" | "photo">("all");
+  const [projectPage, setProjectPage] = useState(1);
+  const PAGE = 24;
+  const mainWorks = artworks.filter((w) => !isProjectWork(w));
+  const activeCategory = directions.some((d) => d.key === category && !d.hidden) ? category : "all";
+  const filtered = searchWorks(filterArtworks(mainWorks, activeCategory), query);
+  const pageWorks = pageSlice(filtered, page, PAGE);
+  const projectOf = (w: { source: string }) => b.projects.find((p) => w.source.endsWith(`/${p.source}`));
+  const projectWorks = artworks.filter(isProjectWork).filter((w) => projectKind === "all" || (projectOf(w)?.kind ?? "painting") === projectKind);
+  const projectPageWorks = pageSlice(projectWorks, projectPage, 12);
   const featured = featuredWorks[featuredIndex];
   const left = artworks.find((work) => work.id === "anniversary-bouquet");
   const right = artworks.find((work) => work.id === "pink-rain");
@@ -81,8 +95,9 @@ function Index() {
   }, [viewerIndex, menuOpen]);
 
   const openWork = (id: string) => {
-    const index = artworks.findIndex((work) => work.id === id);
+    const index = filtered.findIndex((work) => work.id === id);
     if (index >= 0) setViewerIndex(index);
+    else { const any = artworks.find((w) => w.id === id); if (any) setProject({ source: "", photo: false, index: 0, id }); }
   };
   const smoothTo = (top: number) => {
     const start = window.scrollY; const end = Math.max(0, Math.min(top, document.documentElement.scrollHeight - window.innerHeight)); const t0 = performance.now();
@@ -136,9 +151,10 @@ function Index() {
         <SectionMarker number="01">{t.collection}</SectionMarker>
         <div className="flex items-end justify-between gap-6"><div><h2 className="section-heading font-display">{t.allWorks}<span className="ml-3 align-top font-sans text-sm text-primary">({String(filtered.length).padStart(2, "0")})</span></h2></div><p className="hidden max-w-60 text-xs leading-6 text-muted-foreground md:block">{t.artistNote}</p></div>
         <div className={`mt-5 grid gap-y-8 ${shop?.collectionMenuPosition === "left" ? "lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-9" : ""}`}>
-        <CollectionFilters position={shop?.collectionMenuPosition ?? "top"} category={category} lang={lang} onChange={(key) => { setCategory(key); scrollToSection("#works"); }} />
+        <CollectionFilters position={shop?.collectionMenuPosition ?? "top"} category={activeCategory} lang={lang} directions={directions} query={query} onQuery={(q) => { setQuery(q); setPage(1); }} onChange={(key) => { setCategory(key); setPage(1); scrollToSection("#works"); }} />
         <div className={`grid min-w-0 grid-cols-1 gap-x-9 gap-y-10 sm:grid-cols-2 ${shop?.collectionMenuPosition === "left" ? "2xl:grid-cols-3" : "lg:grid-cols-3"}`}>
-          {filtered.map((work) => <article key={work.id} className="gallery-column min-w-0">
+          {pageWorks.length === 0 && <p className="col-span-full py-16 text-center text-sm text-muted-foreground">{lang === "ru" ? "Ничего не найдено" : "Nothing found"}</p>}
+          {pageWorks.map((work) => <article key={work.id} className="gallery-column min-w-0">
             <Button variant="artwork" className="group relative block w-full cursor-zoom-in overflow-hidden" onClick={() => openWork(work.id)} aria-label={`${t.view}: ${work[lang]}`}>
               <img src={work.image} alt={work[lang]} loading="lazy" className="gallery-image transition-transform duration-700 group-hover:scale-[1.015]" />
               <span className="absolute bottom-3 right-3 grid size-9 place-items-center bg-background text-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"><ZoomIn /></span>
@@ -147,16 +163,22 @@ function Index() {
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-[11px]"><span className="text-muted-foreground">{work.catalogueOnly ? (lang === "ru" ? "Авторский проект" : "Artist project") : work.sourceAvailability === "museum" ? (lang === "ru" ? "В музейной коллекции" : "In a museum collection") : work.sourceAvailability === "private" ? (lang === "ru" ? "В частной коллекции" : "In a private collection") : work.sourceAvailability === "sold" || shop?.reserved.has(work.id) ? (lang === "ru" ? "Продана / забронирована" : "Sold / reserved") : <>{availability(work) === "print" ? b.print : b.original}{shop?.showPrices && shop.prices[work.id] ? <b className="ml-2 font-medium text-foreground">{rub(shop.prices[work.id])}</b> : null}</>}</span><span className="flex gap-4"><Button variant="editorial" onClick={() => setInquiryId(work.id)} className="h-auto px-0 pb-1 text-[11px] text-muted-foreground">{lang === "ru" ? "Вопрос" : "Ask"}</Button>{canPurchaseArtwork(work) && !shop?.reserved.has(work.id) && <Button variant="editorial" onClick={() => setBuyId(work.id)} className="h-auto border-b border-foreground px-0 pb-1 text-[11px]">{lang === "ru" ? "Купить" : "Buy"}<ArrowUpRight /></Button>}</span></div>
           </article>)}
         </div>
+        <Pager page={Math.min(page, pageCount(filtered.length, PAGE))} pages={pageCount(filtered.length, PAGE)} label={lang === "ru" ? "Страницы" : "Pages"} onChange={(n) => { setPage(n); scrollToSection("#works"); }} />
         </div>
       </section>
 
       <section id="projects" className="gallery-shell border-t border-border py-10 md:py-16">
         <SectionMarker number="02">{b.projectsLabel}</SectionMarker>
-        <div className="grid gap-10 md:grid-cols-[0.8fr_1.2fr] md:gap-20"><div><h2 className="section-heading font-display">{b.projectsTitle}</h2><p className="mt-5 max-w-sm text-sm leading-7 text-muted-foreground">{b.projectsText}</p><Button asChild variant="editorial" className="mt-6 h-auto border-b border-foreground px-0 pb-2 text-xs"><a href={artist.telegram} target="_blank" rel="noreferrer">{b.commission}<ArrowUpRight /></a></Button></div>
-          <div className="space-y-8">{(["painting", "photo"] as const).map((kind) => <div key={kind}><h3 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">{b.projectKinds[kind]}</h3><div className="border-t border-border">{b.projects.filter((p) => p.kind === kind).map((p) => { const count = artworks.filter((w) => w.source.endsWith(`/${p.source}`)).length; return <button key={p.title} type="button" disabled={!count} onClick={() => setProject({ source: p.source, photo: kind === "photo", index: 0 })} className="group grid w-full grid-cols-[56px_1fr_auto] items-center gap-5 border-b border-border py-5 text-left disabled:opacity-60"><span className="text-xs text-primary">{p.year}</span><span><span className="block font-display text-2xl transition group-hover:text-primary">{p.title}</span><span className="mt-1 block text-[11px] leading-5 text-muted-foreground">{p.note}</span></span><span className="flex items-center gap-1 whitespace-nowrap text-[11px] uppercase tracking-[0.12em] text-muted-foreground group-hover:text-primary">{b.projectOpen} · {count} {b.projectWorks}<ArrowUpRight className="size-3.5" /></span></button>; })}</div></div>)}</div></div>
+        <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end"><div><h2 className="section-heading font-display">{b.projectsTitle}<span className="ml-3 align-top font-sans text-sm text-primary">({String(projectWorks.length).padStart(2, "0")})</span></h2><p className="mt-4 max-w-md text-sm leading-7 text-muted-foreground">{b.projectsText}</p></div><Button asChild variant="editorial" className="h-auto self-start border-b border-foreground px-0 pb-2 text-xs md:self-end"><a href={artist.telegram} target="_blank" rel="noreferrer">{b.commission}<ArrowUpRight /></a></Button></div>
+        <div className="mt-6 flex flex-wrap gap-2 border-y border-border py-2.5" role="group" aria-label={b.projectsLabel}>{(["all", "painting", "photo"] as const).map((k) => <Button key={k} variant="editorial" onClick={() => { setProjectKind(k); setProjectPage(1); }} aria-pressed={projectKind === k} className={`h-8 rounded-full border px-3.5 text-[11px] ${projectKind === k ? "border-primary bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "border-border text-muted-foreground"}`}>{k === "all" ? (lang === "ru" ? "Все проекты" : "All projects") : b.projectKinds[k]}</Button>)}</div>
+        <div className="mt-8 grid grid-cols-1 gap-x-9 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{projectPageWorks.map((work) => { const pr = projectOf(work); return <article key={work.id} className="min-w-0">
+          <Button variant="artwork" className="group relative block w-full cursor-zoom-in overflow-hidden" onClick={() => setProject({ source: "", photo: pr?.kind === "photo", index: projectWorks.indexOf(work), id: "__projects" })} aria-label={`${t.view}: ${pr?.title ?? work[lang]}`}><img src={work.image} alt={pr?.title ?? work[lang]} loading="lazy" className="gallery-image transition-transform duration-700 group-hover:scale-[1.015]" /><span className="absolute left-3 top-3 bg-primary px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-primary-foreground">{lang === "ru" ? "Проект" : "Project"}</span></Button>
+          <div className="mt-4 border-t border-border pt-3"><p className="font-display text-xl">{pr?.title ?? work[lang]}</p><p className="mt-1 text-[11px] leading-5 text-muted-foreground">{pr ? `${b.projectKinds[pr.kind]} · ${pr.note}` : work[lang]}</p></div>
+        </article>; })}</div>
+        <Pager page={Math.min(projectPage, pageCount(projectWorks.length, 12))} pages={pageCount(projectWorks.length, 12)} label={lang === "ru" ? "Страницы проектов" : "Project pages"} onChange={(n) => { setProjectPage(n); scrollToSection("#projects"); }} />
       </section>
 
-      <section id="about" className="border-t border-border bg-muted/45 py-10 md:py-16">
+      <section id="about" className="border-t border-border py-10 md:py-16">
         <SectionMarker number="03" fullWidth>{t.about}</SectionMarker>
         <div className="gallery-shell grid gap-12 md:grid-cols-[0.8fr_1.2fr] md:gap-20">
           <div><h2 className="section-heading font-display">{t.name}</h2><figure className="mt-9 max-w-80"><img src={portraitAsset.url} alt={t.portrait} loading="lazy" className="aspect-[4/5] w-full object-cover" /><figcaption className="mt-3 text-[10px] text-muted-foreground">{t.portrait} · {t.location}</figcaption></figure></div>
@@ -222,8 +244,8 @@ function Index() {
       </div>
       {inquiryWork && <InquiryDialog work={inquiryWork} lang={lang} onClose={() => setInquiryId(null)} />}
       {buyWork && <CheckoutDialog work={buyWork} price={shop?.prices[buyWork.id] ?? null} online={!!shop?.online} onClose={() => setBuyId(null)} />}
-      {project && <ArtworkViewer works={artworks.filter((w) => w.source.endsWith(`/${project.source}`))} index={project.index} lang={lang} viewOnly={project.photo} onChange={(index) => setProject({ ...project, index })} onClose={() => setProject(null)} />}
-      {viewerIndex !== null && <ArtworkViewer works={artworks} index={viewerIndex} lang={lang} onChange={setViewerIndex} onClose={() => setViewerIndex(null)} />}
+      {project && (() => { const list = project.id === "__projects" ? projectWorks : artworks.filter((w) => w.id === project.id); const w = list[project.index]; return <ArtworkViewer works={list} index={project.index} lang={lang} viewOnly={!!w && projectOf(w)?.kind === "photo"} onChange={(index) => setProject({ ...project, index })} onClose={() => setProject(null)} />; })()}
+      {viewerIndex !== null && <ArtworkViewer works={filtered} index={viewerIndex} lang={lang} onChange={setViewerIndex} onClose={() => setViewerIndex(null)} />}
     </main>
   );
 }
