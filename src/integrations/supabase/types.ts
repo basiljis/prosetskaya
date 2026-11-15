@@ -32,6 +32,69 @@ export type Database = {
         }
         Relationships: []
       }
+      artworks: {
+        Row: {
+          catalogue_only: boolean
+          categories: string[]
+          category: string
+          height: number
+          hidden: boolean
+          id: string
+          image_url: string
+          medium_en: string
+          medium_ru: string
+          size: string
+          sort_order: number
+          source: string
+          source_availability: string | null
+          title_en: string
+          title_ru: string
+          updated_at: string
+          width: number
+          year: string
+        }
+        Insert: {
+          catalogue_only?: boolean
+          categories?: string[]
+          category: string
+          height?: number
+          hidden?: boolean
+          id: string
+          image_url: string
+          medium_en?: string
+          medium_ru?: string
+          size?: string
+          sort_order?: number
+          source?: string
+          source_availability?: string | null
+          title_en?: string
+          title_ru: string
+          updated_at?: string
+          width?: number
+          year?: string
+        }
+        Update: {
+          catalogue_only?: boolean
+          categories?: string[]
+          category?: string
+          height?: number
+          hidden?: boolean
+          id?: string
+          image_url?: string
+          medium_en?: string
+          medium_ru?: string
+          size?: string
+          sort_order?: number
+          source?: string
+          source_availability?: string | null
+          title_en?: string
+          title_ru?: string
+          updated_at?: string
+          width?: number
+          year?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           amount: number | null
