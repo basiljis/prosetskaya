@@ -16,8 +16,8 @@ const backgrounds = [
   { surface: "bg-viewer-gray text-viewer-gray-foreground", swatch: "bg-viewer-gray", label: "grayBg" },
 ] as const;
 
-export function ArtworkViewer({ works, index, lang, onChange, onClose }: {
-  works: readonly Artwork[]; index: number; lang: Lang; onChange: (index: number) => void; onClose: () => void;
+export function ArtworkViewer({ works, index, lang, onChange, onClose, viewOnly = false }: {
+  works: readonly Artwork[]; index: number; lang: Lang; viewOnly?: boolean; onChange: (index: number) => void; onClose: () => void;
 }) {
   const [background, setBackground] = useState(1);
   const [room, setRoom] = useState(false);
@@ -25,6 +25,7 @@ export function ArtworkViewer({ works, index, lang, onChange, onClose }: {
   const b = boutique[lang];
   const work = works[index];
   const t = copy[lang];
+  const photo = viewOnly || (!!work && boutique.ru.projects.some((p) => p.kind === "photo" && work.source.endsWith(`/${p.source}`)));
   const go = useCallback((direction: number) => onChange(nextArtworkIndex(index, direction, works.length)), [index, works.length, onChange]);
 
   useEffect(() => {
@@ -49,13 +50,13 @@ export function ArtworkViewer({ works, index, lang, onChange, onClose }: {
               <span className="hidden text-[10px] uppercase opacity-60 sm:inline">{t.background}</span>
               {backgrounds.map((bg, i) => <Button key={bg.label} variant="artwork" size="icon" onClick={() => setBackground(i)} aria-label={t[bg.label]} aria-pressed={background === i} title={t[bg.label]} className={`size-7 rounded-full border border-current ${bg.swatch} ${background === i ? "outline outline-1 outline-offset-4" : ""}`} />)}
             </div>
-            <Button variant="artwork" onClick={() => setRoom(!room)} aria-pressed={room} className={`rounded-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] shadow-lg transition ${room ? "!bg-primary !text-primary-foreground ring-2 ring-primary ring-offset-2 ring-offset-current" : "!bg-primary !text-primary-foreground hover:brightness-110"}`}>{room && <span className="mr-1.5 inline-block size-1.5 rounded-full bg-primary-foreground" />}{b.room}</Button>
+            {!photo && <Button variant="artwork" onClick={() => setRoom(!room)} aria-pressed={room} className={`rounded-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] shadow-lg transition ${room ? "!bg-primary !text-primary-foreground ring-2 ring-primary ring-offset-2 ring-offset-current" : "!bg-primary !text-primary-foreground hover:brightness-110"}`}>{room && <span className="mr-1.5 inline-block size-1.5 rounded-full bg-primary-foreground" />}{b.room}</Button>}
             <span className="hidden text-[11px] tabular-nums sm:inline opacity-60">{String(index + 1).padStart(2, "0")} / {String(works.length).padStart(2, "0")}</span>
             <Button variant="artwork" size="icon" onClick={onClose} aria-label={t.close} title={t.close}><X className="size-6" /></Button>
           </div>
           <div className="relative flex min-h-0 flex-1 items-center justify-center px-12 py-3 md:px-24">
             <Button variant="artwork" size="icon" className="absolute left-1 size-10 md:left-8" onClick={() => go(-1)} aria-label={t.previous} title={t.previous}><ArrowLeft className="size-6" /></Button>
-            {room ? <RoomPreview work={work} lang={lang} /> : <img src={work.image} alt={work[lang]} className="viewer-image" />}
+            {room && !photo ? <RoomPreview work={work} lang={lang} /> : <img src={work.image} alt={work[lang]} className="viewer-image" />}
             <Button variant="artwork" size="icon" className="absolute right-1 size-10 md:right-8" onClick={() => go(1)} aria-label={t.next} title={t.next}><ArrowRight className="size-6" /></Button>
           </div>
           <div id="artwork-details" className="grid shrink-0 gap-4 border-t border-current/15 px-5 py-6 md:grid-cols-[1fr_auto] md:items-center md:gap-16 md:px-10">
