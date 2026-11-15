@@ -41,8 +41,10 @@ export type Database = {
           hidden: boolean
           id: string
           image_url: string
+          interior_enabled: boolean | null
           medium_en: string
           medium_ru: string
+          project_id: string | null
           size: string
           sort_order: number
           source: string
@@ -61,8 +63,10 @@ export type Database = {
           hidden?: boolean
           id: string
           image_url: string
+          interior_enabled?: boolean | null
           medium_en?: string
           medium_ru?: string
+          project_id?: string | null
           size?: string
           sort_order?: number
           source?: string
@@ -81,8 +85,10 @@ export type Database = {
           hidden?: boolean
           id?: string
           image_url?: string
+          interior_enabled?: boolean | null
           medium_en?: string
           medium_ru?: string
+          project_id?: string | null
           size?: string
           sort_order?: number
           source?: string
@@ -93,7 +99,15 @@ export type Database = {
           width?: number
           year?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "artworks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       orders: {
         Row: {
@@ -164,6 +178,51 @@ export type Database = {
           updated_at?: string
           yookassa_secret_key?: string
           yookassa_shop_id?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          cover_artwork_id: string | null
+          description_en: string
+          description_ru: string
+          id: string
+          interior_enabled: boolean
+          kind: string
+          sort_order: number
+          source: string
+          title_en: string
+          title_ru: string
+          updated_at: string
+          year: string
+        }
+        Insert: {
+          cover_artwork_id?: string | null
+          description_en?: string
+          description_ru?: string
+          id: string
+          interior_enabled?: boolean
+          kind?: string
+          sort_order?: number
+          source?: string
+          title_en?: string
+          title_ru: string
+          updated_at?: string
+          year?: string
+        }
+        Update: {
+          cover_artwork_id?: string | null
+          description_en?: string
+          description_ru?: string
+          id?: string
+          interior_enabled?: boolean
+          kind?: string
+          sort_order?: number
+          source?: string
+          title_en?: string
+          title_ru?: string
+          updated_at?: string
+          year?: string
         }
         Relationships: []
       }
