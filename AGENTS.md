@@ -20,3 +20,4 @@
 - Keep the complete source catalogue in a separate data module with stable artwork IDs, all collection memberships, provenance and local CDN asset pointers; deduplicate repeated images without removing their category memberships.
 - The live catalogue is the Cloud `artworks` table (public reads visible rows, admin edits); the bundled catalogue module is only the seed and loading fallback.
 - Use section-scoped sticky markers below the fixed header and offset sticky collection filters beneath them so section titles and controls never overlap.
+- Collection direction names/order/visibility live in site_settings.collection_directions, resolved by src/lib/directions.ts; project works are excluded from the collection and shown only in the Projects block.

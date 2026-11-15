@@ -1,0 +1,1 @@
+ALTER TABLE public.site_settings ADD COLUMN IF NOT EXISTS collection_directions jsonb NOT NULL DEFAULT '[]'::jsonb;
