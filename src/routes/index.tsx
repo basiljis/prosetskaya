@@ -94,7 +94,7 @@ function Index() {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      {ready && <div className="preloader pointer-events-none fixed inset-0 z-[100] flex flex-col items-center justify-center gap-6 bg-background text-foreground md:gap-8" aria-hidden="true"><ArtistMark kind="signature" className="animate-reveal h-32 w-[30rem] max-w-[86%] md:h-48 md:w-[44rem]" alt="" /><p className="animate-reveal px-5 text-center font-sans text-4xl font-medium uppercase tracking-[0.14em] md:text-6xl">{t.name}</p><p className="animate-reveal text-[11px] uppercase tracking-[0.35em] text-primary md:text-sm">{t.signature}</p></div>}
+      {ready && <div className="preloader pointer-events-none fixed inset-0 z-[100] flex flex-col items-center justify-center gap-4 bg-background text-foreground md:gap-5" aria-hidden="true"><ArtistMark kind="signature" className="animate-reveal h-16 w-60 max-w-[70%] md:h-24 md:w-[22rem]" alt="" /><p className="animate-reveal px-5 text-center font-sans text-xl font-medium uppercase tracking-[0.14em] md:text-3xl">{t.name}</p><p className="animate-reveal text-[10px] uppercase tracking-[0.35em] text-primary md:text-xs">{t.signature}</p></div>}
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-lg">
         <div className="gallery-shell flex h-[76px] items-center justify-between gap-4">
           <a href="#top" onClick={(e) => { e.preventDefault(); smoothTo(0); }} className="flex min-w-0 items-center gap-3" aria-label={t.name}><ArtistMark className="h-14 w-10 shrink-0" alt="" /><span className="hidden border-l border-border pl-3 text-[10px] leading-4 sm:block">{t.gallery}<br />{t.location}</span></a>
