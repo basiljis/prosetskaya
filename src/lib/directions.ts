@@ -3,7 +3,7 @@ import { copy } from "@/lib/gallery-copy";
 
 export type Direction = { key: Category; ru: string; en: string; hidden: boolean };
 /** Projects live in their own homepage block, so they are never a collection direction. */
-export const directionKeys = categories.filter((key) => key !== "projects");
+export const directionKeys: Category[] = categories.filter((key) => key !== "projects");
 
 export function resolveDirections(value: unknown): Direction[] {
   const saved = Array.isArray(value) ? (value as Partial<Direction>[]) : [];
