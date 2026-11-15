@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { collectionMenuPosition, type CollectionMenuPosition } from "@/lib/collection-layout";
+import type { Project } from "@/lib/projects";
 
 // Queries and writes still run as the caller: database policies enforce admin access.
 export async function loadAdminData() {
@@ -66,7 +67,7 @@ export async function loadAdminArtworks() {
   return data as import("@/lib/artwork-rows").ArtworkRow[];
 }
 
-export type ArtworkPatch = Partial<Pick<import("@/lib/artwork-rows").ArtworkRow, "title_ru" | "title_en" | "category" | "year" | "size" | "medium_ru" | "medium_en" | "hidden" | "source_availability" | "sort_order">>;
+export type ArtworkPatch = Partial<Pick<import("@/lib/artwork-rows").ArtworkRow, "title_ru" | "title_en" | "category" | "categories" | "year" | "size" | "medium_ru" | "medium_en" | "hidden" | "source_availability" | "sort_order" | "project_id" | "interior_enabled">>;
 
 export async function saveAdminArtwork(id: string, patch: ArtworkPatch) {
   const { data, error } = await supabase.from("artworks").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", id).select("id").single();
@@ -76,4 +77,21 @@ export async function saveAdminArtwork(id: string, patch: ArtworkPatch) {
 export async function deleteAdminArtwork(id: string) {
   const { error } = await supabase.from("artworks").delete().eq("id", id);
   if (error) throw new Error("Картина не удалена. Попробуйте ещё раз.");
+}
+
+export async function loadAdminProjects(): Promise<Project[]> {
+  const { data, error } = await supabase.from("projects").select("*").order("sort_order");
+  if (error) throw new Error("Не удалось загрузить спецпроекты.");
+  return data as Project[];
+}
+
+export type ProjectPatch = Partial<Pick<Project, "title_ru" | "title_en" | "description_ru" | "description_en" | "year" | "kind" | "interior_enabled" | "cover_artwork_id" | "sort_order">>;
+export async function saveAdminProject(id: string, patch: ProjectPatch) {
+  const { data, error } = await supabase.from("projects").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", id).select("id").single();
+  if (error || !data) throw new Error("Проект не сохранён. Попробуйте ещё раз.");
+}
+
+export async function createAdminProject(title: string) {
+  const { data, error } = await supabase.from("projects").insert({ id: crypto.randomUUID(), title_ru: title.trim(), sort_order: 100 }).select("id").single();
+  if (error || !data) throw new Error("Проект не создан. Попробуйте ещё раз.");
 }

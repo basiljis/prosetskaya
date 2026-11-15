@@ -9,6 +9,7 @@ import { nextArtworkIndex } from "@/lib/gallery-navigation";
 import { availability, boutique } from "@/lib/boutique";
 import { RoomPreview } from "@/components/room-preview";
 import { InquiryDialog } from "@/components/inquiry-dialog";
+import { canPreviewInRoom, fallbackProjects, type Project } from "@/lib/projects";
 
 const backgrounds = [
   { surface: "bg-viewer-light text-viewer-light-foreground", swatch: "bg-viewer-light", label: "lightBg" },
@@ -16,8 +17,8 @@ const backgrounds = [
   { surface: "bg-viewer-gray text-viewer-gray-foreground", swatch: "bg-viewer-gray", label: "grayBg" },
 ] as const;
 
-export function ArtworkViewer({ works, index, lang, onChange, onClose, viewOnly = false }: {
-  works: readonly Artwork[]; index: number; lang: Lang; viewOnly?: boolean; onChange: (index: number) => void; onClose: () => void;
+export function ArtworkViewer({ works, index, lang, onChange, onClose, viewOnly = false, projects = fallbackProjects }: {
+  works: readonly Artwork[]; index: number; lang: Lang; projects?: readonly Project[]; viewOnly?: boolean; onChange: (index: number) => void; onClose: () => void;
 }) {
   const [background, setBackground] = useState(1);
   const [room, setRoom] = useState(false);
@@ -25,7 +26,7 @@ export function ArtworkViewer({ works, index, lang, onChange, onClose, viewOnly 
   const b = boutique[lang];
   const work = works[index];
   const t = copy[lang];
-  const photo = viewOnly || (!!work && boutique.ru.projects.some((p) => p.kind === "photo" && work.source.endsWith(`/${p.source}`)));
+  const photo = viewOnly || (!!work && !canPreviewInRoom(work, projects));
   const go = useCallback((direction: number) => onChange(nextArtworkIndex(index, direction, works.length)), [index, works.length, onChange]);
 
   useEffect(() => {

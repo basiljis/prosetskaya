@@ -21,3 +21,5 @@
 - The live catalogue is the Cloud `artworks` table (public reads visible rows, admin edits); the bundled catalogue module is only the seed and loading fallback.
 - Use section-scoped sticky markers below the fixed header and offset sticky collection filters beneath them so section titles and controls never overlap.
 - Collection direction names/order/visibility live in site_settings.collection_directions, resolved by src/lib/directions.ts; project works are excluded from the collection and shown only in the Projects block.
+- Store named special projects in Cloud `projects` and assign artworks through `project_id`; public detail pages load through a publishable server function and admin edits stay in `src/lib/admin.ts`, so names, descriptions and membership have one live source.
+- Resolve interior preview from an artwork's nullable override, then its project's setting; never infer the setting from photograph labels, so administrator choices apply consistently in every viewer.

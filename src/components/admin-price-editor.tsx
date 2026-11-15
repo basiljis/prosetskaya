@@ -6,14 +6,18 @@ import { saveAdminArtwork, saveAdminPrice } from "@/lib/admin";
 import type { ArtworkRow } from "@/lib/artwork-rows";
 import { categories } from "@/lib/artworks";
 import { copy } from "@/lib/gallery-copy";
+import type { Project } from "@/lib/projects";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const fields = [["title_ru", "Название (RU)"], ["title_en", "Название (EN)"], ["year", "Год"], ["size", "Размер, см"], ["medium_ru", "Техника (RU)"], ["medium_en", "Техника (EN)"]] as const;
 
-export function AdminPriceEditor({ work, price, onSaved }: { work: ArtworkRow; price: number | null; onSaved: (message: string) => void }) {
+export function AdminPriceEditor({ work, price, onSaved, projects = [] }: { work: ArtworkRow; price: number | null; projects?: readonly Project[]; onSaved: (message: string) => void }) {
   const [value, setValue] = useState(price?.toString() ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
+  const [projectId, setProjectId] = useState(work.project_id ?? "none");
+  const [interior, setInterior] = useState(work.interior_enabled === true ? "on" : work.interior_enabled === false ? "off" : "inherit");
   useEffect(() => { setValue(price?.toString() ?? ""); }, [price]);
   const changed = value !== (price?.toString() ?? "");
   const act = async (fn: () => Promise<void>, message: string) => {
@@ -26,7 +30,10 @@ export function AdminPriceEditor({ work, price, onSaved }: { work: ArtworkRow; p
     const f = new FormData(event.currentTarget);
     const get = (k: string) => String(f.get(k) ?? "").trim().slice(0, 300);
     const availability = get("source_availability");
-    void act(() => saveAdminArtwork(work.id, { title_ru: get("title_ru") || work.title_ru, title_en: get("title_en"), year: get("year"), size: get("size"), medium_ru: get("medium_ru"), medium_en: get("medium_en"), category: get("category") || work.category, source_availability: availability || null, sort_order: Number(get("sort_order")) || 0 }), "Картина сохранена");
+    const category = get("category") || work.category;
+    const memberships = work.categories.filter((c) => c !== "projects");
+    const categories = [...new Set([...memberships, category, ...(projectId !== "none" ? ["projects"] : [])])];
+    void act(() => saveAdminArtwork(work.id, { title_ru: get("title_ru") || work.title_ru, title_en: get("title_en"), year: get("year"), size: get("size"), medium_ru: get("medium_ru"), medium_en: get("medium_en"), category, categories, source_availability: availability || null, sort_order: Number(get("sort_order")) || 0, project_id: projectId === "none" ? null : projectId, interior_enabled: interior === "inherit" ? null : interior === "on" }), "Картина сохранена");
   };
   return <li className={`border-b border-border py-5 ${work.hidden ? "opacity-60" : ""}`}>
     <div className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-4 sm:grid-cols-[72px_minmax(0,1fr)_180px_auto]">
@@ -46,6 +53,8 @@ export function AdminPriceEditor({ work, price, onSaved }: { work: ArtworkRow; p
       <label className="text-xs text-muted-foreground">Коллекция<select name="category" defaultValue={work.category} className="mt-1 h-10 w-full border border-input bg-card px-2 text-sm text-foreground">{categories.filter((c) => c !== "all").map((c) => <option key={c} value={c}>{copy.ru.categories[c]}</option>)}</select></label>
       <label className="text-xs text-muted-foreground">Статус<select name="source_availability" defaultValue={work.source_availability ?? ""} className="mt-1 h-10 w-full border border-input bg-card px-2 text-sm text-foreground"><option value="">В продаже</option><option value="sold">Продана</option><option value="private">В частной коллекции</option><option value="museum">В музее</option></select></label>
       <label className="text-xs text-muted-foreground">Порядок показа<Input name="sort_order" type="number" defaultValue={work.sort_order} disabled={busy} className="mt-1 h-10 bg-card text-foreground shadow-none" /></label>
+      <label className="text-xs text-muted-foreground">Спецпроект<Select value={projectId} onValueChange={setProjectId} disabled={busy}><SelectTrigger className="mt-1 w-full bg-card text-foreground"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">Без спецпроекта</SelectItem>{projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.title_ru}</SelectItem>)}</SelectContent></Select></label>
+      <label className="text-xs text-muted-foreground">В интерьере<Select value={interior} onValueChange={setInterior} disabled={busy}><SelectTrigger className="mt-1 w-full bg-card text-foreground"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="inherit">По настройке проекта</SelectItem><SelectItem value="on">Включено</SelectItem><SelectItem value="off">Только просмотр</SelectItem></SelectContent></Select></label>
       <div className="flex items-end"><Button type="submit" disabled={busy} className="h-10">{busy ? <Loader2 className="animate-spin" /> : <Save />}Сохранить</Button></div>
     </form>}
     {error && <p role="alert" className="mt-3 text-xs leading-5 text-destructive">{error}</p>}

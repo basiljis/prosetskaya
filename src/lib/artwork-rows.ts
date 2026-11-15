@@ -5,6 +5,7 @@ export interface ArtworkRow {
   year: string; size: string; medium_ru: string; medium_en: string; image_url: string;
   width: number; height: number; catalogue_only: boolean; source_availability: string | null;
   source: string; sort_order: number; hidden: boolean;
+  project_id?: string | null; interior_enabled?: boolean | null;
 }
 
 /** Database row → gallery artwork shape used across the site. */
@@ -15,6 +16,7 @@ export function rowToArtwork(r: ArtworkRow): Artwork {
     category: r.category as Artwork["category"], categories: (r.categories.length ? r.categories : [r.category]) as NonNullable<Artwork["categories"]>,
     year: r.year, size: r.size, mediumRu: r.medium_ru, mediumEn: r.medium_en || r.medium_ru,
     width: r.width, height: r.height,
+    projectId: r.project_id, interiorEnabled: r.interior_enabled,
     ...(r.catalogue_only ? { catalogueOnly: true } : {}),
     ...(availability ? { sourceAvailability: availability } : {}),
   };

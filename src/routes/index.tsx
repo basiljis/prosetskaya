@@ -22,6 +22,9 @@ import { useArtworks } from "@/hooks/use-artworks";
 import { Pager } from "@/components/pager";
 import { isProjectWork, pageCount, pageSlice, resolveDirections, searchWorks } from "@/lib/directions";
 import portraitAsset from "@/assets/prosetskaya/portrait.jpg.asset.json";
+import { ProjectCatalogue } from "@/components/project-catalogue";
+import { useProjects } from "@/hooks/use-projects";
+import { projectIntro } from "@/lib/projects";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [
@@ -39,6 +42,7 @@ const featuredWorks = featuredIds.map((id) => staticArtworks.find((work) => work
 
 function Index() {
   const artworks = useArtworks();
+  const projects = useProjects();
   const [lang, setLang] = useState<Lang>("ru");
   const [dark, setDark] = useState(false);
   const [ready, setReady] = useState(false);
@@ -57,16 +61,11 @@ function Index() {
   const directions = shop?.directions ?? resolveDirections([]);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
-  const [projectKind, setProjectKind] = useState<"all" | "painting" | "photo">("all");
-  const [projectPage, setProjectPage] = useState(1);
   const PAGE = 24;
   const mainWorks = artworks.filter((w) => !isProjectWork(w));
   const activeCategory = directions.some((d) => d.key === category && !d.hidden) ? category : "all";
   const filtered = searchWorks(filterArtworks(mainWorks, activeCategory), query);
   const pageWorks = pageSlice(filtered, page, PAGE);
-  const projectOf = (w: { source: string }) => b.projects.find((p) => w.source.endsWith(`/${p.source}`));
-  const projectWorks = artworks.filter(isProjectWork).filter((w) => projectKind === "all" || (projectOf(w)?.kind ?? "painting") === projectKind);
-  const projectPageWorks = pageSlice(projectWorks, projectPage, 12);
   const featured = featuredWorks[featuredIndex];
   const left = artworks.find((work) => work.id === "anniversary-bouquet");
   const right = artworks.find((work) => work.id === "pink-rain");
@@ -169,13 +168,8 @@ function Index() {
 
       <section id="projects" className="gallery-shell border-t border-border py-10 md:py-16">
         <SectionMarker number="02">{b.projectsLabel}</SectionMarker>
-        <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end"><div><h2 className="section-heading font-display">{b.projectsTitle}<span className="ml-3 align-top font-sans text-sm text-primary">({String(projectWorks.length).padStart(2, "0")})</span></h2><p className="mt-4 max-w-md text-sm leading-7 text-muted-foreground">{b.projectsText}</p></div><Button asChild variant="editorial" className="h-auto self-start border-b border-foreground px-0 pb-2 text-xs md:self-end"><a href={artist.telegram} target="_blank" rel="noreferrer">{b.commission}<ArrowUpRight /></a></Button></div>
-        <div className="mt-6 flex flex-wrap gap-2 border-y border-border py-2.5" role="group" aria-label={b.projectsLabel}>{(["all", "painting", "photo"] as const).map((k) => <Button key={k} variant="editorial" onClick={() => { setProjectKind(k); setProjectPage(1); }} aria-pressed={projectKind === k} className={`h-8 rounded-full border px-3.5 text-[11px] ${projectKind === k ? "border-primary bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "border-border text-muted-foreground"}`}>{k === "all" ? (lang === "ru" ? "Все проекты" : "All projects") : b.projectKinds[k]}</Button>)}</div>
-        <div className="mt-8 grid grid-cols-1 gap-x-9 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{projectPageWorks.map((work) => { const pr = projectOf(work); return <article key={work.id} className="min-w-0">
-          <Button variant="artwork" className="group relative block w-full cursor-zoom-in overflow-hidden" onClick={() => setProject({ source: "", photo: pr?.kind === "photo", index: projectWorks.indexOf(work), id: "__projects" })} aria-label={`${t.view}: ${pr?.title ?? work[lang]}`}><img src={work.image} alt={pr?.title ?? work[lang]} loading="lazy" className="gallery-image transition-transform duration-700 group-hover:scale-[1.015]" /><span className="absolute left-3 top-3 bg-primary px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-primary-foreground">{lang === "ru" ? "Проект" : "Project"}</span></Button>
-          <div className="mt-4 border-t border-border pt-3"><p className="font-display text-xl">{pr?.title ?? work[lang]}</p><p className="mt-1 text-[11px] leading-5 text-muted-foreground">{pr ? `${b.projectKinds[pr.kind]} · ${pr.note}` : work[lang]}</p></div>
-        </article>; })}</div>
-        <Pager page={Math.min(projectPage, pageCount(projectWorks.length, 12))} pages={pageCount(projectWorks.length, 12)} label={lang === "ru" ? "Страницы проектов" : "Project pages"} onChange={(n) => { setProjectPage(n); scrollToSection("#projects"); }} />
+        <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end"><div><h2 className="section-heading font-display">{b.projectsLabel}<span className="ml-3 align-top font-sans text-sm text-primary">({projects.length})</span></h2><p className="mt-4 max-w-3xl whitespace-pre-line text-sm leading-7 text-muted-foreground">{projectIntro[lang]}</p></div><div className="flex shrink-0 flex-wrap gap-5"><Button asChild variant="editorial" className="h-auto border-b border-foreground px-0 pb-2 text-xs"><Link to="/projects">{lang === "ru" ? "Все спецпроекты" : "All special projects"}<ArrowUpRight /></Link></Button><ContactDialog lang={lang}><Button variant="editorial" className="h-auto border-b border-foreground px-0 pb-2 text-xs">{b.commission}<ArrowUpRight /></Button></ContactDialog></div></div>
+        <ProjectCatalogue projects={projects} works={artworks} lang={lang} />
       </section>
 
       <section id="about" className="border-t border-border py-10 md:py-16">
@@ -244,8 +238,8 @@ function Index() {
       </div>
       {inquiryWork && <InquiryDialog work={inquiryWork} lang={lang} onClose={() => setInquiryId(null)} />}
       {buyWork && <CheckoutDialog work={buyWork} price={shop?.prices[buyWork.id] ?? null} online={!!shop?.online} onClose={() => setBuyId(null)} />}
-      {project && (() => { const list = project.id === "__projects" ? projectWorks : artworks.filter((w) => w.id === project.id); const w = list[project.index]; return <ArtworkViewer works={list} index={project.index} lang={lang} viewOnly={!!w && projectOf(w)?.kind === "photo"} onChange={(index) => setProject({ ...project, index })} onClose={() => setProject(null)} />; })()}
-      {viewerIndex !== null && <ArtworkViewer works={filtered} index={viewerIndex} lang={lang} onChange={setViewerIndex} onClose={() => setViewerIndex(null)} />}
+      {project && <ArtworkViewer works={artworks.filter((w) => w.id === project.id)} index={project.index} lang={lang} projects={projects} onChange={(index) => setProject({ ...project, index })} onClose={() => setProject(null)} />}
+      {viewerIndex !== null && <ArtworkViewer works={filtered} index={viewerIndex} lang={lang} projects={projects} onChange={setViewerIndex} onClose={() => setViewerIndex(null)} />}
     </main>
   );
 }
