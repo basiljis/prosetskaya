@@ -15,8 +15,8 @@ export function resolveDirections(value: unknown): Direction[] {
   });
 }
 
-export function isProjectWork(work: { category: string; categories?: readonly string[] }) {
-  return work.category === "projects" || !!work.categories?.includes("projects");
+export function isProjectWork(work: { category: string; categories?: readonly string[]; projectId?: string | null }) {
+  return !!work.projectId || work.category === "projects" || !!work.categories?.includes("projects");
 }
 
 export function pageCount(total: number, size: number) { return Math.max(1, Math.ceil(total / size)); }

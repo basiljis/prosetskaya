@@ -10,6 +10,8 @@ export interface Artwork {
   year: string; size: string; mediumRu: string; mediumEn: string; width: number; height: number;
   catalogueOnly?: boolean;
   sourceAvailability?: "sold" | "private" | "museum";
+  projectId?: string | null;
+  interiorEnabled?: boolean | null;
 }
 
 type CatalogueArtwork = Omit<Artwork, "image">;
