@@ -169,6 +169,7 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          collection_directions: Json
           collection_menu_position: string
           id: number
           online_payment_enabled: boolean
@@ -176,6 +177,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          collection_directions?: Json
           collection_menu_position?: string
           id?: number
           online_payment_enabled?: boolean
@@ -183,6 +185,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          collection_directions?: Json
           collection_menu_position?: string
           id?: number
           online_payment_enabled?: boolean

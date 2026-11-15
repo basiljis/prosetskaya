@@ -22,6 +22,13 @@
       "when": 1794718923164,
       "tag": "0002_artworks_catalogue",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794720576604,
+      "tag": "0003_collection_directions",
+      "breakpoints": true
     }
   ]
 }
