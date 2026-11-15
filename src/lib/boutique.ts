@@ -2,8 +2,8 @@ import type { Artwork, Lang } from "@/lib/artworks";
 
 /** Wall width shown in the room preview, in centimetres. */
 export const ROOMS = [
-  { id: "living", ru: "Гостиная", en: "Living room", wallCm: 470, bottomPct: 52 },
-  { id: "dining", ru: "Столовая", en: "Dining room", wallCm: 398, bottomPct: 46 },
+  { id: "living", ru: "Гостиная", en: "Living room", wallCm: 470, bottomPct: 52, portrait: { wallCm: 300, bottomPct: 46 } },
+  { id: "dining", ru: "Столовая", en: "Dining room", wallCm: 398, bottomPct: 46, portrait: { wallCm: 250, bottomPct: 43 } },
 ] as const;
 
 /** Real artwork width/height in cm, using the catalogue size and the photo's proportions. */
