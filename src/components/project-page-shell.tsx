@@ -14,7 +14,7 @@ export function ProjectPageShell({ children }: { children: (lang: Lang) => React
     setDark(theme); document.documentElement.classList.toggle("dark", theme);
   }, []);
   return <main className="min-h-screen bg-background text-foreground">
-    <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-lg"><div className="gallery-shell flex h-[76px] items-center justify-between gap-3">
+    <header className="sticky top-0 z-40 border-b border-border bg-background"><div className="gallery-shell flex h-[76px] items-center justify-between gap-3">
       <Button asChild variant="editorial" className="h-auto gap-3 px-0 text-xs"><Link to="/"><ArtistMark className="h-12 w-9 shrink-0" alt="" /><ArrowLeft className="size-4" /><span>{lang === "ru" ? "Галерея" : "Gallery"}</span></Link></Button>
       <div className="flex items-center gap-2"><Button asChild variant="editorial" className="hidden px-3 text-xs sm:inline-flex"><Link to="/projects">{lang === "ru" ? "Спецпроекты" : "Special projects"}</Link></Button><Button variant="editorial" onClick={() => { const next = lang === "ru" ? "en" : "ru"; setLang(next); localStorage.setItem("prosetskaya-lang", next); document.documentElement.lang = next; }} className="px-2 text-xs uppercase" aria-label="Язык / Language">{lang}</Button><Button variant="editorial" size="icon" aria-label={lang === "ru" ? "Сменить тему" : "Change theme"} title={lang === "ru" ? "Сменить тему" : "Change theme"} onClick={() => { setDark(!dark); localStorage.setItem("prosetskaya-theme", dark ? "light" : "dark"); document.documentElement.classList.toggle("dark", !dark); }}>{dark ? <Sun /> : <Moon />}</Button></div>
     </div></header>
