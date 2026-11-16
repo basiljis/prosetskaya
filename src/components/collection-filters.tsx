@@ -14,7 +14,7 @@ export function CollectionFilters({ position, category, lang, directions, query,
   const visible = directions.filter((d) => !d.hidden);
   const current = visible.find((d) => d.key === category) ?? visible[0];
   const ph = lang === "ru" ? "Поиск по названию, году" : "Search title, year";
-  return <div className={`sticky top-[120px] z-20 self-start border-y border-border bg-background/95 py-2.5 backdrop-blur-lg lg:py-4 ${left ? "lg:top-[132px] lg:border-y-0 lg:border-r lg:pr-6" : ""}`} role="group" aria-label={t.practices}>
+  return <div className={`sticky top-[120px] z-20 self-start border-y border-border bg-background py-2.5 lg:py-4 ${left ? "lg:top-[132px] lg:border-y-0 lg:border-r lg:pr-6" : ""}`} role="group" aria-label={t.practices}>
     {left && <p className="mb-4 hidden text-xs font-medium lg:block">{t.collection}</p>}
     <div className={`flex gap-2 ${left ? "lg:flex-col" : "lg:items-start"}`}>
       <Button variant="editorial" onClick={() => setOpen(!open)} aria-expanded={open} className="h-9 min-w-0 flex-1 justify-between rounded-full border border-primary px-4 text-xs md:hidden"><span className="truncate">{current?.[lang]}</span><ChevronDown className={`transition ${open ? "rotate-180" : ""}`} /></Button>

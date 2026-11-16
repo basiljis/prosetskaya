@@ -16,7 +16,8 @@ export function rowToArtwork(r: ArtworkRow): Artwork {
     category: r.category as Artwork["category"], categories: (r.categories.length ? r.categories : [r.category]) as NonNullable<Artwork["categories"]>,
     year: r.year, size: r.size, mediumRu: r.medium_ru, mediumEn: r.medium_en || r.medium_ru,
     width: r.width, height: r.height,
-    projectId: r.project_id, interiorEnabled: r.interior_enabled,
+    ...(r.project_id !== undefined ? { projectId: r.project_id } : {}),
+    ...(r.interior_enabled !== undefined ? { interiorEnabled: r.interior_enabled } : {}),
     ...(r.catalogue_only ? { catalogueOnly: true } : {}),
     ...(availability ? { sourceAvailability: availability } : {}),
   };
