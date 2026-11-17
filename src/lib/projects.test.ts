@@ -9,10 +9,10 @@ describe("Special project grouping and interior settings", () => {
     if (!project) throw new Error("Missing Luzhniki");
     expect(worksForProject(artworks, project)).toHaveLength(8);
   });
-  it("keeps all 47 project works in named groups without duplication", () => {
+  it("keeps all 55 project works (incl. 8 logos) in named groups without duplication", () => {
     const ids = fallbackProjects.flatMap((p) => worksForProject(artworks, p).map((w) => w.id));
-    expect(ids.length).toBe(47);
-    expect(new Set(ids).size).toBe(47);
+    expect(ids.length).toBe(55);
+    expect(new Set(ids).size).toBe(55);
   });
   it("lets the admin enable interior preview for a photographic project", () => {
     const project = fallbackProjects.find((p) => p.id === "hotels");

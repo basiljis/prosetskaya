@@ -26,6 +26,6 @@ function ProjectsPage() {
     <p className="mb-4 text-xs uppercase text-primary">Юлия Просецкая / {lang === "ru" ? "Авторские проекты" : "Artist projects"}</p>
     <h1 className="section-heading font-display">{lang === "ru" ? "Спецпроекты" : "Special projects"}</h1>
     <div className="mt-7 grid gap-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-end"><div className="max-w-3xl whitespace-pre-line text-sm leading-7 text-muted-foreground">{projectIntro[lang]}</div><ContactDialog lang={lang}><Button variant="editorial" className="h-auto w-fit border-b border-foreground px-0 pb-2 text-xs">{lang === "ru" ? "Обсудить проект" : "Discuss a project"}<ArrowUpRight /></Button></ContactDialog></div>
-    <ProjectCatalogue projects={data.projects} works={data.works} lang={lang} />
+    <ProjectCatalogue projects={data.projects} works={data.works} lang={lang} sticky={false} />
   </section>}</ProjectPageShell>;
 }
