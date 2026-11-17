@@ -3,7 +3,7 @@ import { copy } from "@/lib/gallery-copy";
 
 export type Direction = { key: Category; ru: string; en: string; hidden: boolean };
 /** Projects live in their own homepage block, so they are never a collection direction. */
-export const directionKeys: Category[] = categories.filter((key) => key !== "projects");
+export const directionKeys: Category[] = categories.filter((key) => key !== "projects" && key !== "logos");
 
 export function resolveDirections(value: unknown): Direction[] {
   const saved = Array.isArray(value) ? (value as Partial<Direction>[]) : [];
@@ -16,7 +16,7 @@ export function resolveDirections(value: unknown): Direction[] {
 }
 
 export function isProjectWork(work: { category: string; categories?: readonly string[]; projectId?: string | null }) {
-  return !!work.projectId || work.category === "projects" || !!work.categories?.includes("projects");
+  return !!work.projectId || ["projects", "logos"].some((c) => work.category === c || !!work.categories?.includes(c));
 }
 
 export function pageCount(total: number, size: number) { return Math.max(1, Math.ceil(total / size)); }

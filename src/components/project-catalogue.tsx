@@ -1,21 +1,37 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, Menu } from "lucide-react";
+import { ArrowUpRight, ChevronDown, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import type { Artwork, Lang } from "@/lib/artworks";
 import { projectCover, projectDescription, projectTitle, worksForProject, type Project } from "@/lib/projects";
 
-export function ProjectCatalogue({ projects, works, lang }: { projects: readonly Project[]; works: readonly Artwork[]; lang: Lang }) {
+export function ProjectCatalogue({ projects, works, lang, sticky = true }: { projects: readonly Project[]; works: readonly Artwork[]; lang: Lang; sticky?: boolean }) {
   const [selected, setSelected] = useState("all");
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
   const all = lang === "ru" ? "Все проекты" : "All projects";
   const choices = [{ id: "all", title: all }, ...projects.map((p) => ({ id: p.id, title: projectTitle(p, lang) }))];
-  const filtered = projects.filter((p) => selected === "all" || selected === p.id);
+  const current = choices.find((c) => c.id === selected) ?? choices[0];
+  const q = query.trim().toLowerCase();
+  const filtered = projects.filter((p) => (selected === "all" || selected === p.id) && (!q || [p.title_ru, p.title_en, p.description_ru, p.description_en, p.year].some((v) => v.toLowerCase().includes(q))));
+  const ph = lang === "ru" ? "Поиск по проектам" : "Search projects";
   return <>
-    <div className="mt-6 border-y border-border py-3" role="group" aria-label={lang === "ru" ? "Фильтры спецпроектов" : "Project filters"}>
-      <div className="md:hidden"><Select value={selected} onValueChange={setSelected}><SelectTrigger aria-label={lang === "ru" ? "Выбрать спецпроект" : "Choose project"} className="h-11 w-full bg-transparent"><Menu className="size-4 shrink-0" /><SelectValue /></SelectTrigger><SelectContent>{choices.map((p) => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}</SelectContent></Select></div>
-      <div className="hidden flex-wrap gap-2 md:flex">{choices.map((p) => <Button key={p.id} variant="editorial" onClick={() => setSelected(p.id)} aria-pressed={selected === p.id} className={`h-auto min-h-9 max-w-full whitespace-normal rounded-full border px-4 py-2 text-xs ${selected === p.id ? "border-primary bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "border-border text-muted-foreground hover:border-primary hover:text-primary"}`}>{p.title}</Button>)}</div>
+    <div className={`${sticky ? "sticky top-[120px] z-20" : ""} mt-6 border-y border-border bg-background py-2.5 lg:py-4`} role="group" aria-label={lang === "ru" ? "Фильтры спецпроектов" : "Project filters"}>
+      <div className="flex gap-2 lg:items-start">
+        <Button variant="editorial" onClick={() => setOpen(!open)} aria-expanded={open} className="h-9 min-w-0 flex-1 justify-between rounded-full border border-primary px-4 text-xs md:hidden"><span className="truncate">{current?.title}</span><ChevronDown className={`transition ${open ? "rotate-180" : ""}`} /></Button>
+        <div className="relative w-[42%] md:order-2 md:ml-auto md:w-56">
+          <Search className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
+          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={ph} aria-label={ph} className="h-9 rounded-full bg-transparent pl-9 pr-8 text-xs shadow-none" />
+          {query && <button type="button" onClick={() => setQuery("")} aria-label={lang === "ru" ? "Очистить" : "Clear"} className="absolute right-3 top-2.5 text-muted-foreground"><X className="size-4" /></button>}
+        </div>
+        <div className="hidden min-w-0 flex-1 flex-wrap gap-2 md:flex">
+          {choices.map((p) => <Button key={p.id} variant="editorial" onClick={() => setSelected(p.id)} aria-pressed={selected === p.id} className={`h-8 shrink-0 whitespace-nowrap rounded-full border px-3.5 text-[11px] font-medium transition-colors lg:text-xs ${selected === p.id ? "border-primary bg-primary text-primary-foreground shadow-sm hover:bg-primary hover:text-primary-foreground" : "border-border text-muted-foreground hover:border-primary hover:text-primary"}`}>{p.title}</Button>)}
+        </div>
+      </div>
+      {open && <div className="mt-2 grid gap-1 border-t border-border pt-2 md:hidden">{choices.map((p) => <button key={p.id} type="button" onClick={() => { setSelected(p.id); setOpen(false); }} aria-pressed={selected === p.id} className={`border-l-2 px-3 py-2 text-left text-sm ${selected === p.id ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>{p.title}</button>)}</div>}
     </div>
+    {filtered.length === 0 && <p className="mt-8 text-sm text-muted-foreground">{lang === "ru" ? "Ничего не найдено" : "Nothing found"}</p>}
     <div className="mt-8 grid gap-x-9 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
       {filtered.map((project) => { const cover = projectCover(project, works); const count = worksForProject(works, project).length; return <article key={project.id} className="min-w-0">
         <Button asChild variant="artwork" className="group block h-auto w-full whitespace-normal"><Link to="/projects/$projectId" params={{ projectId: project.id }} aria-label={projectTitle(project, lang)}>{cover ? <img src={cover.image} alt={projectTitle(project, lang)} loading="lazy" className="gallery-image transition-transform duration-700 group-hover:scale-[1.015]" /> : <div className="flex h-72 items-center justify-center border border-border text-sm text-muted-foreground">{projectTitle(project, lang)}</div>}</Link></Button>
