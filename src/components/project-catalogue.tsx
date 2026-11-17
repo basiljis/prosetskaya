@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import type { Artwork, Lang } from "@/lib/artworks";
 import { projectCover, projectDescription, projectTitle, worksForProject, type Project } from "@/lib/projects";
 
-export function ProjectCatalogue({ projects, works, lang, sticky = true }: { projects: readonly Project[]; works: readonly Artwork[]; lang: Lang; sticky?: boolean }) {
+export function ProjectCatalogue({ projects, works, lang, stickyTop = "top-[120px]" }: { projects: readonly Project[]; works: readonly Artwork[]; lang: Lang; stickyTop?: string }) {
   const [selected, setSelected] = useState("all");
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -17,7 +17,7 @@ export function ProjectCatalogue({ projects, works, lang, sticky = true }: { pro
   const filtered = projects.filter((p) => (selected === "all" || selected === p.id) && (!q || [p.title_ru, p.title_en, p.description_ru, p.description_en, p.year].some((v) => v.toLowerCase().includes(q))));
   const ph = lang === "ru" ? "Поиск по проектам" : "Search projects";
   return <>
-    <div className={`${sticky ? "sticky top-[120px] z-20" : ""} mt-6 border-y border-border bg-background py-2.5 lg:py-4`} role="group" aria-label={lang === "ru" ? "Фильтры спецпроектов" : "Project filters"}>
+    <div className={`sticky z-20 ${stickyTop} mt-6 border-y border-border bg-background py-2.5 lg:py-4`} role="group" aria-label={lang === "ru" ? "Фильтры спецпроектов" : "Project filters"}>
       <div className="flex gap-2 lg:items-start">
         <Button variant="editorial" onClick={() => setOpen(!open)} aria-expanded={open} className="h-9 min-w-0 flex-1 justify-between rounded-full border border-primary px-4 text-xs md:hidden"><span className="truncate">{current?.title}</span><ChevronDown className={`transition ${open ? "rotate-180" : ""}`} /></Button>
         <div className="relative w-[42%] md:order-2 md:ml-auto md:w-56">
