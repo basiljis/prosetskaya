@@ -14,6 +14,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      artwork_import: {
+        Row: {
+          id: string
+          payload: Json
+        }
+        Insert: {
+          id: string
+          payload: Json
+        }
+        Update: {
+          id?: string
+          payload?: Json
+        }
+        Relationships: []
+      }
       artwork_prices: {
         Row: {
           artwork_id: string
@@ -163,6 +178,33 @@ export type Database = {
           payment_id?: string | null
           status?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      page_views: {
+        Row: {
+          created_at: string
+          device: string
+          id: string
+          path: string
+          referrer: string
+          visitor_id: string
+        }
+        Insert: {
+          created_at?: string
+          device?: string
+          id?: string
+          path: string
+          referrer?: string
+          visitor_id: string
+        }
+        Update: {
+          created_at?: string
+          device?: string
+          id?: string
+          path?: string
+          referrer?: string
+          visitor_id?: string
         }
         Relationships: []
       }

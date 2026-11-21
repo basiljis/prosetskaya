@@ -103,8 +103,10 @@ function Index() {
   };
   const smoothTo = (top: number) => {
     const start = window.scrollY; const end = Math.max(0, Math.min(top, document.documentElement.scrollHeight - window.innerHeight)); const t0 = performance.now();
-    const duration = Math.min(1100, 450 + Math.abs(end - start) / 8);
-    const step = (now: number) => { const p = Math.min(1, (now - t0) / duration); const e = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2; window.scrollTo(0, start + (end - start) * e); if (p < 1) requestAnimationFrame(step); };
+    const duration = Math.min(2200, 900 + Math.abs(end - start) / 5);
+    let stop = false; const cancel = () => { stop = true; };
+    window.addEventListener("wheel", cancel, { once: true, passive: true }); window.addEventListener("touchstart", cancel, { once: true, passive: true });
+    const step = (now: number) => { if (stop) return; const p = Math.min(1, (now - t0) / duration); const e = -(Math.cos(Math.PI * p) - 1) / 2; window.scrollTo(0, start + (end - start) * e); if (p < 1) requestAnimationFrame(step); else { window.removeEventListener("wheel", cancel); window.removeEventListener("touchstart", cancel); } };
     requestAnimationFrame(step);
   };
   const scrollToSection = (hash: string) => { const el = document.querySelector(hash); if (el) smoothTo(el.getBoundingClientRect().top + window.scrollY - 76); history.replaceState(null, "", hash); };
