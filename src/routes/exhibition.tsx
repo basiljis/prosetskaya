@@ -71,7 +71,7 @@ function Exhibition() {
   return <main className="fixed inset-0 bg-background text-foreground">
     {ids !== null && works.length === 0 && <div className="grid h-full place-items-center p-6 text-center"><div><p className="font-display text-3xl">{ru ? "Выберите работы для выставки" : "Choose works for the exhibition"}</p><p className="mt-3 text-sm text-muted-foreground">{ru ? "Отметьте жанр или направление в коллекции, затем нажмите значок выставки." : "Pick a genre or style in the collection, then press the exhibition icon."}</p><Button asChild className="mt-6"><Link to="/" hash="works">{ru ? "К коллекции" : "To the collection"}</Link></Button></div></div>}
     {ids !== null && works.length > 0 && <Suspense fallback={<p className="grid h-full place-items-center text-sm text-muted-foreground">{ru ? "Готовим зал…" : "Preparing the hall…"}</p>}>
-      <div className="absolute inset-0"><VirtualGallery works={works} lang={lang} index={index} distance={distance} resetKey={resetKey} onIndex={(i) => { setIndex(i); setAuto(false); }} /></div>
+      <div className="absolute inset-0"><VirtualGallery works={works} lang={lang} index={index} distance={distance} resetKey={resetKey} hallName={halls.find((h) => h.key === hall)?.label ?? ""} onIndex={(i) => { setIndex(i); setAuto(false); }} /></div>
     </Suspense>}
     <header className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between p-4 md:p-6">
       <Button asChild variant="editorial" className="pointer-events-auto bg-background/85 px-3 text-xs backdrop-blur"><Link to="/" hash="works"><ArrowLeft />{ru ? "В коллекцию" : "Collection"}</Link></Button>

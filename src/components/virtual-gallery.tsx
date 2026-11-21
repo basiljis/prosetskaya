@@ -158,7 +158,7 @@ function Rig({ target, bounds, resetKey }: { target: THREE.Vector3 & { look?: TH
   return null;
 }
 
-export function VirtualGallery({ works, lang, index, onIndex, distance = 1, resetKey = 0 }: { works: readonly Artwork[]; lang: Lang; index: number; onIndex: (i: number) => void; distance?: number; resetKey?: number }) {
+export function VirtualGallery({ works, lang, index, onIndex, distance = 1, resetKey = 0, hallName = "" }: { works: readonly Artwork[]; lang: Lang; index: number; onIndex: (i: number) => void; distance?: number; resetKey?: number; hallName?: string }) {
   const room = useMemo(() => layoutRoom(works), [works]);
   const { width: W, depth: D, hung: hungs } = room;
   const FRONT = 1.6; // entrance wall behind the starting viewpoint
@@ -176,7 +176,7 @@ export function VirtualGallery({ works, lang, index, onIndex, distance = 1, rese
     y += 30; g.font = "300 32px 'Helvetica Neue', Arial, sans-serif"; g.fillStyle = "#3a3e42";
     for (const para of [c.bio, c.bioSecond]) { for (const l of wrapAll(g, para, 960)) { g.fillText(l, 0, y); y += 46; } y += 26; }
   }), [lang]);
-  const title = useMemo(() => canvasTex(1024, 160, (g) => { g.fillStyle = "#2b2e31"; g.font = "300 96px 'Helvetica Neue', Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(lang === "ru" ? "Юлия Просецкая" : "Yulia Prosetskaya", 512, 84); }), [lang]);
+  const title = useMemo(() => canvasTex(1024, 260, (g) => { g.fillStyle = "#2b2e31"; g.textAlign = "center"; g.textBaseline = "middle"; g.font = "300 96px 'Helvetica Neue', Arial, sans-serif"; g.fillText(lang === "ru" ? "Юлия Просецкая" : "Yulia Prosetskaya", 512, 80); if (hallName) { g.fillStyle = "#e8742a"; g.fillRect(482, 150, 60, 5); g.fillStyle = "#3a3e42"; g.font = "400 46px 'Helvetica Neue', Arial, sans-serif"; g.fillText(`${lang === "ru" ? "Зал" : "Hall"} · ${hallName}`.toUpperCase().split("").join(String.fromCharCode(8202)), 512, 210); } }), [lang, hallName]);
   // Open-cell black ceiling grid with a darker void above, as in the reference museum.
   const grid = useMemo(() => { const t = canvasTex(256, 256, (g) => { g.fillStyle = "#0d0d0e"; g.fillRect(0, 0, 256, 256); g.strokeStyle = "#262628"; g.lineWidth = 5; for (let k = 0; k <= 256; k += 32) { g.beginPath(); g.moveTo(k, 0); g.lineTo(k, 256); g.moveTo(0, k); g.lineTo(256, k); g.stroke(); } }); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(W / 2, len / 2); return t; }, [W, len]);
   // Cove (закарнизная) light: a soft wash along the top of every wall.
@@ -262,7 +262,7 @@ export function VirtualGallery({ works, lang, index, onIndex, distance = 1, rese
         <mesh rotation-x={-Math.PI / 2} position={[0, 0.001, FRONT + 1.25]}><planeGeometry args={[door + 2, 2.5]} /><meshStandardMaterial color="#8a5a34" roughness={0.5} /></mesh>
       </group>;
     })()}
-    <mesh position={[0, CEIL - 0.75, -D + 0.01]}><planeGeometry args={[3.2, 0.5]} /><meshBasicMaterial map={title} transparent depthWrite={false} /></mesh>
+    <mesh position={[0, CEIL - 0.68, -D + 0.01]}><planeGeometry args={[3.2, 0.8125]} /><meshBasicMaterial map={title} transparent depthWrite={false} /></mesh>
     <mesh position={[-(W + door) / 4, 1.75, FRONT - 0.01]} rotation-y={Math.PI}><planeGeometry args={[Math.min(2.2, (W - door) / 2 - 0.5), Math.min(2.2, (W - door) / 2 - 0.5) * 1100 / 1024]} /><meshBasicMaterial map={intro} transparent depthWrite={false} /></mesh>
     {/* skirting */}
     {[-1, 1].map((s) => <mesh key={`k${s}`} position={[s * (W / 2 - 0.01), 0.0125, midZ]}><boxGeometry args={[0.02, 0.025, len]} /><meshBasicMaterial color="#3a3836" /></mesh>)}
