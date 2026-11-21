@@ -56,3 +56,5 @@
 - [x] Добавить 3 присланных фото в спецпроект «Годунов»
 - [x] Спецпроект «Роспись» с подразделами «Стены» и «Потолки», загрузить 10 фото
 - [x] График статистики: показывать значения по дням
+- [x] Mobile collection filters: search collapses to icon next to genre/style dropdowns; expanding search collapses the dropdowns to icons
+- [x] Special projects menu on mobile still not optimized (see screenshot)
