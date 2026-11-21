@@ -29,8 +29,11 @@ export function CollectionFilters({ position, category, lang, directions, query,
         {visible.map((d) => <Pill key={d.key} d={d} lang={lang} active={category === d.key} left={left} onClick={() => onChange(d.key)} />)}
       </div>
     </div>
-    {onStyle && <div className={`mt-2 flex gap-2 ${left ? "lg:mt-4" : ""}`}>
-      <Facet label={lang === "ru" ? "Направление" : "Style"} all={lang === "ru" ? "Все направления" : "All styles"} value={style} items={Object.fromEntries(styleTerms.filter((t) => !t.hidden).map((t) => [t.key, t]))} lang={lang} onChange={onStyle} />
+    {onStyle && <div className={`mt-2 flex gap-2 ${left ? "lg:mt-4 lg:border-t lg:border-border lg:pt-4" : ""}`}>
+      <div className={`hidden min-w-0 flex-1 flex-wrap gap-2 md:flex ${left ? "lg:flex-col lg:flex-nowrap lg:gap-1" : ""}`}>
+        {[{ key: "all", ru: "Все направления", en: "All styles", hidden: false }, ...styleTerms.filter((t) => !t.hidden)].map((t) => <Pill key={t.key} d={t as unknown as Direction} lang={lang} active={style === t.key} left={left} onClick={() => onStyle(t.key)} />)}
+      </div>
+      <div className="w-full md:hidden"><Facet label={lang === "ru" ? "Направление" : "Style"} all={lang === "ru" ? "Все направления" : "All styles"} value={style} items={Object.fromEntries(styleTerms.filter((t) => !t.hidden).map((t) => [t.key, t]))} lang={lang} onChange={onStyle} /></div>
     </div>}
     {open && <div className="mt-2 grid gap-1 border-t border-border pt-2 md:hidden">{visible.map((d) => <button key={d.key} type="button" onClick={() => { onChange(d.key); setOpen(false); }} aria-pressed={category === d.key} className={`border-l-2 px-3 py-2 text-left text-sm ${category === d.key ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>{d[lang]}</button>)}</div>}
   </div>;
