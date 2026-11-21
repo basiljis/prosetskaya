@@ -9,7 +9,7 @@ export function useShop() {
     queryKey: ["shop"],
     queryFn: async () => {
       const [s, p, r] = await Promise.all([
-        supabase.from("site_settings").select("show_prices, online_payment_enabled, collection_menu_position, collection_directions, genres, styles, cv").eq("id", 1).single(),
+        supabase.from("site_settings").select("show_prices, online_payment_enabled, collection_menu_position, collection_directions, genres, styles, cv, show_style_filter").eq("id", 1).single(),
         supabase.from("artwork_prices").select("artwork_id, price"),
         supabase.rpc("reserved_artworks"),
       ]);
@@ -17,6 +17,7 @@ export function useShop() {
         showPrices: !!s.data?.show_prices,
         online: !!s.data?.online_payment_enabled,
         collectionMenuPosition: collectionMenuPosition(s.data?.collection_menu_position),
+        showStyleFilter: s.data?.show_style_filter !== false,
         directions: resolveDirections(s.data?.collection_directions),
         genres: resolveTerms(s.data?.genres, genres),
         styles: resolveTerms(s.data?.styles, styles),

@@ -325,6 +325,7 @@ export type Database = {
           id: number
           online_payment_enabled: boolean
           show_prices: boolean
+          show_style_filter: boolean
           styles: Json
           updated_at: string
         }
@@ -336,6 +337,7 @@ export type Database = {
           id?: number
           online_payment_enabled?: boolean
           show_prices?: boolean
+          show_style_filter?: boolean
           styles?: Json
           updated_at?: string
         }
@@ -347,6 +349,7 @@ export type Database = {
           id?: number
           online_payment_enabled?: boolean
           show_prices?: boolean
+          show_style_filter?: boolean
           styles?: Json
           updated_at?: string
         }

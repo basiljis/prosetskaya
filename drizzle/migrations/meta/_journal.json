@@ -64,6 +64,13 @@
       "when": 1795286584668,
       "tag": "0008_favorites_news_cv_taxonomy",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1795287117914,
+      "tag": "0009_show_style_filter",
+      "breakpoints": true
     }
   ]
 }
