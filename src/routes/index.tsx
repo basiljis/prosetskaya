@@ -30,7 +30,7 @@ export const Route = createFileRoute("/")({
   head: () => ({ meta: [
     { title: "Юлия Просецкая — галерея живописи и цифрового искусства" },
     { name: "description", content: "Галерея художницы Юлии Просецкой: живопись, пейзажи, цифровое искусство, графика и флуоресцентные работы. Биография и контакты художницы." },
-    { property: "og:title", content: "Юлия Просецкая — галерея художника" },
+    { property: "og:title", content: "Галерея Юлии Просецкой: живопись и цифровое искусство" },
     { property: "og:description", content: "Полная коллекция живописи, пейзажей, графики и цифровых работ Юлии Просецкой." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },

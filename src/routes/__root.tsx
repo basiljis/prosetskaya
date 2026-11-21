@@ -78,10 +78,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Юлия Просецкая — галерея художника" },
+      { title: "Юлия Просецкая — живопись, пейзажи и цифровое искусство" },
       { name: "description", content: "Живопись, пейзажи, цифровое искусство и графика Юлии Просецкой." },
       { name: "author", content: "Юлия Просецкая" },
-      { property: "og:title", content: "Юлия Просецкая — галерея художника" },
+      { property: "og:title", content: "Юлия Просецкая — живопись, пейзажи и цифровое искусство" },
       { property: "og:description", content: "Живопись, пейзажи, цифровое искусство и графика Юлии Просецкой." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
