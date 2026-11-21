@@ -12,6 +12,16 @@ export const projectIntro = {
 };
 /** Projects shown under the «Кино и декорации» tag. */
 export const cinemaProjectIds = ["godunov"];
+/** Direction groups for the special-projects filter; projects not listed fall into "public". */
+export const projectGroups = [
+  { id: "murals", ru: "Роспись стен и потолков", en: "Wall & ceiling murals", ids: ["murals"] },
+  { id: "cinema", ru: "Кино и декорации", en: "Film & set design", ids: cinemaProjectIds },
+  { id: "public", ru: "Общественные пространства", en: "Public spaces", ids: ["luzhniki", "hotels", "tavrida", "individual", "other-projects"] },
+  { id: "graphics", ru: "Графика и дизайн", en: "Graphics & design", ids: ["logos", "illustration-projects"] },
+] as const;
+export function projectGroupOf(id: string) {
+  return projectGroups.find((g) => (g.ids as readonly string[]).includes(id))?.id ?? "public";
+}
 
 const sources = ["dlya-sportkompleksa", "dlya-seti-gostinic", "razrabotka-eskiza-dlya-proekta-tavrida", "individualnye-proekty", "proekty", "illyustracii", "razrabotka-logotipov"];
 const names = [
