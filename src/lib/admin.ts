@@ -67,7 +67,7 @@ export async function loadAdminArtworks() {
   return data as import("@/lib/artwork-rows").ArtworkRow[];
 }
 
-export type ArtworkPatch = Partial<Pick<import("@/lib/artwork-rows").ArtworkRow, "title_ru" | "title_en" | "category" | "categories" | "year" | "size" | "medium_ru" | "medium_en" | "hidden" | "source_availability" | "sort_order" | "project_id" | "interior_enabled">>;
+export type ArtworkPatch = Partial<Pick<import("@/lib/artwork-rows").ArtworkRow, "title_ru" | "title_en" | "category" | "categories" | "year" | "size" | "medium_ru" | "medium_en" | "hidden" | "source_availability" | "sort_order" | "project_id" | "interior_enabled" | "genre" | "style">>;
 
 export async function saveAdminArtwork(id: string, patch: ArtworkPatch) {
   const { data, error } = await supabase.from("artworks").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", id).select("id").single();

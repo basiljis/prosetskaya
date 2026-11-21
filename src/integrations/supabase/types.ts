@@ -37,6 +37,7 @@ export type Database = {
           catalogue_only: boolean
           categories: string[]
           category: string
+          genre: string | null
           height: number
           hidden: boolean
           id: string
@@ -49,6 +50,7 @@ export type Database = {
           sort_order: number
           source: string
           source_availability: string | null
+          style: string | null
           title_en: string
           title_ru: string
           updated_at: string
@@ -59,6 +61,7 @@ export type Database = {
           catalogue_only?: boolean
           categories?: string[]
           category: string
+          genre?: string | null
           height?: number
           hidden?: boolean
           id: string
@@ -71,6 +74,7 @@ export type Database = {
           sort_order?: number
           source?: string
           source_availability?: string | null
+          style?: string | null
           title_en?: string
           title_ru: string
           updated_at?: string
@@ -81,6 +85,7 @@ export type Database = {
           catalogue_only?: boolean
           categories?: string[]
           category?: string
+          genre?: string | null
           height?: number
           hidden?: boolean
           id?: string
@@ -93,6 +98,7 @@ export type Database = {
           sort_order?: number
           source?: string
           source_availability?: string | null
+          style?: string | null
           title_en?: string
           title_ru?: string
           updated_at?: string

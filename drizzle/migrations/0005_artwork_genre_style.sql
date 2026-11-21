@@ -1,0 +1,1 @@
+ALTER TABLE public.artworks ADD COLUMN IF NOT EXISTS genre text, ADD COLUMN IF NOT EXISTS style text;

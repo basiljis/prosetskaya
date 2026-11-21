@@ -36,6 +36,7 @@ function Admin() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [search, setSearch] = useState("");
+  const [workFilter, setWorkFilter] = useState("all");
   const [orderFilter, setOrderFilter] = useState("all");
   const [webhook, setWebhook] = useState("");
   const { data, isLoading, isError, refetch } = useQuery({ queryKey: ["admin"], queryFn: loadAdminData, retry: 1 });
@@ -65,7 +66,7 @@ function Admin() {
   if (!data) return <SimplePage title="Нет доступа"><LockKeyhole className="mt-8 size-8 text-muted-foreground" /><p className="mt-5 text-sm leading-7 text-muted-foreground">Управление галереей доступно только администратору.</p><Button asChild variant="outline" className="mt-6"><Link to="/account">Мой кабинет<ArrowUpRight /></Link></Button></SimplePage>;
 
   const artworks = rows;
-  const visibleWorks = rows.filter((work) => work.title_ru.toLowerCase().includes(search.trim().toLowerCase()));
+  const visibleWorks = rows.filter((work) => work.title_ru.toLowerCase().includes(search.trim().toLowerCase()) && matchesWorkFilter(work, workFilter));
   const activeOrders = data.orders.filter((order) => order.status !== "cancelled" && order.status !== "completed");
   const visibleOrders = data.orders.filter((order) => orderFilter === "all" || order.status === orderFilter);
   const pricedCount = artworks.filter((work) => data.prices[work.id] != null).length;
@@ -86,6 +87,7 @@ function Admin() {
         </TabsList>
         <TabsContent value="works" className="mt-8">
           <div className="flex flex-wrap items-center justify-between gap-5"><h2 className="font-display text-3xl">Картины и цены <span className="font-sans text-sm text-muted-foreground">({rows.length})</span></h2><div className="relative w-full sm:w-72"><Search className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground" /><Input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} aria-label="Поиск картины" placeholder="Найти картину" className="h-11 bg-card pl-10 shadow-none" /></div></div>
+          <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Фильтр картин">{workFilters.map(([k, label]) => <Button key={k} type="button" size="sm" variant={workFilter === k ? "default" : "outline"} aria-pressed={workFilter === k} onClick={() => { setWorkFilter(k); setPage(1); }}>{label} <span className="opacity-60">{rows.filter((w) => matchesWorkFilter(w, k)).length}</span></Button>)}</div>
           <ul className="mt-6 border-t border-border">{pageSlice(visibleWorks, page, 40).map((work) => <AdminPriceEditor key={work.id} work={work} price={data.prices[work.id] ?? null} projects={projects} onSaved={refresh} />)}</ul>
           <Pager page={Math.min(page, pageCount(visibleWorks.length, 40))} pages={pageCount(visibleWorks.length, 40)} label="Страницы картин" onChange={(n) => { setPage(n); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
           {visibleWorks.length === 0 && <p className="py-12 text-center text-sm text-muted-foreground">Картины не найдены.</p>}
@@ -125,4 +127,9 @@ function Admin() {
 
 function Summary({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return <div className="min-w-0 py-3"><span className="flex items-center gap-2 text-[11px] text-muted-foreground">{icon}{label}</span><p className="mt-3 break-words text-xl font-medium sm:text-2xl">{value}</p></div>;
+}
+
+const workFilters = [["all", "Все"], ["no-size", "Нет размера"], ["no-genre", "Нет жанра"], ["no-style", "Нет направления"], ["hidden", "Скрытые"]] as const;
+function matchesWorkFilter(w: { size: string; genre?: string | null; style?: string | null; hidden: boolean }, f: string) {
+  return f === "no-size" ? !w.size.trim() : f === "no-genre" ? !w.genre : f === "no-style" ? !w.style : f === "hidden" ? w.hidden : true;
 }

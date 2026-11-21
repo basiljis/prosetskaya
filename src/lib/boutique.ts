@@ -2,8 +2,8 @@ import type { Artwork, Lang } from "@/lib/artworks";
 
 /** Wall width shown in the room preview, in centimetres. */
 export const ROOMS = [
-  { id: "living", ru: "Гостиная", en: "Living room", wallCm: 470, bottomPct: 52, portrait: { wallCm: 300, bottomPct: 46 } },
-  { id: "dining", ru: "Столовая", en: "Dining room", wallCm: 398, bottomPct: 46, portrait: { wallCm: 250, bottomPct: 43 } },
+  { id: "living", ru: "Гостиная", en: "Living room", wallCm: 470, bottomPct: 52, furniture: { ru: "Диван 240 × 95 см", en: "Sofa 240 × 95 cm" }, portrait: { wallCm: 300, bottomPct: 46 } },
+  { id: "dining", ru: "Столовая", en: "Dining room", wallCm: 398, bottomPct: 46, furniture: { ru: "Консоль 180 × 80 см", en: "Console 180 × 80 cm" }, portrait: { wallCm: 250, bottomPct: 43 } },
 ] as const;
 
 /** Real artwork width/height in cm, using the catalogue size and the photo's proportions. */
@@ -12,6 +12,11 @@ export function artworkSizeCm(work: Pick<Artwork, "size" | "width" | "height">):
   const longSide = numbers.length ? Math.max(...numbers) : 60;
   const ratio = work.width / work.height;
   return ratio >= 1 ? { w: longSide, h: Math.round(longSide / ratio) } : { w: Math.round(longSide * ratio), h: longSide };
+}
+
+/** Extra lift (in cm) for smaller works so they don't sit right on the furniture: up to 24 cm for tiny pieces, none from 80 cm tall. */
+export function hangLiftCm(heightCm: number): number {
+  return Math.round(Math.min(24, Math.max(0, (80 - heightCm) * 0.4)));
 }
 
 export type Availability = "original" | "print";

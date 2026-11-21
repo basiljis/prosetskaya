@@ -12,6 +12,8 @@ export interface Artwork {
   sourceAvailability?: "sold" | "private" | "museum";
   projectId?: string | null;
   interiorEnabled?: boolean | null;
+  genre?: string | null;
+  style?: string | null;
 }
 
 type CatalogueArtwork = Omit<Artwork, "image">;

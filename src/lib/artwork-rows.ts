@@ -6,6 +6,7 @@ export interface ArtworkRow {
   width: number; height: number; catalogue_only: boolean; source_availability: string | null;
   source: string; sort_order: number; hidden: boolean;
   project_id?: string | null; interior_enabled?: boolean | null;
+  genre?: string | null; style?: string | null;
 }
 
 /** Database row → gallery artwork shape used across the site. */
@@ -18,6 +19,8 @@ export function rowToArtwork(r: ArtworkRow): Artwork {
     width: r.width, height: r.height,
     ...(r.project_id !== undefined ? { projectId: r.project_id } : {}),
     ...(r.interior_enabled !== undefined ? { interiorEnabled: r.interior_enabled } : {}),
+    ...(r.genre ? { genre: r.genre } : {}),
+    ...(r.style ? { style: r.style } : {}),
     ...(r.catalogue_only ? { catalogueOnly: true } : {}),
     ...(availability ? { sourceAvailability: availability } : {}),
   };

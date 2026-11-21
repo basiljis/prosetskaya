@@ -20,6 +20,7 @@ import { useShop } from "@/hooks/use-shop";
 import { rub } from "@/lib/shop";
 import { useArtworks } from "@/hooks/use-artworks";
 import { Pager } from "@/components/pager";
+import { filterByTaxonomy } from "@/lib/genres";
 import { isProjectWork, pageCount, pageSlice, resolveDirections, searchWorks } from "@/lib/directions";
 import portraitAsset from "@/assets/prosetskaya/portrait.jpg.asset.json";
 import { ProjectCatalogue } from "@/components/project-catalogue";
@@ -60,11 +61,13 @@ function Index() {
   const buyWork = artworks.find((w) => w.id === buyId);
   const directions = shop?.directions ?? resolveDirections([]);
   const [query, setQuery] = useState("");
+  const [genre, setGenre] = useState("all");
+  const [style, setStyle] = useState("all");
   const [page, setPage] = useState(1);
   const PAGE = 24;
   const mainWorks = artworks.filter((w) => !isProjectWork(w));
   const activeCategory = directions.some((d) => d.key === category && !d.hidden) ? category : "all";
-  const filtered = searchWorks(filterArtworks(mainWorks, activeCategory), query);
+  const filtered = searchWorks(filterByTaxonomy(filterArtworks(mainWorks, activeCategory), genre, style), query);
   const pageWorks = pageSlice(filtered, page, PAGE);
   const featured = featuredWorks[featuredIndex];
   const left = artworks.find((work) => work.id === "anniversary-bouquet");
@@ -150,7 +153,7 @@ function Index() {
         <SectionMarker number="01">{t.collection}</SectionMarker>
         <div className="flex items-end justify-between gap-6"><div><h2 className="section-heading font-display">{t.allWorks}<span className="ml-3 align-top font-sans text-sm text-primary">({String(filtered.length).padStart(2, "0")})</span></h2></div><p className="hidden max-w-60 text-xs leading-6 text-muted-foreground md:block">{t.artistNote}</p></div>
         <div className={`mt-5 grid gap-y-8 ${shop?.collectionMenuPosition === "left" ? "lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-9" : ""}`}>
-        <CollectionFilters position={shop?.collectionMenuPosition ?? "top"} category={activeCategory} lang={lang} directions={directions} query={query} onQuery={(q) => { setQuery(q); setPage(1); }} onChange={(key) => { setCategory(key); setPage(1); scrollToSection("#works"); }} />
+        <CollectionFilters position={shop?.collectionMenuPosition ?? "top"} category={activeCategory} lang={lang} directions={directions} genre={genre} style={style} onGenre={(g) => { setGenre(g); setPage(1); }} onStyle={(v) => { setStyle(v); setPage(1); }} query={query} onQuery={(q) => { setQuery(q); setPage(1); }} onChange={(key) => { setCategory(key); setPage(1); scrollToSection("#works"); }} />
         <div className={`grid min-w-0 grid-cols-1 gap-x-9 gap-y-10 sm:grid-cols-2 ${shop?.collectionMenuPosition === "left" ? "2xl:grid-cols-3" : "lg:grid-cols-3"}`}>
           {pageWorks.length === 0 && <p className="col-span-full py-16 text-center text-sm text-muted-foreground">{lang === "ru" ? "Ничего не найдено" : "Nothing found"}</p>}
           {pageWorks.map((work) => <article key={work.id} className="gallery-column min-w-0">

@@ -36,6 +36,13 @@
       "when": 1794721955572,
       "tag": "0004_special_projects",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795281527775,
+      "tag": "0005_artwork_genre_style",
+      "breakpoints": true
     }
   ]
 }

@@ -6,8 +6,10 @@ import type { Category, Lang } from "@/lib/artworks";
 import { copy } from "@/lib/gallery-copy";
 import type { CollectionMenuPosition } from "@/lib/collection-layout";
 import type { Direction } from "@/lib/directions";
+import { genres, styles } from "@/lib/genres";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export function CollectionFilters({ position, category, lang, directions, query, onQuery, onChange }: { position: CollectionMenuPosition; category: Category; lang: Lang; directions: Direction[]; query: string; onQuery: (q: string) => void; onChange: (category: Category) => void }) {
+export function CollectionFilters({ position, category, lang, directions, query, onQuery, onChange, genre = "all", style = "all", onGenre, onStyle }: { genre?: string; style?: string; onGenre?: (g: string) => void; onStyle?: (s: string) => void; position: CollectionMenuPosition; category: Category; lang: Lang; directions: Direction[]; query: string; onQuery: (q: string) => void; onChange: (category: Category) => void }) {
   const t = copy[lang];
   const left = position === "left";
   const [open, setOpen] = useState(false);
@@ -27,10 +29,18 @@ export function CollectionFilters({ position, category, lang, directions, query,
         {visible.map((d) => <Pill key={d.key} d={d} lang={lang} active={category === d.key} left={left} onClick={() => onChange(d.key)} />)}
       </div>
     </div>
+    {onGenre && onStyle && <div className={`mt-2 grid grid-cols-2 gap-2 md:flex ${left ? "lg:mt-4 lg:grid lg:grid-cols-1" : ""}`}>
+      <Facet label={lang === "ru" ? "Жанр" : "Genre"} all={lang === "ru" ? "Все жанры" : "All genres"} value={genre} items={genres} lang={lang} onChange={onGenre} />
+      <Facet label={lang === "ru" ? "Направление" : "Style"} all={lang === "ru" ? "Все направления" : "All styles"} value={style} items={styles} lang={lang} onChange={onStyle} />
+    </div>}
     {open && <div className="mt-2 grid gap-1 border-t border-border pt-2 md:hidden">{visible.map((d) => <button key={d.key} type="button" onClick={() => { onChange(d.key); setOpen(false); }} aria-pressed={category === d.key} className={`border-l-2 px-3 py-2 text-left text-sm ${category === d.key ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>{d[lang]}</button>)}</div>}
   </div>;
 }
 
 function Pill({ d, lang, active, left, onClick }: { d: Direction; lang: Lang; active: boolean; left: boolean; onClick: () => void }) {
   return <Button variant="editorial" onClick={onClick} aria-pressed={active} className={`h-8 shrink-0 whitespace-nowrap rounded-full border px-3.5 text-[11px] font-medium transition-colors lg:text-xs ${active ? "border-primary bg-primary text-primary-foreground shadow-sm hover:bg-primary hover:text-primary-foreground" : "border-border text-muted-foreground hover:border-primary hover:text-primary"} ${left ? "lg:justify-start lg:rounded-none lg:border-0 lg:border-l-2 lg:bg-transparent lg:px-3 lg:shadow-none" : ""} ${left && active ? "lg:border-primary lg:text-primary lg:hover:bg-transparent lg:hover:text-primary" : ""}`}>{d[lang]}</Button>;
+}
+
+function Facet({ label, all, value, items, lang, onChange }: { label: string; all: string; value: string; items: Record<string, { ru: string; en: string }>; lang: Lang; onChange: (v: string) => void }) {
+  return <Select value={value} onValueChange={onChange}><SelectTrigger aria-label={label} className={`h-9 w-full rounded-full bg-transparent px-4 text-xs shadow-none md:w-48 ${value !== "all" ? "border-primary text-primary" : ""}`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">{all}</SelectItem>{Object.entries(items).map(([k, v]) => <SelectItem key={k} value={k}>{v[lang]}</SelectItem>)}</SelectContent></Select>;
 }
