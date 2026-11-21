@@ -9,7 +9,7 @@ import type { Direction } from "@/lib/directions";
 import type { Term } from "@/lib/genres";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export function CollectionFilters({ position, category, lang, directions, query, onQuery, onChange, genre = "all", style = "all", onGenre, onStyle, styleTerms = [] }: { styleTerms?: Term[]; genre?: string; style?: string; onGenre?: (g: string) => void; onStyle?: (s: string) => void; position: CollectionMenuPosition; category: Category; lang: Lang; directions: Direction[]; query: string; onQuery: (q: string) => void; onChange: (category: Category) => void }) {
+export function CollectionFilters({ position, category, lang, directions, query, onQuery, onChange, genre = "all", style = "all", onGenre, onStyle, styleTerms = [] }: { styleTerms?: Term[]; genre?: string; style?: string; onGenre?: (g: string) => void; onStyle?: ((s: string) => void) | undefined; position: CollectionMenuPosition; category: Category; lang: Lang; directions: Direction[]; query: string; onQuery: (q: string) => void; onChange: (category: Category) => void }) {
   const t = copy[lang];
   const left = position === "left";
   const [open, setOpen] = useState(false);
