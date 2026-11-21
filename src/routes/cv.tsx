@@ -9,13 +9,14 @@ import { artist, type Lang } from "@/lib/artworks";
 
 export const Route = createFileRoute("/cv")({
   head: () => ({ meta: [
+    { property: "og:url", content: "https://prosetskaya.lovable.app/cv" },
     { title: "Юлия Просецкая — CV художника" },
     { name: "description", content: "Резюме художницы Юлии Просецкой: образование, персональные и групповые выставки, спецпроекты, награды. Скачать CV в PDF." },
     { property: "og:title", content: "Юлия Просецкая — CV" },
     { property: "og:description", content: "Образование, выставки, проекты и награды Юлии Просецкой." },
     { property: "og:type", content: "profile" },
     { name: "twitter:card", content: "summary" },
-  ] }),
+  ], links: [{ rel: "canonical", href: "https://prosetskaya.lovable.app/cv" }], scripts: [{ type: "application/ld+json", children: JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Юлия Просецкая","alternateName":"Yulia Prosetskaya","jobTitle":"Художник","url":"https://prosetskaya.lovable.app/","email":"mailto:prosetskaya.juliya@gmail.com","sameAs":["https://t.me/yuliya_prosetskaya","https://www.instagram.com/yulia_prosetskaya/"]}) }] }),
   component: CvPage,
 });
 

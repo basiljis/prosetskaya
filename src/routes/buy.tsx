@@ -4,13 +4,14 @@ import { boutique } from "@/lib/boutique";
 
 export const Route = createFileRoute("/buy")({
   head: () => ({ meta: [
+    { property: "og:url", content: "https://prosetskaya.lovable.app/buy" },
     { title: "Как купить картину — Юлия Просецкая" },
     { name: "description", content: "Два способа купить работу Юлии Просецкой: по договору и счёту или онлайн-оплата на сайте." },
     { property: "og:title", content: "Как купить картину Юлии Просецкой" },
     { property: "og:description", content: "Покупка по договору и счёту или онлайн на сайте." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
-  ] }),
+  ], links: [{ rel: "canonical", href: "https://prosetskaya.lovable.app/buy" }] }),
   component: BuyPage,
 });
 

@@ -35,13 +35,14 @@ import { ExpandableText } from "@/components/expandable-text";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [
+    { property: "og:url", content: "https://prosetskaya.lovable.app/" },
     { title: "Юлия Просецкая — галерея живописи и цифрового искусства" },
     { name: "description", content: "Галерея художницы Юлии Просецкой: живопись, пейзажи, цифровое искусство, графика и флуоресцентные работы. Биография и контакты художницы." },
     { property: "og:title", content: "Галерея Юлии Просецкой: живопись и цифровое искусство" },
     { property: "og:description", content: "Полная коллекция живописи, пейзажей, графики и цифровых работ Юлии Просецкой." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },
-  ] }),
+  ], links: [{ rel: "canonical", href: "https://prosetskaya.lovable.app/" }], scripts: [{ type: "application/ld+json", children: JSON.stringify({"@context":"https://schema.org","@type":"WebSite","name":"Галерея Юлии Просецкой","url":"https://prosetskaya.lovable.app/","inLanguage":["ru","en"]}) }, { type: "application/ld+json", children: JSON.stringify({"@context":"https://schema.org","@type":"Person","name":"Юлия Просецкая","alternateName":"Yulia Prosetskaya","jobTitle":"Художник","url":"https://prosetskaya.lovable.app/","email":"mailto:prosetskaya.juliya@gmail.com","sameAs":["https://t.me/yuliya_prosetskaya","https://www.instagram.com/yulia_prosetskaya/"]}) }] }),
   component: Index,
 });
 
