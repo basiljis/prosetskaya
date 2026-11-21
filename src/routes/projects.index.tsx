@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowUpRight } from "lucide-react";
 import { publicProjectsOptions } from "@/lib/projects-query";
 import { projectIntro } from "@/lib/projects";
+import { ExpandableText } from "@/components/expandable-text";
 
 export const Route = createFileRoute("/projects/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(publicProjectsOptions),
@@ -25,7 +26,7 @@ function ProjectsPage() {
   return <ProjectPageShell>{(lang) => <section className="gallery-shell py-10 md:py-14">
     <p className="mb-4 text-xs uppercase text-primary">Юлия Просецкая / {lang === "ru" ? "Авторские проекты" : "Artist projects"}</p>
     <h1 className="section-heading font-display">{lang === "ru" ? "Спецпроекты" : "Special projects"}</h1>
-    <div className="mt-7 grid gap-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-end"><div className="max-w-3xl whitespace-pre-line text-sm leading-7 text-muted-foreground">{projectIntro[lang]}</div><ContactDialog lang={lang}><Button variant="editorial" className="h-auto w-fit border-b border-foreground px-0 pb-2 text-xs">{lang === "ru" ? "Обсудить проект" : "Discuss a project"}<ArrowUpRight /></Button></ContactDialog></div>
+    <div className="mt-7 grid gap-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-end"><ExpandableText text={projectIntro[lang]} lang={lang} className="max-w-3xl text-sm leading-7 text-muted-foreground" /><ContactDialog lang={lang}><Button variant="editorial" className="h-auto w-fit border-b border-foreground px-0 pb-2 text-xs">{lang === "ru" ? "Обсудить проект" : "Discuss a project"}<ArrowUpRight /></Button></ContactDialog></div>
     <ProjectCatalogue projects={data.projects} works={data.works} lang={lang} stickyTop="top-[76px]" />
   </section>}</ProjectPageShell>;
 }
