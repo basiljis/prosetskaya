@@ -52,7 +52,7 @@ function CvPage() {
           {cv.sections.map((s, i) => (
             <section key={s.ru} className="grid gap-4 border-t border-border py-8 md:grid-cols-[1fr_1.8fr] md:gap-10">
               <h2 className="flex items-baseline gap-3 text-xl tracking-[0.06em]"><span className="text-[10px] text-primary">{String(i + 1).padStart(2, "0")}</span>{en ? s.en : s.ru}</h2>
-              <ul className="space-y-3 text-sm leading-6">{s.items.map((item) => <li key={item}>{item}</li>)}</ul>
+              <ul className="space-y-3 text-sm leading-6">{(en && s.itemsEn?.length ? s.itemsEn : s.items).map((item) => <li key={item}>{item}</li>)}</ul>
             </section>
           ))}
           <section className="grid gap-4 border-t border-border py-8 md:grid-cols-[1fr_1.8fr] md:gap-10">

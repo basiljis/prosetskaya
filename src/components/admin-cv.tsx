@@ -22,8 +22,9 @@ export function AdminCv({ initial, busy, onSave }: { initial: Cv; busy: boolean;
     {cv.sections.map((s, i) => <section key={i} className="border border-border bg-card p-4">
       <div className="flex gap-2"><Input value={s.ru} onChange={(e) => setSec(i, { ru: e.target.value })} aria-label="Раздел" /><Input value={s.en} onChange={(e) => setSec(i, { en: e.target.value })} aria-label="Раздел (англ.)" /><Button variant="ghost" size="icon" aria-label="Удалить раздел" onClick={() => set({ sections: cv.sections.filter((_, j) => j !== i) })}><Trash2 /></Button></div>
       <label className={`${L} mt-3`}>Пункты — каждый с новой строки<Textarea rows={Math.min(14, s.items.length + 2)} value={s.items.join("\n")} onChange={(e) => setSec(i, { items: e.target.value.split("\n") })} className="bg-background text-foreground" /></label>
+      <label className={`${L} mt-3`}>Пункты (англ.) — в том же порядке<Textarea rows={Math.min(14, (s.itemsEn ?? []).length + 2)} value={(s.itemsEn ?? []).join("\n")} onChange={(e) => setSec(i, { itemsEn: e.target.value.split("\n") })} className="bg-background text-foreground" /></label>
     </section>)}
-    <div className="flex gap-3"><Button variant="outline" onClick={() => set({ sections: [...cv.sections, { ru: "Новый раздел", en: "New section", items: [] }] })}><Plus />Раздел</Button>
-      <Button disabled={busy} onClick={() => onSave({ ...cv, sections: cv.sections.map((s) => ({ ...s, items: s.items.map((x) => x.trim()).filter(Boolean) })) })}>{busy ? <Loader2 className="animate-spin" /> : <Save />}Сохранить резюме</Button></div>
+    <div className="flex gap-3"><Button variant="outline" onClick={() => set({ sections: [...cv.sections, { ru: "Новый раздел", en: "New section", items: [], itemsEn: [] }] })}><Plus />Раздел</Button>
+      <Button disabled={busy} onClick={() => onSave({ ...cv, sections: cv.sections.map((s) => ({ ...s, items: s.items.map((x) => x.trim()).filter(Boolean), itemsEn: (s.itemsEn ?? []).map((x) => x.trim()).filter(Boolean) })) })}>{busy ? <Loader2 className="animate-spin" /> : <Save />}Сохранить резюме</Button></div>
   </div>;
 }
