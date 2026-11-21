@@ -32,6 +32,11 @@ export const Route = createFileRoute("/projects/$projectId")({
   component: ProjectPage,
 });
 
+/** Projects whose works are split into sub-sections by medium. */
+const MURAL_SECTIONS: Record<string, { medium: string | null; ru: string; en: string }[]> = {
+  murals: [{ medium: "Роспись стены", ru: "Стены", en: "Walls" }, { medium: "Роспись потолка", ru: "Потолки", en: "Ceilings" }],
+};
+
 function ProjectPage() {
   const { project, works, projects } = Route.useLoaderData();
   const [index, setIndex] = useState<number | null>(null);
@@ -41,10 +46,17 @@ function ProjectPage() {
     <h1 className="max-w-5xl font-display text-4xl leading-tight md:text-6xl">{projectTitle(project, lang)}</h1>
     <div className="mt-6 max-w-3xl whitespace-pre-line text-sm leading-7 text-muted-foreground">{projectDescription(project, lang)}</div>
     <ContactDialog lang={lang}><Button variant="editorial" className="mt-6 h-auto border-b border-foreground px-0 pb-2 text-xs">{lang === "ru" ? "Обсудить проект" : "Discuss a project"}<ArrowUpRight /></Button></ContactDialog>
-    <div className="mt-10 grid gap-x-9 gap-y-10 border-t border-border pt-8 sm:grid-cols-2 lg:grid-cols-3">{works.map((work, i) => <figure key={work.id} className="min-w-0">
+    {(MURAL_SECTIONS[project.id] ?? [{ medium: null, ru: "", en: "" }]).map((sec) => {
+      const list = works.map((work, i) => ({ work, i })).filter(({ work }) => !sec.medium || work.mediumRu === sec.medium);
+      return <section key={sec.ru || "all"} className="mt-10">
+        {sec.medium && <h2 className="font-display text-3xl">{lang === "ru" ? sec.ru : sec.en} <span className="font-sans text-sm text-primary">({list.length})</span></h2>}
+        {list.length === 0 ? <p className="mt-4 border-t border-border pt-6 text-sm text-muted-foreground">{lang === "ru" ? "Фотографии скоро появятся." : "Photos coming soon."}</p> :
+        <div className="mt-4 grid gap-x-9 gap-y-10 border-t border-border pt-8 sm:grid-cols-2 lg:grid-cols-3">{list.map(({ work, i }) => <figure key={work.id} className="min-w-0">
       <Button variant="artwork" onClick={() => setIndex(i)} aria-label={`${lang === "ru" ? "Смотреть" : "View"}: ${work[lang]}`} className="group relative block w-full cursor-zoom-in"><img src={work.image} alt={work[lang]} loading="lazy" className="gallery-image" /><span className="absolute bottom-3 right-3 grid size-9 place-items-center bg-background text-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"><ZoomIn className="size-4" /></span></Button>
       <ArtworkCaption work={work} lang={lang} className="mt-4 border-t border-border pt-3" />
-    </figure>)}</div>
+    </figure>)}</div>}
+      </section>;
+    })}
     {index !== null && <ArtworkViewer works={works} index={index} lang={lang} projects={projects} onChange={setIndex} onClose={() => setIndex(null)} />}
   </article>}</ProjectPageShell>;
 }

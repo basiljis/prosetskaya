@@ -26,3 +26,6 @@
 - Collection filters are genre pills plus a style dropdown driven by admin-editable dictionaries in site_settings.genres/styles (resolveTerms merges saved entries with built-ins), so the admin controls labels/order without code changes.
 - Visits are logged anonymously to page_views from the root tracker and aggregated client-side in the admin Statistics tab; admin uploads go to the private `artworks` bucket with long-lived signed links because public buckets are blocked in this workspace.
 - News, CV text and favourites live in Cloud (news table, site_settings.cv, favorites table); the bundled cv.json is only the fallback and the PDF is regenerated separately.
+- Admin image uploads are resized (longest side MAX_SIDE) and re-encoded to WebP in the browser by src/lib/image-optimize.ts before storage, so page weight stays low without server-side image tooling.
+- The virtual exhibition (/exhibition, ssr:false) is a lazy-loaded React Three Fiber scene; hanging rules live in pure src/lib/exhibition-layout.ts and the selection is passed via sessionStorage to avoid huge URLs.
+- Project pages can split works into sub-sections by medium via MURAL_SECTIONS in the project route (e.g. murals: walls/ceilings).
