@@ -59,3 +59,5 @@
 - [x] Mobile collection filters: search collapses to icon next to genre/style dropdowns; expanding search collapses the dropdowns to icons
 - [x] Special projects menu on mobile still not optimized (see screenshot)
 - [ ] Newsletter sending: blocked on email domain setup
+- [x] Move favourite heart off the artwork image
+- [x] Tooltips with hints on icon buttons across the site

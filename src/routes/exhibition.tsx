@@ -5,10 +5,11 @@ import { ArtworkCaption } from "@/components/artwork-caption";
 import { Button } from "@/components/ui/button";
 import { useArtworks } from "@/hooks/use-artworks";
 import type { Lang } from "@/lib/artworks";
+import { EXHIBITION_LIMIT } from "@/lib/exhibition-layout";
 
 const VirtualGallery = lazy(() => import("@/components/virtual-gallery").then((m) => ({ default: m.VirtualGallery })));
 export const EXHIBITION_KEY = "prosetskaya-exhibition";
-export const EXHIBITION_MAX = 30;
+export const EXHIBITION_MAX = EXHIBITION_LIMIT;
 
 export const Route = createFileRoute("/exhibition")({
   ssr: false,
@@ -34,7 +35,7 @@ function Exhibition() {
   }, []);
   const works = useMemo(() => {
     const by = new Map(all.map((w) => [w.id, w]));
-    const list = (ids?.length ? ids.map((id) => by.get(id)).filter((w) => !!w) : all.slice(0, 16));
+    const list = (ids ?? []).map((id) => by.get(id)).filter((w) => !!w);
     return list.slice(0, EXHIBITION_MAX);
   }, [all, ids]);
   const go = (d: number) => setIndex((i) => (i + d + works.length) % works.length);
@@ -46,7 +47,8 @@ function Exhibition() {
   const ru = lang === "ru";
   const work = works[index];
   return <main className="fixed inset-0 bg-background text-foreground">
-    {ids !== null && <Suspense fallback={<p className="grid h-full place-items-center text-sm text-muted-foreground">{ru ? "Готовим зал…" : "Preparing the hall…"}</p>}>
+    {ids !== null && works.length === 0 && <div className="grid h-full place-items-center p-6 text-center"><div><p className="font-display text-3xl">{ru ? "Выберите работы для выставки" : "Choose works for the exhibition"}</p><p className="mt-3 text-sm text-muted-foreground">{ru ? "Отметьте жанр или направление в коллекции, затем нажмите значок выставки." : "Pick a genre or style in the collection, then press the exhibition icon."}</p><Button asChild className="mt-6"><Link to="/" hash="works">{ru ? "К коллекции" : "To the collection"}</Link></Button></div></div>}
+    {ids !== null && works.length > 0 && <Suspense fallback={<p className="grid h-full place-items-center text-sm text-muted-foreground">{ru ? "Готовим зал…" : "Preparing the hall…"}</p>}>
       <div className="absolute inset-0"><VirtualGallery works={works} lang={lang} index={index} onIndex={(i) => { setIndex(i); setAuto(false); }} /></div>
     </Suspense>}
     <header className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between p-4 md:p-6">

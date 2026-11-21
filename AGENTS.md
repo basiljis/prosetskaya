@@ -27,6 +27,7 @@
 - Visits are logged anonymously to page_views from the root tracker and aggregated client-side in the admin Statistics tab; admin uploads go to the private `artworks` bucket with long-lived signed links because public buckets are blocked in this workspace.
 - News, CV text and favourites live in Cloud (news table, site_settings.cv, favorites table); the bundled cv.json is only the fallback and the PDF is regenerated separately.
 - Admin image uploads are resized (longest side MAX_SIDE) and re-encoded to WebP in the browser by src/lib/image-optimize.ts before storage, so page weight stays low without server-side image tooling.
-- The virtual exhibition (/exhibition, ssr:false) is a lazy-loaded React Three Fiber scene; hanging rules live in pure src/lib/exhibition-layout.ts and the selection is passed via sessionStorage to avoid huge URLs.
+- The virtual exhibition (/exhibition, ssr:false) is a lazy-loaded React Three Fiber closed room (max EXHIBITION_LIMIT works, launch only after a genre/style filter); hanging rules live in pure src/lib/exhibition-layout.ts and the selection is passed via sessionStorage to avoid huge URLs.
 - Project pages can split works into sub-sections by medium via MURAL_SECTIONS in the project route (e.g. murals: walls/ceilings).
 - Newsletter subscribers live in Cloud `subscribers` keyed by email; anonymous signup and self-unsubscribe go through security-definer RPCs (subscribe, set_my_subscription), letter HTML is built by src/lib/newsletter.ts.
+- Icon-button hints come from one global HintLayer in __root that styles title/aria-label, so new buttons get tooltips by setting title.

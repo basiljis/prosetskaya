@@ -11,6 +11,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import { VisitTracker } from "@/components/visit-tracker";
+import { HintLayer } from "@/components/hint-layer";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -126,6 +127,7 @@ function RootComponent() {
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <VisitTracker />
+      <HintLayer />
     </QueryClientProvider>
   );
 }
