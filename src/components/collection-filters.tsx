@@ -26,6 +26,7 @@ export function CollectionFilters({ position, lang, genreTerms, styleTerms, genr
     <div className={`flex flex-nowrap items-center gap-2 sm:flex-wrap ${left ? "lg:flex-col lg:items-stretch" : ""}`}>
       <Multi icon={<Shapes className="size-4" />} compact={s} onOpen={() => setSearching(false)} label={ru ? "Жанр" : "Genre"} all={ru ? "Все жанры" : "All genres"} terms={genreTerms} value={genre} onChange={onGenre} lang={lang} />
       {styleTerms && <Multi icon={<Palette className="size-4" />} compact={s} onOpen={() => setSearching(false)} label={ru ? "Направление" : "Style"} all={ru ? "Все направления" : "All styles"} terms={styleTerms} value={style} onChange={onStyle} lang={lang} />}
+      {extra}
       {any && <button type="button" onClick={() => { onGenre([]); onStyle([]); }} className="px-2 text-xs text-muted-foreground underline-offset-4 hover:text-primary hover:underline">{ru ? "Сбросить" : "Reset"}</button>}
       <div className={`relative min-w-0 sm:block sm:w-56 sm:flex-none ${s ? "flex-1" : "hidden"} ${left ? "lg:w-full" : "sm:ml-auto"}`}>
         <Search className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
@@ -33,7 +34,6 @@ export function CollectionFilters({ position, lang, genreTerms, styleTerms, genr
         {(query || searching) && <button type="button" onClick={() => { onQuery(""); setSearching(false); }} aria-label={ru ? "Очистить" : "Clear"} className="absolute right-3 top-2.5 text-muted-foreground"><X className="size-4" /></button>}
       </div>
       {!s && <Button variant="editorial" onClick={() => setSearching(true)} aria-label={ph} className="size-9 shrink-0 rounded-full border border-border p-0 text-muted-foreground sm:hidden"><Search className="size-4" /></Button>}
-      {extra}
     </div>
   </div>;
 }
