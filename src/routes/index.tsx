@@ -246,8 +246,8 @@ function Index() {
         </Dialog.Portal>
       </Dialog.Root>
       <div className="fixed bottom-5 right-4 z-40 flex flex-col gap-2">
-        <Button variant="outline" size="icon" className="bg-background/90 backdrop-blur" onClick={() => smoothTo(0)} aria-label={lang === "ru" ? "В начало страницы" : "To top"} title={lang === "ru" ? "В начало страницы" : "To top"}><ArrowUp /></Button>
-        <Button variant="outline" size="icon" className="bg-background/90 backdrop-blur" onClick={() => smoothTo(document.documentElement.scrollHeight)} aria-label={lang === "ru" ? "В конец страницы" : "To bottom"} title={lang === "ru" ? "В конец страницы" : "To bottom"}><ArrowDown /></Button>
+        <Button variant="outline" size="icon" className="rounded-full bg-background/90 shadow-sm backdrop-blur" onClick={() => smoothTo(0)} aria-label={lang === "ru" ? "В начало страницы" : "To top"} title={lang === "ru" ? "В начало страницы" : "To top"}><ArrowUp /></Button>
+        <Button variant="outline" size="icon" className="rounded-full bg-background/90 shadow-sm backdrop-blur" onClick={() => smoothTo(document.documentElement.scrollHeight)} aria-label={lang === "ru" ? "В конец страницы" : "To bottom"} title={lang === "ru" ? "В конец страницы" : "To bottom"}><ArrowDown /></Button>
       </div>
       {inquiryWork && <InquiryDialog work={inquiryWork} lang={lang} onClose={() => setInquiryId(null)} />}
       {buyWork && <CheckoutDialog work={buyWork} price={shop?.prices[buyWork.id] ?? null} online={!!shop?.online} onClose={() => setBuyId(null)} />}

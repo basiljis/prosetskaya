@@ -23,3 +23,6 @@
 - Collection direction names/order/visibility live in site_settings.collection_directions, resolved by src/lib/directions.ts; project works are excluded from the collection and shown only in the Projects block.
 - Store named special projects in Cloud `projects` and assign artworks through `project_id`; public detail pages load through a publishable server function and admin edits stay in `src/lib/admin.ts`, so names, descriptions and membership have one live source.
 - Resolve interior preview from an artwork's nullable override, then its project's setting; never infer the setting from photograph labels, so administrator choices apply consistently in every viewer.
+- Collection filters are genre pills plus a style dropdown driven by admin-editable dictionaries in site_settings.genres/styles (resolveTerms merges saved entries with built-ins), so the admin controls labels/order without code changes.
+- Visits are logged anonymously to page_views from the root tracker and aggregated client-side in the admin Statistics tab; admin uploads go to the private `artworks` bucket with long-lived signed links because public buckets are blocked in this workspace.
+- News, CV text and favourites live in Cloud (news table, site_settings.cv, favorites table); the bundled cv.json is only the fallback and the PDF is regenerated separately.
