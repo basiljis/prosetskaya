@@ -1,5 +1,5 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { ContactShadows, Environment, Lightformer } from "@react-three/drei";
+import { ContactShadows, Environment, Lightformer, MeshReflectorMaterial } from "@react-three/drei";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import type { Artwork, Lang } from "@/lib/artworks";
@@ -27,7 +27,7 @@ function canvasTex(w: number, h: number, draw: (g: CanvasRenderingContext2D) => 
 function useGlow() {
   return useMemo(() => canvasTex(256, 256, (g) => {
     const r = g.createRadialGradient(128, 110, 0, 128, 128, 128);
-    r.addColorStop(0, "rgba(255,236,205,0.55)"); r.addColorStop(0.5, "rgba(255,230,195,0.22)"); r.addColorStop(1, "rgba(255,230,195,0)");
+    r.addColorStop(0, "rgba(255,248,236,0.32)"); r.addColorStop(0.55, "rgba(255,246,232,0.12)"); r.addColorStop(1, "rgba(255,246,232,0)");
     g.fillStyle = r; g.fillRect(0, 0, 256, 256);
   }), []);
 }
@@ -105,46 +105,40 @@ export function VirtualGallery({ works, lang, index, onIndex }: { works: readonl
   }, [hungs, index, D]);
   const floor = useMemo(() => {
     const t = canvasTex(1024, 1024, (g) => {
-      // pale oak planks, 8 per tile — warm wood floor as in magazine gallery shots
-      g.fillStyle = "#cdb48f"; g.fillRect(0, 0, 1024, 1024);
-      const pw = 128;
-      for (let i = 0; i < 8; i++) for (let k = -1; k < 3; k++) {
-        const off = ((i * 37) % 4) * 128 + k * 512 - 256, base = 196 + Math.random() * 22;
-        g.fillStyle = `rgb(${base},${base - 26},${base - 58})`; g.fillRect(i * pw, off, pw, 512);
-        for (let l = 0; l < 26; l++) { const gx = i * pw + Math.random() * pw; g.strokeStyle = `rgba(120,85,50,${0.05 + Math.random() * 0.08})`; g.lineWidth = 1 + Math.random() * 1.5; g.beginPath(); g.moveTo(gx, off); g.bezierCurveTo(gx + 6, off + 170, gx - 6, off + 340, gx + 3, off + 512); g.stroke(); }
-        g.fillStyle = "rgba(70,50,30,.35)"; g.fillRect(i * pw, off, 2, 512); g.fillRect(i * pw, off, pw, 2);
-      }
+      // polished light-grey concrete with soft trowel mottling and saw-cut joints — the standard white-cube floor
+      g.fillStyle = "#a9a6a1"; g.fillRect(0, 0, 1024, 1024);
+      for (let i = 0; i < 1400; i++) { const r = 10 + Math.random() * 90, v = 150 + Math.random() * 50; const gr = g.createRadialGradient(0, 0, 0, 0, 0, r); gr.addColorStop(0, `rgba(${v},${v - 2},${v - 6},.045)`); gr.addColorStop(1, "rgba(0,0,0,0)"); g.save(); g.translate(Math.random() * 1024, Math.random() * 1024); g.fillStyle = gr; g.fillRect(-r, -r, r * 2, r * 2); g.restore(); }
+      for (let i = 0; i < 9000; i++) { const v = 120 + Math.random() * 80; g.fillStyle = `rgba(${v},${v},${v},.12)`; g.fillRect(Math.random() * 1024, Math.random() * 1024, 1.5, 1.5); }
+      g.strokeStyle = "rgba(55,52,48,.35)"; g.lineWidth = 2; g.beginPath(); g.moveTo(0, 1); g.lineTo(1024, 1); g.moveTo(1, 0); g.lineTo(1, 1024); g.stroke();
     });
-    t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(W / 3, len / 3); return t;
+    t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(W / 4, len / 4); return t;
   }, [W, len]);
   const plaster = useMemo(() => {
     const t = canvasTex(256, 256, (g) => { g.fillStyle = "#808080"; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 5000; i++) { const v = 110 + Math.random() * 36; g.fillStyle = `rgba(${v},${v},${v},.35)`; g.fillRect(Math.random() * 256, Math.random() * 256, 2, 2); } }, false);
     t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(4, 2); return t;
   }, []);
-  // Skylight grid: diffuse ceiling panels, as in white-cube halls.
-  const panels = useMemo(() => { const out: [number, number][] = []; const nx = Math.max(2, Math.round(W / 2.6)), nz = Math.max(3, Math.round(len / 2.6)); for (let i = 0; i < nx; i++) for (let j = 0; j < nz; j++) out.push([-W / 2 + (i + 0.5) * (W / nx), FRONT - (j + 0.5) * (len / nz)]); return { out, sx: W / nx - 0.35, sz: len / Math.max(3, Math.round(len / 2.6)) - 0.35 }; }, [W, len]);
   // Baked ambient occlusion where walls meet floor and ceiling — the cue that stops a room looking "CG".
   const ao = useMemo(() => canvasTex(4, 128, (g) => { const gr = g.createLinearGradient(0, 128, 0, 0); gr.addColorStop(0, "rgba(40,30,20,.38)"); gr.addColorStop(0.35, "rgba(40,30,20,.12)"); gr.addColorStop(1, "rgba(40,30,20,0)"); g.fillStyle = gr; g.fillRect(0, 0, 4, 128); }), []);
   const aoStrips: { p: [number, number, number]; r: [number, number, number]; w: number }[] = [
     { p: [-W / 2 + 0.003, 0, midZ], r: [0, Math.PI / 2, 0], w: len }, { p: [W / 2 - 0.003, 0, midZ], r: [0, -Math.PI / 2, 0], w: len },
     { p: [0, 0, -D + 0.003], r: [0, 0, 0], w: W }, { p: [0, 0, FRONT - 0.003], r: [0, Math.PI, 0], w: W },
   ];
-  const wallMat = <meshStandardMaterial color="#f4f1ec" roughness={0.95} bumpMap={plaster} bumpScale={0.25} />;
+  const wallMat = <meshStandardMaterial color="#f7f7f5" roughness={0.97} bumpMap={plaster} bumpScale={0.12} />;
   const door = 1.8;
-  return <Canvas shadows dpr={[1, 1.5]} gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }} camera={{ position: [0, EYE, 0.6], fov: 55 }} onCreated={({ gl }) => { gl.domElement.parentElement?.setAttribute("data-scene-ready", ""); }} aria-label={lang === "ru" ? "Виртуальный выставочный зал" : "Virtual exhibition hall"}>
-    <color attach="background" args={["#ece9e4"]} />
-    <ambientLight intensity={0.35} color="#fffaf3" />
+  return <Canvas shadows dpr={[1, 1.5]} gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.25 }} camera={{ position: [0, EYE, 0.6], fov: 46 }} onCreated={({ gl }) => { gl.domElement.parentElement?.setAttribute("data-scene-ready", ""); }} aria-label={lang === "ru" ? "Виртуальный выставочный зал" : "Virtual exhibition hall"}>
+    <color attach="background" args={["#efefed"]} />
+    <ambientLight intensity={0.5} color="#fffaf3" />
     <hemisphereLight args={["#fffaf2", "#bfae98", 0.8]} />
     <directionalLight position={[2, CEIL, 0]} intensity={0.45} color="#fff6ea" />
     <Environment resolution={128}>
       <Lightformer form="rect" intensity={2} position={[0, 6, midZ]} rotation-x={Math.PI / 2} scale={[W, len, 1]} />
       <Lightformer form="rect" intensity={0.5} color="#fff1dd" position={[0, 2, 6]} scale={[W, 3, 1]} />
     </Environment>
-    <mesh rotation-x={-Math.PI / 2} position={[0, 0, midZ]} receiveShadow><planeGeometry args={[W, len]} /><meshStandardMaterial map={floor} roughness={0.42} envMapIntensity={0.8} /></mesh>
+    <mesh rotation-x={-Math.PI / 2} position={[0, 0, midZ]} receiveShadow><planeGeometry args={[W, len]} /><MeshReflectorMaterial map={floor} mirror={0.35} blur={[400, 120]} resolution={512} mixBlur={1} mixStrength={1.4} roughness={0.55} depthScale={0.6} minDepthThreshold={0.4} maxDepthThreshold={1.3} color="#c9c6c1" metalness={0.05} /></mesh>
     <ContactShadows position={[0, 0.002, midZ]} scale={[W, len]} opacity={0.3} blur={2.5} far={2} resolution={512} frames={1} />
     {/* ceiling + skylight panels with deep frames */}
-    <mesh rotation-x={Math.PI / 2} position={[0, CEIL, midZ]}><planeGeometry args={[W, len]} /><meshBasicMaterial color="#e9e5df" /></mesh>
-    {panels.out.map(([x, z]) => <mesh key={`${x}:${z}`} rotation-x={Math.PI / 2} position={[x, CEIL - 0.01, z]}><planeGeometry args={[panels.sx * 0.45, panels.sz * 0.45]} /><meshBasicMaterial color="#f7f3ec" toneMapped={false} /></mesh>)}
+    <mesh rotation-x={Math.PI / 2} position={[0, CEIL, midZ]}><planeGeometry args={[W, len]} /><meshBasicMaterial color="#e8e8e6" /></mesh>
+    {(() => { const n = Math.max(2, Math.round(W / 2.4)); return Array.from({ length: n }, (_, i) => -W / 2 + (i + 0.5) * (W / n)); })().map((x: number) => <mesh key={`led${x}`} rotation-x={Math.PI / 2} position={[x, CEIL - 0.005, midZ]}><planeGeometry args={[0.08, len - 1.2]} /><meshBasicMaterial color="#ffffff" toneMapped={false} /></mesh>)}
     {/* walls: left, right, back, and entrance with an opening */}
     <mesh position={[-W / 2, CEIL / 2, midZ]} rotation-y={Math.PI / 2} receiveShadow><planeGeometry args={[len, CEIL]} />{wallMat}</mesh>
     <mesh position={[W / 2, CEIL / 2, midZ]} rotation-y={-Math.PI / 2} receiveShadow><planeGeometry args={[len, CEIL]} />{wallMat}</mesh>
@@ -152,24 +146,21 @@ export function VirtualGallery({ works, lang, index, onIndex }: { works: readonl
     {[-1, 1].map((s) => <mesh key={s} position={[s * (W + door) / 4, CEIL / 2, FRONT]} rotation-y={Math.PI}><planeGeometry args={[(W - door) / 2, CEIL]} />{wallMat}</mesh>)}
     <mesh position={[0, (CEIL + 2.6) / 2, FRONT]} rotation-y={Math.PI}><planeGeometry args={[door, CEIL - 2.6]} />{wallMat}</mesh>
     {/* skirting */}
-    {[-1, 1].map((s) => <mesh key={`k${s}`} position={[s * (W / 2 - 0.01), 0.05, midZ]}><boxGeometry args={[0.02, 0.1, len]} /><meshStandardMaterial color="#dcd7cf" /></mesh>)}
-    <mesh position={[0, 0.05, -D + 0.01]}><boxGeometry args={[W, 0.1, 0.02]} /><meshStandardMaterial color="#dcd7cf" /></mesh>
+    {[-1, 1].map((s) => <mesh key={`k${s}`} position={[s * (W / 2 - 0.01), 0.0125, midZ]}><boxGeometry args={[0.02, 0.025, len]} /><meshBasicMaterial color="#3a3836" /></mesh>)}
+    <mesh position={[0, 0.0125, -D + 0.01]}><boxGeometry args={[W, 0.025, 0.02]} /><meshBasicMaterial color="#3a3836" /></mesh>
     {aoStrips.map((a, i) => <group key={`ao${i}`} position={a.p} rotation={a.r}>
       <mesh position={[0, 0.35, 0]}><planeGeometry args={[a.w, 0.7]} /><meshBasicMaterial map={ao} transparent depthWrite={false} /></mesh>
       <mesh position={[0, CEIL - 0.25, 0]} rotation-z={Math.PI}><planeGeometry args={[a.w, 0.5]} /><meshBasicMaterial map={ao} transparent opacity={0.6} depthWrite={false} /></mesh>
     </group>)}
     {/* track-light spots aimed at each work */}
     {hungs.map((h) => <group key={`spot${h.id}`} position={[h.x + h.nx * 1.3, CEIL - 0.12, h.z + h.nz * 1.3]} rotation={[0, h.rotY, 0]}>
-      <mesh rotation-x={-0.6}><cylinderGeometry args={[0.045, 0.06, 0.2, 12]} /><meshStandardMaterial color="#202020" roughness={0.35} metalness={0.6} /></mesh>
-      <mesh position={[0, 0.08, 0]}><boxGeometry args={[0.04, 0.08, 0.04]} /><meshStandardMaterial color="#202020" /></mesh>
+      <mesh rotation-x={-0.6}><cylinderGeometry args={[0.045, 0.06, 0.2, 12]} /><meshStandardMaterial color="#f2f2f0" roughness={0.4} metalness={0.2} /></mesh>
+      <mesh position={[0, 0.08, 0]}><boxGeometry args={[0.04, 0.08, 0.04]} /><meshStandardMaterial color="#f2f2f0" /></mesh>
     </group>)}
-    {[-1, 1].map((s) => <mesh key={`rail${s}`} position={[s * (W / 2 - 1.3), CEIL - 0.02, midZ]}><boxGeometry args={[0.03, 0.03, len - 0.6]} /><meshStandardMaterial color="#222" /></mesh>)}
-    <mesh position={[0, CEIL - 0.02, -D + 1.3]}><boxGeometry args={[W - 2.6, 0.03, 0.03]} /><meshStandardMaterial color="#222" /></mesh>
-    {/* two benches facing the walls */}
-    {[-1.2, 1.2].map((zOff) => <group key={zOff} position={[0, 0, -D / 2 + zOff]}>
-      <mesh position={[0, 0.42, 0]} castShadow><boxGeometry args={[1.9, 0.12, 0.55]} /><meshStandardMaterial color="#3a2c24" roughness={0.75} /></mesh>
-      {[-0.75, 0.75].map((x) => <mesh key={x} position={[x, 0.18, 0]}><boxGeometry args={[0.04, 0.36, 0.5]} /><meshStandardMaterial color="#1e1e1e" roughness={0.4} metalness={0.5} /></mesh>)}
-    </group>)}
+    {[-1, 1].map((s) => <mesh key={`rail${s}`} position={[s * (W / 2 - 1.3), CEIL - 0.02, midZ]}><boxGeometry args={[0.035, 0.035, len - 0.6]} /><meshStandardMaterial color="#e4e4e2" /></mesh>)}
+    <mesh position={[0, CEIL - 0.02, -D + 1.3]}><boxGeometry args={[W - 2.6, 0.035, 0.035]} /><meshStandardMaterial color="#e4e4e2" /></mesh>
+    {/* single minimal bench, as in contemporary galleries */}
+    <group position={[0, 0, -D / 2 + 0.5]}><mesh position={[0, 0.22, 0]} castShadow><boxGeometry args={[2.2, 0.44, 0.6]} /><meshStandardMaterial color="#f4f4f2" roughness={0.8} /></mesh></group>
     {hungs.map((h, i) => <Painting key={h.id} hung={h} work={works[i]!} lang={lang} glow={glow} onPick={() => onIndex(i)} />)}
     <Rig target={target} />
   </Canvas>;
