@@ -10,7 +10,7 @@ const schema = z.object({
   message: z.string().trim().min(1).max(1500),
 });
 
-export function ContactDialog({ lang, children }: { lang: Lang; children: ReactNode }) {
+export function ContactDialog({ lang, children, topics = false }: { lang: Lang; children: ReactNode; topics?: boolean }) {
   const en = lang === "en";
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
@@ -23,7 +23,8 @@ export function ContactDialog({ lang, children }: { lang: Lang; children: ReactN
     if (!f.get("consent")) { setError(en ? "Please accept the privacy policy." : "Подтвердите согласие с политикой конфиденциальности."); return; }
     setError("");
     const { name, contact, message } = parsed.data;
-    const body = `${message}\n\n${name}\n${contact}`;
+    const topic = f.get("topic");
+    const body = `${topic ? `${topic}\n\n` : ""}${message}\n\n${name}\n${contact}`;
     window.location.href = `mailto:${artist.email}?subject=${encodeURIComponent(en ? "Message from the website" : "Сообщение с сайта")}&body=${encodeURIComponent(body)}`;
     setSent(true);
   };
@@ -43,6 +44,7 @@ export function ContactDialog({ lang, children }: { lang: Lang; children: ReactN
             <form onSubmit={submit} className="mt-6 space-y-5" noValidate>
               <label className="block text-[10px] uppercase text-muted-foreground">{en ? "Name" : "Имя"}<input name="name" maxLength={100} className={field} /></label>
               <label className="block text-[10px] uppercase text-muted-foreground">{en ? "Email or phone" : "Почта или телефон"}<input name="contact" maxLength={150} className={field} /></label>
+              {topics && <label className="block text-[10px] uppercase text-muted-foreground">{en ? "Direction" : "Направление"}<select name="topic" className={field}>{(en ? ["Set design / film work", "Murals", "Paintings for interiors", "Other special project"] : ["Декорации / работа в кино", "Роспись стен", "Картины для интерьера", "Другой спецпроект"]).map((o) => <option key={o} value={o} className="bg-background">{o}</option>)}</select></label>}
               <label className="block text-[10px] uppercase text-muted-foreground">{en ? "Message" : "Сообщение"}<textarea name="message" rows={4} maxLength={1500} className={field} /></label>
               <label className="flex items-start gap-2 text-[11px] text-muted-foreground"><input type="checkbox" name="consent" className="mt-0.5" />{en ? "I agree with the privacy policy" : "Согласен(на) с политикой конфиденциальности"}</label>
               {error && <p className="text-xs text-destructive">{error}</p>}

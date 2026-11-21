@@ -7,9 +7,11 @@ export interface Project {
 }
 
 export const projectIntro = {
-  ru: "Юлия Просецкая как художница известна не только в России, но и за её пределами. Работает с корпоративными клиентами, которые заказывают картины для интерьера ресторанов, гостиниц, спортивных комплексов. Занимается росписью стен: в числе известных проектов — работа специально для сериала о Борисе Годунове.\n\nЕсли вы желаете заказать авторскую картину, оставьте заявку для обсуждения деталей. Заказы отправляются по всей территории России и за границу при помощи транспортных компаний.",
-  en: "Yulia Prosetskaya is known as an artist in Russia and abroad. She works with corporate clients on paintings for restaurant, hotel and sports-complex interiors. Her mural projects include work for a series about Boris Godunov.\n\nTo commission a painting, get in touch to discuss the details. Works can be shipped throughout Russia and internationally by transport companies.",
+  ru: "Юлия Просецкая создаёт масштабные художественные решения для бизнеса, общественных пространств и киноиндустрии.\n\nКино и декорации. Работает на съёмочных площадках и в павильонах как художник-декоратор: создаёт художественные декорации, исторические и тематические росписи, живописный реквизит. В портфолио — проекты для крупных киностудий, включая работу для сериала «Годунов».\n\nИнтерьеры и архитектура. Выполняет роспись стен и создаёт серии картин для ресторанов, гостиниц и спортивных комплексов («Лужники», «Таврида»).\n\nОткрыта к сотрудничеству с киностудиями, продакшнами, архитекторами и корпоративными заказчиками. Оставьте заявку, чтобы обсудить сценарий, ТЗ или концепцию вашего проекта.",
+  en: "Yulia Prosetskaya creates large-scale artistic solutions for business, public spaces and the film industry.\n\nFilm and set design. She works on film sets and in studio pavilions as a set decorator: painted sets, historical and themed murals, painted props. Her portfolio includes projects for major film studios, among them the TV series “Godunov”.\n\nInteriors and architecture. Murals and painting series for restaurants, hotels and sports complexes (Luzhniki, Tavrida).\n\nOpen to collaboration with film studios, production companies, architects and corporate clients. Get in touch to discuss your script, brief or concept.",
 };
+/** Projects shown under the «Кино и декорации» tag. */
+export const cinemaProjectIds = ["godunov"];
 
 const sources = ["dlya-sportkompleksa", "dlya-seti-gostinic", "razrabotka-eskiza-dlya-proekta-tavrida", "individualnye-proekty", "proekty", "illyustracii", "razrabotka-logotipov"];
 const names = [
