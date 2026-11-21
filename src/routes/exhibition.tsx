@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { ArrowLeft, ChevronLeft, Undo2, ChevronRight, Pause, Play } from "lucide-react";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { ArtworkCaption } from "@/components/artwork-caption";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,8 @@ function Exhibition() {
   const [index, setIndex] = useState(-1);
   const [auto, setAuto] = useState(false);
   const [distance, setDistance] = useState(1);
+  const [resetKey, setResetKey] = useState(0);
+  const overview = () => { setAuto(false); setIndex(-1); setResetKey((k) => k + 1); };
   useEffect(() => {
     setLang(localStorage.getItem("prosetskaya-lang") === "en" ? "en" : "ru");
     try { setIds(JSON.parse(sessionStorage.getItem(EXHIBITION_KEY) ?? "[]")); } catch { setIds([]); }
@@ -41,7 +43,7 @@ function Exhibition() {
   }, [all, ids]);
   const go = (d: number) => setIndex((i) => (i + d + works.length) % works.length);
   useEffect(() => {
-    const k = (e: KeyboardEvent) => { if (e.key === "ArrowRight") go(1); if (e.key === "ArrowLeft") go(-1); if (e.key === "Escape") setIndex(-1); };
+    const k = (e: KeyboardEvent) => { if (e.key === "ArrowRight") go(1); if (e.key === "ArrowLeft") go(-1); if (e.key === "Escape") overview(); };
     window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k);
   });
   useEffect(() => { if (!auto) return; const t = setInterval(() => go(1), 5000); return () => clearInterval(t); });
@@ -50,7 +52,7 @@ function Exhibition() {
   return <main className="fixed inset-0 bg-background text-foreground">
     {ids !== null && works.length === 0 && <div className="grid h-full place-items-center p-6 text-center"><div><p className="font-display text-3xl">{ru ? "Выберите работы для выставки" : "Choose works for the exhibition"}</p><p className="mt-3 text-sm text-muted-foreground">{ru ? "Отметьте жанр или направление в коллекции, затем нажмите значок выставки." : "Pick a genre or style in the collection, then press the exhibition icon."}</p><Button asChild className="mt-6"><Link to="/" hash="works">{ru ? "К коллекции" : "To the collection"}</Link></Button></div></div>}
     {ids !== null && works.length > 0 && <Suspense fallback={<p className="grid h-full place-items-center text-sm text-muted-foreground">{ru ? "Готовим зал…" : "Preparing the hall…"}</p>}>
-      <div className="absolute inset-0"><VirtualGallery works={works} lang={lang} index={index} distance={distance} onIndex={(i) => { setIndex(i); setAuto(false); }} /></div>
+      <div className="absolute inset-0"><VirtualGallery works={works} lang={lang} index={index} distance={distance} resetKey={resetKey} onIndex={(i) => { setIndex(i); setAuto(false); }} /></div>
     </Suspense>}
     <header className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between p-4 md:p-6">
       <Button asChild variant="editorial" className="pointer-events-auto bg-background/85 px-3 text-xs backdrop-blur"><Link to="/" hash="works"><ArrowLeft />{ru ? "В коллекцию" : "Collection"}</Link></Button>
@@ -58,7 +60,7 @@ function Exhibition() {
     </header>
     <footer className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 p-4 md:p-6">
       {work ? <div className="w-[min(92vw,420px)] bg-background/90 p-4 shadow-lg backdrop-blur"><ArtworkCaption work={work} lang={lang} /></div>
-        : <p className="bg-background/85 px-4 py-2 text-center text-xs text-muted-foreground backdrop-blur">{ru ? "Нажмите на картину или начните экскурсию" : "Click a painting or start the tour"}</p>}
+        : <p className="bg-background/85 px-4 py-2 text-center text-xs text-muted-foreground backdrop-blur">{ru ? "Тяните или крутите колёсико (↑↓), чтобы ходить · нажмите на пол или на картину" : "Drag or scroll (↑↓) to walk · click the floor or a painting"}</p>}
       <div className="flex items-center gap-1 rounded-full bg-background/90 p-1 text-[11px] shadow-lg backdrop-blur" role="group" aria-label={ru ? "Расстояние до стены" : "Distance from wall"}>
         <span className="px-2 text-muted-foreground">{ru ? "Расстояние" : "Distance"}</span>
         {([[0.55, ru ? "Близко" : "Close"], [1, ru ? "Средне" : "Medium"], [1.7, ru ? "Далеко" : "Far"]] as const).map(([v, l]) => <button key={v} type="button" onClick={() => { setDistance(v); if (index < 0) setIndex(0); }} aria-pressed={distance === v} className={`rounded-full px-3 py-1.5 transition-colors ${distance === v ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>{l}</button>)}
@@ -66,6 +68,7 @@ function Exhibition() {
       <div className="flex items-center gap-2 rounded-full bg-background/90 p-1.5 shadow-lg backdrop-blur">
         <Button variant="ghost" size="icon" className="rounded-full" aria-label={ru ? "Предыдущая работа" : "Previous artwork"} onClick={() => { setAuto(false); go(-1); }}><ChevronLeft /></Button>
         <Button variant="ghost" className="rounded-full px-4 text-xs" onClick={() => { if (index < 0) setIndex(0); setAuto(!auto); }}>{auto ? <Pause /> : <Play />}{auto ? (ru ? "Пауза" : "Pause") : (ru ? "Экскурсия" : "Tour")}</Button>
+        <Button variant="ghost" size="icon" className="rounded-full" title={ru ? "Отойти назад — общий вид зала" : "Step back — hall overview"} aria-label={ru ? "Отойти назад" : "Step back"} onClick={overview}><Undo2 /></Button>
         <span className="min-w-14 text-center text-[11px] text-muted-foreground">{index + 1 > 0 ? index + 1 : "—"} / {works.length}</span>
         <Button variant="ghost" size="icon" className="rounded-full" aria-label={ru ? "Следующая работа" : "Next artwork"} onClick={() => { setAuto(false); go(1); }}><ChevronRight /></Button>
       </div>
