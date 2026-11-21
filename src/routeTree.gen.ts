@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BuyRouteImport } from './routes/buy'
 import { Route as CvRouteImport } from './routes/cv'
 import { Route as DeliveryRouteImport } from './routes/delivery'
+import { Route as ExhibitionRouteImport } from './routes/exhibition'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RequisitesRouteImport } from './routes/requisites'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -52,6 +53,11 @@ const CvRoute = CvRouteImport.update({
 const DeliveryRoute = DeliveryRouteImport.update({
   id: '/delivery',
   path: '/delivery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExhibitionRoute = ExhibitionRouteImport.update({
+  id: '/exhibition',
+  path: '/exhibition',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/buy': typeof BuyRoute
   '/cv': typeof CvRoute
   '/delivery': typeof DeliveryRoute
+  '/exhibition': typeof ExhibitionRoute
   '/privacy': typeof PrivacyRoute
   '/requisites': typeof RequisitesRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/buy': typeof BuyRoute
   '/cv': typeof CvRoute
   '/delivery': typeof DeliveryRoute
+  '/exhibition': typeof ExhibitionRoute
   '/privacy': typeof PrivacyRoute
   '/requisites': typeof RequisitesRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -140,6 +148,7 @@ export interface FileRoutesById {
   '/buy': typeof BuyRoute
   '/cv': typeof CvRoute
   '/delivery': typeof DeliveryRoute
+  '/exhibition': typeof ExhibitionRoute
   '/privacy': typeof PrivacyRoute
   '/requisites': typeof RequisitesRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -158,6 +167,7 @@ export interface FileRouteTypes {
     | '/buy'
     | '/cv'
     | '/delivery'
+    | '/exhibition'
     | '/privacy'
     | '/requisites'
     | '/reset-password'
@@ -174,6 +184,7 @@ export interface FileRouteTypes {
     | '/buy'
     | '/cv'
     | '/delivery'
+    | '/exhibition'
     | '/privacy'
     | '/requisites'
     | '/reset-password'
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/buy'
     | '/cv'
     | '/delivery'
+    | '/exhibition'
     | '/privacy'
     | '/requisites'
     | '/reset-password'
@@ -209,6 +221,7 @@ export interface RootRouteChildren {
   BuyRoute: typeof BuyRoute
   CvRoute: typeof CvRoute
   DeliveryRoute: typeof DeliveryRoute
+  ExhibitionRoute: typeof ExhibitionRoute
   PrivacyRoute: typeof PrivacyRoute
   RequisitesRoute: typeof RequisitesRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -260,6 +273,13 @@ declare module '@tanstack/react-router' {
       path: '/delivery'
       fullPath: '/delivery'
       preLoaderRoute: typeof DeliveryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exhibition': {
+      id: '/exhibition'
+      path: '/exhibition'
+      fullPath: '/exhibition'
+      preLoaderRoute: typeof ExhibitionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -348,6 +368,7 @@ const rootRouteChildren: RootRouteChildren = {
   BuyRoute: BuyRoute,
   CvRoute: CvRoute,
   DeliveryRoute: DeliveryRoute,
+  ExhibitionRoute: ExhibitionRoute,
   PrivacyRoute: PrivacyRoute,
   RequisitesRoute: RequisitesRoute,
   ResetPasswordRoute: ResetPasswordRoute,

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import * as Dialog from "@radix-ui/react-dialog";
-import { ArrowDown, ArrowUp, ArrowLeft, ArrowRight, ArrowUpRight, Download, Menu, Moon, Settings, Sun, User, X, ZoomIn } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowLeft, ArrowRight, ArrowUpRight, Box, Download, Menu, Moon, Settings, Sun, User, X, ZoomIn } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArtworkCaption, SoldDot } from "@/components/artwork-caption";
@@ -159,7 +159,7 @@ function Index() {
       <section id="works" className="gallery-shell pb-12 pt-4 md:pb-16 md:pt-6">
         <NewsStrip lang={lang} />
         <SectionMarker number="01">{t.collection}</SectionMarker>
-        <div className="flex items-end justify-between gap-6"><div><h2 className="section-heading font-display">{t.allWorks}<span className="ml-3 align-top font-sans text-sm text-primary">({String(filtered.length).padStart(2, "0")})</span></h2></div><p className="hidden max-w-60 text-xs leading-6 text-muted-foreground md:block">{t.artistNote}</p></div>
+        <div className="flex items-end justify-between gap-6"><div><h2 className="section-heading font-display">{t.allWorks}<span className="ml-3 align-top font-sans text-sm text-primary">({String(filtered.length).padStart(2, "0")})</span></h2></div><div className="flex items-end gap-6"><p className="hidden max-w-60 text-xs leading-6 text-muted-foreground md:block">{t.artistNote}</p><Button asChild variant="outline" className="shrink-0 rounded-full text-xs" disabled={!filtered.length}><Link to="/exhibition" onClick={() => sessionStorage.setItem("prosetskaya-exhibition", JSON.stringify(filtered.slice(0, 30).map((w) => w.id)))}><Box />{lang === "ru" ? `Виртуальная выставка (${Math.min(30, filtered.length)})` : `Virtual exhibition (${Math.min(30, filtered.length)})`}</Link></Button></div></div>
         <div className={`mt-5 grid gap-y-8 ${shop?.collectionMenuPosition === "left" ? "lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-9" : ""}`}>
         <CollectionFilters position={shop?.collectionMenuPosition ?? "top"} lang={lang} genreTerms={genreOptions} styleTerms={shop?.showStyleFilter === false ? null : styleOptions} genre={genre} style={style} onGenre={(v) => { setGenre(v); setPage(1); }} onStyle={(v) => { setStyle(v); setPage(1); }} query={query} onQuery={(q) => { setQuery(q); setPage(1); }} />
         <div className={`grid min-w-0 grid-cols-1 gap-x-9 gap-y-10 sm:grid-cols-2 ${shop?.collectionMenuPosition === "left" ? "2xl:grid-cols-3" : "lg:grid-cols-3"}`}>
