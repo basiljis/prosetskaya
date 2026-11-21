@@ -58,3 +58,4 @@
 - [x] График статистики: показывать значения по дням
 - [x] Mobile collection filters: search collapses to icon next to genre/style dropdowns; expanding search collapses the dropdowns to icons
 - [x] Special projects menu on mobile still not optimized (see screenshot)
+- [ ] Newsletter sending: blocked on email domain setup

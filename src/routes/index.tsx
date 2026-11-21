@@ -27,6 +27,7 @@ import { filterByTaxonomy } from "@/lib/genres";
 import { isProjectWork, pageCount, pageSlice, resolveDirections, searchWorks } from "@/lib/directions";
 import portraitAsset from "@/assets/prosetskaya/portrait.jpg.asset.json";
 import { ProjectCatalogue } from "@/components/project-catalogue";
+import { SubscribeForm } from "@/components/subscribe-form";
 import { useProjects } from "@/hooks/use-projects";
 import { projectIntro } from "@/lib/projects";
 import { ExpandableText } from "@/components/expandable-text";
@@ -204,6 +205,7 @@ function Index() {
           <div className="grid gap-12 md:grid-cols-[1.2fr_1fr]"><div><h2 className="section-heading font-display">{t.enquiryTitle}</h2><p className="mt-5 max-w-xs text-xs leading-6 opacity-60">{t.enquiryText}</p><ContactDialog lang={lang}><button type="button" className="mt-7 inline-flex items-center gap-8 border-b border-footer-foreground/50 pb-2 text-sm">{t.write}<ArrowUpRight className="size-4" /></button></ContactDialog></div>
             <div className="space-y-6 md:pt-9"><a href={`mailto:${artist.email}`} className="block break-all text-lg md:text-xl">{artist.email}</a><a href={artist.phoneHref} className="block text-lg">{artist.phone}</a><p className="text-xs opacity-60">{t.address}</p><div className="flex flex-wrap gap-7 pt-4 text-xs"><a href={artist.telegram} target="_blank" rel="noreferrer" className="flex items-center gap-1">Telegram<ArrowUpRight className="size-3" /></a><a href={artist.instagram} target="_blank" rel="noreferrer" className="flex items-center gap-1">Instagram<ArrowUpRight className="size-3" /></a><a href={artist.whatsapp} target="_blank" rel="noreferrer" className="flex items-center gap-1">WhatsApp<ArrowUpRight className="size-3" /></a></div></div>
           </div>
+          <div className="mt-12"><SubscribeForm lang={lang} /></div>
           <div className="mt-10 border-t border-footer-foreground/20">
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-5">
               <nav aria-label={lang === "ru" ? "Информация" : "Information"} className="grid min-w-0 grid-cols-2 gap-x-6 gap-y-1 text-xs leading-6 text-footer-foreground/85 sm:flex sm:flex-wrap sm:gap-x-8">

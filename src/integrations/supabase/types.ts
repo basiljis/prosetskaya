@@ -355,6 +355,30 @@ export type Database = {
         }
         Relationships: []
       }
+      subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          lang: string
+          subscribed: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          lang?: string
+          subscribed?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          lang?: string
+          subscribed?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -386,6 +410,11 @@ export type Database = {
         Returns: boolean
       }
       reserved_artworks: { Args: never; Returns: string[] }
+      set_my_subscription: { Args: { _on: boolean }; Returns: undefined }
+      subscribe: {
+        Args: { _email: string; _lang?: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"

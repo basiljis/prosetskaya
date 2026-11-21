@@ -29,3 +29,4 @@
 - Admin image uploads are resized (longest side MAX_SIDE) and re-encoded to WebP in the browser by src/lib/image-optimize.ts before storage, so page weight stays low without server-side image tooling.
 - The virtual exhibition (/exhibition, ssr:false) is a lazy-loaded React Three Fiber scene; hanging rules live in pure src/lib/exhibition-layout.ts and the selection is passed via sessionStorage to avoid huge URLs.
 - Project pages can split works into sub-sections by medium via MURAL_SECTIONS in the project route (e.g. murals: walls/ceilings).
+- Newsletter subscribers live in Cloud `subscribers` keyed by email; anonymous signup and self-unsubscribe go through security-definer RPCs (subscribe, set_my_subscription), letter HTML is built by src/lib/newsletter.ts.
