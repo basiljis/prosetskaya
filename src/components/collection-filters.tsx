@@ -1,3 +1,4 @@
+import type React from "react";
 import { useState, type ReactNode } from "react";
 import { ChevronDown, Palette, Search, Shapes, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,10 +10,10 @@ import { copy } from "@/lib/gallery-copy";
 import type { CollectionMenuPosition } from "@/lib/collection-layout";
 import type { Term } from "@/lib/genres";
 
-type Props = { position: CollectionMenuPosition; lang: Lang; genreTerms: Term[]; styleTerms: Term[] | null; genre: string[]; style: string[]; onGenre: (v: string[]) => void; onStyle: (v: string[]) => void; query: string; onQuery: (q: string) => void };
+type Props = { position: CollectionMenuPosition; lang: Lang; genreTerms: Term[]; styleTerms: Term[] | null; genre: string[]; style: string[]; onGenre: (v: string[]) => void; onStyle: (v: string[]) => void; query: string; onQuery: (q: string) => void; extra?: React.ReactNode };
 
 /** Collection filters: multi-select dropdowns for genre and style plus search. */
-export function CollectionFilters({ position, lang, genreTerms, styleTerms, genre, style, onGenre, onStyle, query, onQuery }: Props) {
+export function CollectionFilters({ position, lang, genreTerms, styleTerms, genre, style, onGenre, onStyle, query, onQuery, extra }: Props) {
   const t = copy[lang];
   const left = position === "left";
   const ru = lang === "ru";
@@ -32,6 +33,7 @@ export function CollectionFilters({ position, lang, genreTerms, styleTerms, genr
         {(query || searching) && <button type="button" onClick={() => { onQuery(""); setSearching(false); }} aria-label={ru ? "Очистить" : "Clear"} className="absolute right-3 top-2.5 text-muted-foreground"><X className="size-4" /></button>}
       </div>
       {!s && <Button variant="editorial" onClick={() => setSearching(true)} aria-label={ph} className="size-9 shrink-0 rounded-full border border-border p-0 text-muted-foreground sm:hidden"><Search className="size-4" /></Button>}
+      {extra}
     </div>
   </div>;
 }
