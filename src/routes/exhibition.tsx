@@ -48,7 +48,7 @@ function Exhibition() {
   const [own, setOwn] = useState<string[] | null>(null);
   useEffect(() => { if (ids && own === null) setOwn(ids); }, [ids, own]);
   const halls = useMemo(() => [
-    ...(own && own.length ? [{ key: "own", label: (() => { const by = new Map(all.map((w) => [w.id, w])); const gs = [...new Set(own.map((id) => by.get(id)?.genre).filter((g): g is string => !!g))]; return gs.length ? gs.map((g) => genreLabel(g, lang)).join(" · ") : (ru0(lang) ? "Подборка" : "Selection"); })(), ids: own }] : []),
+    ...(own && own.length ? [{ key: "own", label: (() => { try { const n = JSON.parse(sessionStorage.getItem("prosetskaya-exhibition-name") ?? "null") as string[] | null; const v = n?.[ru0(lang) ? 0 : 1]; if (v) return v; } catch { /* ignore */ } return ru0(lang) ? "Подборка" : "Selection"; })(), ids: own }] : []),
     ...Object.keys(genres).map((g) => ({ key: g, label: genreLabel(g, lang), ids: all.filter((w) => w.genre === g).slice(0, EXHIBITION_MAX).map((w) => w.id) })).filter((h) => h.ids.length > 0),
   ], [all, own, lang]);
   const [hall, setHall] = useState("own");
