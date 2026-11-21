@@ -57,7 +57,7 @@ function wrap(g: CanvasRenderingContext2D, text: string, maxW: number) {
 /** Museum wall label: title (with a red dot when sold), year, medium, size — printed on a matte card. */
 function useLabel(work: Artwork, lang: Lang) {
   return useMemo(() => canvasTex(640, 400, (g) => {
-    g.fillStyle = "#efe4cf"; g.fillRect(0, 0, 640, 400); for (let k = 0; k < 120; k++) { g.strokeStyle = `rgba(150,110,60,${0.03 + Math.random() * 0.05})`; g.beginPath(); const yy = Math.random() * 400; g.moveTo(0, yy); g.bezierCurveTo(200, yy + 6, 420, yy - 6, 640, yy + 3); g.stroke(); } g.fillStyle = "#e8742a"; g.fillRect(0, 0, 14, 400);
+    g.fillStyle = "#ffffff"; g.fillRect(0, 0, 640, 400);
     const sold = work.sourceAvailability === "sold";
     let x = 44, y = 62;
     g.fillStyle = "#1c1a18"; g.font = "500 30px 'Helvetica Neue', Arial, sans-serif";
