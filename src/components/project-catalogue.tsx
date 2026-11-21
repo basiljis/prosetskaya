@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, ChevronDown, Search, X } from "lucide-react";
+import { ArrowUpRight, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { Artwork, Lang } from "@/lib/artworks";
@@ -16,20 +16,21 @@ export function ProjectCatalogue({ projects, works, lang, stickyTop = "top-[120p
   const q = query.trim().toLowerCase();
   const filtered = projects.filter((p) => (selected === "all" || projectGroupOf(p.id) === selected) && (!q || [p.title_ru, p.title_en, p.description_ru, p.description_en, p.year].some((v) => v.toLowerCase().includes(q))));
   const ph = lang === "ru" ? "Поиск по проектам" : "Search projects";
+  const search = <div className="relative">
+    <Search className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
+    <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={ph} aria-label={ph} className="h-9 rounded-full bg-transparent pl-9 pr-8 text-xs shadow-none" />
+    {query && <button type="button" onClick={() => setQuery("")} aria-label={lang === "ru" ? "Очистить" : "Clear"} className="absolute right-3 top-2.5 text-muted-foreground"><X className="size-4" /></button>}
+  </div>;
   return <>
-    <div className={`sticky z-20 ${stickyTop} mt-6 border-y border-border bg-background py-2.5 lg:py-4`} role="group" aria-label={lang === "ru" ? "Фильтры спецпроектов" : "Project filters"}>
-      <div className="flex gap-2 lg:items-start">
-        <Button variant="editorial" onClick={() => setOpen(!open)} aria-expanded={open} className="h-9 min-w-0 flex-1 justify-between rounded-full border border-primary px-4 text-xs md:hidden"><span className="truncate">{current?.title}</span><ChevronDown className={`transition ${open ? "rotate-180" : ""}`} /></Button>
-        <div className="relative w-[42%] md:order-2 md:ml-auto md:w-56">
-          <Search className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
-          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={ph} aria-label={ph} className="h-9 rounded-full bg-transparent pl-9 pr-8 text-xs shadow-none" />
-          {query && <button type="button" onClick={() => setQuery("")} aria-label={lang === "ru" ? "Очистить" : "Clear"} className="absolute right-3 top-2.5 text-muted-foreground"><X className="size-4" /></button>}
+    <div className={`sticky z-20 ${stickyTop} mt-6 border-y border-border bg-background py-2.5 lg:py-3`} role="group" aria-label={lang === "ru" ? "Фильтры спецпроектов" : "Project filters"}>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+        <div className="-mx-1 flex min-w-0 gap-1.5 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {choices.map((p) => <Button key={p.id} variant="editorial" onClick={() => setSelected(p.id)} aria-pressed={selected === p.id} className={`h-8 shrink-0 whitespace-nowrap rounded-full border px-3 text-[11px] font-medium transition-colors lg:text-xs ${selected === p.id ? "border-primary bg-primary text-primary-foreground shadow-sm hover:bg-primary hover:text-primary-foreground" : "border-border text-muted-foreground hover:border-primary hover:text-primary"}`}>{p.title}<span className="ml-1 opacity-60">{p.count}</span></Button>)}
         </div>
-        <div className="hidden min-w-0 flex-1 gap-2 overflow-x-auto md:flex">
-          {choices.map((p) => <Button key={p.id} variant="editorial" onClick={() => setSelected(p.id)} aria-pressed={selected === p.id} className={`h-8 shrink-0 whitespace-nowrap rounded-full border px-3.5 text-[11px] font-medium transition-colors lg:text-xs ${selected === p.id ? "border-primary bg-primary text-primary-foreground shadow-sm hover:bg-primary hover:text-primary-foreground" : "border-border text-muted-foreground hover:border-primary hover:text-primary"}`}>{p.title}<span className="ml-1.5 opacity-60">{p.count}</span></Button>)}
-        </div>
+        <div className="hidden w-52 lg:block">{search}</div>
+        <Button variant="editorial" onClick={() => setOpen(!open)} aria-expanded={open} aria-label={ph} className={`size-8 shrink-0 rounded-full border p-0 lg:hidden ${open || query ? "border-primary text-primary" : "border-border text-muted-foreground"}`}>{open ? <X className="size-4" /> : <Search className="size-4" />}</Button>
       </div>
-      {open && <div className="mt-2 grid gap-1 border-t border-border pt-2 md:hidden">{choices.map((p) => <button key={p.id} type="button" onClick={() => { setSelected(p.id); setOpen(false); }} aria-pressed={selected === p.id} className={`border-l-2 px-3 py-2 text-left text-sm ${selected === p.id ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>{p.title}</button>)}</div>}
+      {open && <div className="mt-2 lg:hidden">{search}</div>}
     </div>
     {filtered.length === 0 && <p className="mt-8 text-sm text-muted-foreground">{lang === "ru" ? "Ничего не найдено" : "Nothing found"}</p>}
     <div className="mt-8 grid gap-x-9 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
