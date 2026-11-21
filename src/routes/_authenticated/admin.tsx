@@ -80,12 +80,6 @@ function Admin() {
   return (
     <SimplePage title="Управление галереей" kicker="Юлия Просецкая / Администратор" wide>
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3"><span className="flex items-center gap-2 text-xs text-muted-foreground"><LockKeyhole className="size-4" />Закрытый кабинет</span><Button asChild variant="editorial" className="px-0 text-xs"><Link to="/">Открыть сайт<ArrowUpRight /></Link></Button></div>
-      <div className="mt-8 grid grid-cols-2 gap-x-5 border-y border-border py-6 md:grid-cols-4">
-        <Summary icon={<Image />} label="Работ в галерее" value={String(artworks.length)} />
-        <Summary icon={<Package />} label="Активных заказов" value={String(activeOrders.length)} />
-        <Summary icon={<Settings />} label="Указаны цены" value={`${pricedCount} / ${artworks.length}`} />
-        <Summary icon={<CreditCard />} label="Онлайн-оплата" value={data.settings.online_payment_enabled ? "Включена" : "Выключена"} />
-      </div>
       {(note || error) && <p role={error ? "alert" : "status"} className={`mt-5 flex items-center gap-2 text-sm leading-6 ${error ? "text-destructive" : "text-primary"}`}>{!error && <CheckCircle2 className="size-4 shrink-0" />}{error || note}</p>}
       <Tabs defaultValue="works" className="mt-8">
         <TabsList aria-label="Разделы управления" className="grid h-auto w-full grid-cols-2 rounded-none border-b border-border bg-transparent p-0 sm:grid-cols-4 lg:grid-cols-8">
@@ -102,7 +96,15 @@ function Admin() {
         <TabsContent value="projects" className="mt-8">
           {projectQuery.isLoading ? <p role="status" className="text-sm text-muted-foreground">Загружаем спецпроекты…</p> : projectQuery.isError ? <div><p role="alert" className="text-sm text-destructive">Не удалось загрузить спецпроекты.</p><Button variant="outline" onClick={() => projectQuery.refetch()} className="mt-4"><RefreshCw />Повторить</Button></div> : <AdminProjects projects={projects} works={rows} onSaved={refresh} />}
         </TabsContent>
-        <TabsContent value="stats" className="mt-8"><AdminStats /></TabsContent>
+        <TabsContent value="stats" className="mt-8">
+      <div className="mb-10 grid grid-cols-2 gap-x-5 border-y border-border py-6 md:grid-cols-4">
+        <Summary icon={<Image />} label="Работ в галерее" value={String(artworks.length)} />
+        <Summary icon={<Package />} label="Активных заказов" value={String(activeOrders.length)} />
+        <Summary icon={<Settings />} label="Указаны цены" value={`${pricedCount} / ${artworks.length}`} />
+        <Summary icon={<CreditCard />} label="Онлайн-оплата" value={data.settings.online_payment_enabled ? "Включена" : "Выключена"} />
+      </div>
+          <AdminStats />
+        </TabsContent>
         <TabsContent value="news" className="mt-8"><AdminNews onSaved={(m) => refresh(m)} /></TabsContent>
         <TabsContent value="cv" className="mt-8"><AdminCv initial={resolveCv(data.settings.cv)} busy={busy} onSave={(cv) => run(() => saveSiteJson("cv", cv), "Резюме сохранено")} /></TabsContent>
         <TabsContent value="dicts" className="mt-8">
