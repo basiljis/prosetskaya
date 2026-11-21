@@ -19,8 +19,10 @@ export function genreLabel(g: string | null | undefined, lang: Lang) { return g 
 export function styleLabel(s: string | null | undefined, lang: Lang) { return s && s in styles ? styles[s as Style][lang] : ""; }
 
 /** Narrow works by genre/style; "all" disables a filter. */
-export function filterByTaxonomy<T extends { genre?: string | null; style?: string | null }>(works: readonly T[], genre: string, style: string): readonly T[] {
-  return works.filter((w) => (genre === "all" || w.genre === genre) && (style === "all" || w.style === style));
+export function filterByTaxonomy<T extends { genre?: string | null; style?: string | null }>(works: readonly T[], genre: string | readonly string[], style: string | readonly string[]): readonly T[] {
+  const set = (v: string | readonly string[]) => { const a = typeof v === "string" ? (v === "all" ? [] : [v]) : v; return new Set(a); };
+  const g = set(genre), st = set(style);
+  return works.filter((w) => (!g.size || g.has(w.genre ?? "")) && (!st.size || st.has(w.style ?? "")));
 }
 
 /** Admin-editable dictionary entry (genre or style). */
