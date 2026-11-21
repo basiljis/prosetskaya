@@ -3,14 +3,17 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowDown, ArrowUp, ArrowLeft, ArrowRight, ArrowUpRight, Download, Menu, Moon, Settings, Sun, User, X, ZoomIn } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArtworkCaption } from "@/components/artwork-caption";
+import { ArtworkCaption, SoldDot } from "@/components/artwork-caption";
+import { FavoriteButton } from "@/components/favorite-button";
+import { NewsStrip } from "@/components/news-strip";
+import { genres as genreDefaults, styles as styleDefaults, resolveTerms } from "@/lib/genres";
 import { CollectionFilters } from "@/components/collection-filters";
 import { SectionMarker } from "@/components/section-marker";
 import { ArtistMark } from "@/components/artist-mark";
 import { ArtworkViewer } from "@/components/artwork-viewer";
 import { artist, artworks as staticArtworks, canPurchaseArtwork, featuredIds, type Category, type Lang } from "@/lib/artworks";
 import { copy } from "@/lib/gallery-copy";
-import { filterArtworks, nextArtworkIndex } from "@/lib/gallery-navigation";
+import { nextArtworkIndex } from "@/lib/gallery-navigation";
 import { InquiryDialog } from "@/components/inquiry-dialog";
 import { availability, boutique } from "@/lib/boutique";
 import { ContactDialog } from "@/components/contact-dialog";
@@ -48,7 +51,6 @@ function Index() {
   const [dark, setDark] = useState(false);
   const [ready, setReady] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [category, setCategory] = useState<Category>("all");
   const [featuredIndex, setFeaturedIndex] = useState(0);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [project, setProject] = useState<{ source: string; photo: boolean; index: number; id?: string } | null>(null);
@@ -66,8 +68,11 @@ function Index() {
   const [page, setPage] = useState(1);
   const PAGE = 24;
   const mainWorks = artworks.filter((w) => !isProjectWork(w));
-  const activeCategory = directions.some((d) => d.key === category && !d.hidden) ? category : "all";
-  const filtered = searchWorks(filterByTaxonomy(filterArtworks(mainWorks, activeCategory), genre, style), query);
+  const genreTerms = shop?.genres ?? resolveTerms([], genreDefaults);
+  const styleTerms = shop?.styles ?? resolveTerms([], styleDefaults);
+  const genrePills = [{ key: "all", ru: lang === "ru" ? "Все работы" : "All works", en: "All works", hidden: false }, ...genreTerms.filter((g) => !g.hidden && mainWorks.some((w) => w.genre === g.key))] as unknown as typeof directions;
+  const activeCategory = genre as Category;
+  const filtered = searchWorks(filterByTaxonomy(mainWorks, genre, style), query);
   const pageWorks = pageSlice(filtered, page, PAGE);
   const featured = featuredWorks[featuredIndex];
   const left = artworks.find((work) => work.id === "anniversary-bouquet");
@@ -152,17 +157,20 @@ function Index() {
       </section>
 
       <section id="works" className="gallery-shell pb-12 pt-4 md:pb-16 md:pt-6">
+        <NewsStrip lang={lang} />
         <SectionMarker number="01">{t.collection}</SectionMarker>
         <div className="flex items-end justify-between gap-6"><div><h2 className="section-heading font-display">{t.allWorks}<span className="ml-3 align-top font-sans text-sm text-primary">({String(filtered.length).padStart(2, "0")})</span></h2></div><p className="hidden max-w-60 text-xs leading-6 text-muted-foreground md:block">{t.artistNote}</p></div>
         <div className={`mt-5 grid gap-y-8 ${shop?.collectionMenuPosition === "left" ? "lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-9" : ""}`}>
-        <CollectionFilters position={shop?.collectionMenuPosition ?? "top"} category={activeCategory} lang={lang} directions={directions} genre={genre} style={style} onGenre={(g) => { setGenre(g); setPage(1); }} onStyle={(v) => { setStyle(v); setPage(1); }} query={query} onQuery={(q) => { setQuery(q); setPage(1); }} onChange={(key) => { setCategory(key); setPage(1); scrollToSection("#works"); }} />
+        <CollectionFilters position={shop?.collectionMenuPosition ?? "top"} category={activeCategory} lang={lang} directions={genrePills} styleTerms={styleTerms} genre={genre} style={style} onStyle={(v) => { setStyle(v); setPage(1); }} query={query} onQuery={(q) => { setQuery(q); setPage(1); }} onChange={(key) => { setGenre(key); setPage(1); scrollToSection("#works"); }} />
         <div className={`grid min-w-0 grid-cols-1 gap-x-9 gap-y-10 sm:grid-cols-2 ${shop?.collectionMenuPosition === "left" ? "2xl:grid-cols-3" : "lg:grid-cols-3"}`}>
           {pageWorks.length === 0 && <p className="col-span-full py-16 text-center text-sm text-muted-foreground">{lang === "ru" ? "Ничего не найдено" : "Nothing found"}</p>}
           {pageWorks.map((work) => <article key={work.id} className="gallery-column min-w-0">
             <Button variant="artwork" className="group relative block w-full cursor-zoom-in overflow-hidden" onClick={() => openWork(work.id)} aria-label={`${t.view}: ${work[lang]}`}>
               <img src={work.image} alt={work[lang]} loading="lazy" className="gallery-image transition-transform duration-700 group-hover:scale-[1.015]" />
+              {work.sourceAvailability === "sold" && <SoldDot className="absolute left-3 top-3 size-3.5 ring-2 ring-background" />}
               <span className="absolute bottom-3 right-3 grid size-9 place-items-center bg-background text-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"><ZoomIn /></span>
             </Button>
+            <div className="relative"><FavoriteButton id={work.id} lang={lang} className="absolute -top-12 left-3" /></div>
             <ArtworkCaption work={work} lang={lang} className="mt-5 border-t border-border pt-3" />
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-[11px]"><span className="text-muted-foreground">{work.catalogueOnly ? (lang === "ru" ? "Авторский проект" : "Artist project") : work.sourceAvailability === "museum" ? (lang === "ru" ? "В музейной коллекции" : "In a museum collection") : work.sourceAvailability === "private" ? (lang === "ru" ? "В частной коллекции" : "In a private collection") : work.sourceAvailability === "sold" || shop?.reserved.has(work.id) ? (lang === "ru" ? "Продана / забронирована" : "Sold / reserved") : <>{availability(work) === "print" ? b.print : b.original}{shop?.showPrices && shop.prices[work.id] ? <b className="ml-2 font-medium text-foreground">{rub(shop.prices[work.id])}</b> : null}</>}</span><span className="flex gap-4"><Button variant="editorial" onClick={() => setInquiryId(work.id)} className="h-auto px-0 pb-1 text-[11px] text-muted-foreground">{lang === "ru" ? "Вопрос" : "Ask"}</Button>{canPurchaseArtwork(work) && !shop?.reserved.has(work.id) && <Button variant="editorial" onClick={() => setBuyId(work.id)} className="h-auto border-b border-foreground px-0 pb-1 text-[11px]">{lang === "ru" ? "Купить" : "Buy"}<ArrowUpRight /></Button>}</span></div>
           </article>)}

@@ -11,7 +11,7 @@ export async function loadAdminData() {
   if (roleError) throw new Error("Не удалось проверить права доступа.");
   if (!isAdmin) return null;
   const [settings, payment, prices, orders] = await Promise.all([
-    supabase.from("site_settings").select("show_prices, online_payment_enabled, collection_menu_position, collection_directions").eq("id", 1).single(),
+    supabase.from("site_settings").select("show_prices, online_payment_enabled, collection_menu_position, collection_directions, genres, styles, cv").eq("id", 1).single(),
     supabase.from("payment_settings").select("yookassa_shop_id, yookassa_secret_key").eq("id", 1).single(),
     supabase.from("artwork_prices").select("artwork_id, price"),
     supabase.from("orders").select("*").order("created_at", { ascending: false }),
@@ -94,4 +94,9 @@ export async function saveAdminProject(id: string, patch: ProjectPatch) {
 export async function createAdminProject(title: string) {
   const { data, error } = await supabase.from("projects").insert({ id: crypto.randomUUID(), title_ru: title.trim(), sort_order: 100 }).select("id").single();
   if (error || !data) throw new Error("Проект не создан. Попробуйте ещё раз.");
+}
+
+export async function saveSiteJson(key: "genres" | "styles" | "cv", value: unknown) {
+  const { data, error } = await supabase.from("site_settings").update({ [key]: value, updated_at: new Date().toISOString() } as unknown as { updated_at: string }).eq("id", 1).select("id").single();
+  if (error || !data) throw new Error("Изменения не сохранены. Попробуйте ещё раз.");
 }

@@ -1,9 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
-import { ArrowUpRight, CheckCircle2, CreditCard, Image, Loader2, LockKeyhole, Package, BarChart3, PanelLeft, PanelTop, RefreshCw, Save, Search, Settings } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, CreditCard, Image, Loader2, LockKeyhole, Package, BarChart3, BookOpen, Newspaper, Tags, PanelLeft, PanelTop, RefreshCw, Save, Search, Settings } from "lucide-react";
 import { SimplePage } from "@/components/simple-page";
-import { AdminDirections } from "@/components/admin-directions";
+import { AdminTaxonomy } from "@/components/admin-taxonomy";
+import { AdminUpload } from "@/components/admin-upload";
+import { AdminNews } from "@/components/admin-news";
+import { AdminCv } from "@/components/admin-cv";
+import { genres as genreDefaults, resolveTerms, styles as styleDefaults } from "@/lib/genres";
+import { resolveCv } from "@/lib/cv";
 import { AdminStats } from "@/components/admin-stats";
 import { AdminProjects } from "@/components/admin-projects";
 import { Pager } from "@/components/pager";
@@ -16,7 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { artworks as staticArtworks } from "@/lib/artworks";
 import { methodLabel, rub, statusLabel } from "@/lib/shop";
-import { loadAdminArtworks, loadAdminData, loadAdminProjects, saveAdminOrderStatus, saveAdminPayment, saveAdminSetting, saveCollectionMenuPosition, saveCollectionDirections } from "@/lib/admin";
+import { loadAdminArtworks, loadAdminData, loadAdminProjects, saveAdminOrderStatus, saveAdminPayment, saveAdminSetting, saveCollectionMenuPosition, saveSiteJson } from "@/lib/admin";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [
@@ -83,12 +88,13 @@ function Admin() {
       </div>
       {(note || error) && <p role={error ? "alert" : "status"} className={`mt-5 flex items-center gap-2 text-sm leading-6 ${error ? "text-destructive" : "text-primary"}`}>{!error && <CheckCircle2 className="size-4 shrink-0" />}{error || note}</p>}
       <Tabs defaultValue="works" className="mt-8">
-        <TabsList aria-label="Разделы управления" className="grid h-auto w-full grid-cols-2 rounded-none border-b border-border bg-transparent p-0 sm:grid-cols-4">
-          {[{ value: "works", label: "Картины", icon: Image }, { value: "projects", label: "Спецпроекты", icon: PanelTop }, { value: "orders", label: "Заказы", icon: Package }, { value: "stats", label: "Статистика", icon: BarChart3 }, { value: "settings", label: "Настройки", icon: Settings }].map((tab) => <TabsTrigger key={tab.value} value={tab.value} className="h-12 gap-2 rounded-none border-b-2 border-transparent px-2 text-xs data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none sm:text-sm"><tab.icon className="size-4" />{tab.label}</TabsTrigger>)}
+        <TabsList aria-label="Разделы управления" className="grid h-auto w-full grid-cols-2 rounded-none border-b border-border bg-transparent p-0 sm:grid-cols-4 lg:grid-cols-8">
+          {[{ value: "works", label: "Картины", icon: Image }, { value: "projects", label: "Спецпроекты", icon: PanelTop }, { value: "orders", label: "Заказы", icon: Package }, { value: "stats", label: "Статистика", icon: BarChart3 }, { value: "news", label: "Новости", icon: Newspaper }, { value: "cv", label: "Резюме", icon: BookOpen }, { value: "dicts", label: "Справочники", icon: Tags }, { value: "settings", label: "Настройки", icon: Settings }].map((tab) => <TabsTrigger key={tab.value} value={tab.value} className="h-12 gap-2 rounded-none border-b-2 border-transparent px-2 text-xs data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none sm:text-sm"><tab.icon className="size-4" />{tab.label}</TabsTrigger>)}
         </TabsList>
         <TabsContent value="works" className="mt-8">
           <div className="flex flex-wrap items-center justify-between gap-5"><h2 className="font-display text-3xl">Картины и цены <span className="font-sans text-sm text-muted-foreground">({rows.length})</span></h2><div className="relative w-full sm:w-72"><Search className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground" /><Input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} aria-label="Поиск картины" placeholder="Найти картину" className="h-11 bg-card pl-10 shadow-none" /></div></div>
           <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Фильтр картин">{workFilters.map(([k, label]) => <Button key={k} type="button" size="sm" variant={workFilter === k ? "default" : "outline"} aria-pressed={workFilter === k} onClick={() => { setWorkFilter(k); setPage(1); }}>{label} <span className="opacity-60">{rows.filter((w) => matchesWorkFilter(w, k)).length}</span></Button>)}</div>
+          <div className="mt-6"><AdminUpload genres={resolveTerms(data.settings.genres, genreDefaults)} styles={resolveTerms(data.settings.styles, styleDefaults)} onSaved={refresh} /></div>
           <ul className="mt-6 border-t border-border">{pageSlice(visibleWorks, page, 40).map((work) => <AdminPriceEditor key={work.id} work={work} price={data.prices[work.id] ?? null} projects={projects} onSaved={refresh} />)}</ul>
           <Pager page={Math.min(page, pageCount(visibleWorks.length, 40))} pages={pageCount(visibleWorks.length, 40)} label="Страницы картин" onChange={(n) => { setPage(n); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
           {visibleWorks.length === 0 && <p className="py-12 text-center text-sm text-muted-foreground">Картины не найдены.</p>}
@@ -97,6 +103,12 @@ function Admin() {
           {projectQuery.isLoading ? <p role="status" className="text-sm text-muted-foreground">Загружаем спецпроекты…</p> : projectQuery.isError ? <div><p role="alert" className="text-sm text-destructive">Не удалось загрузить спецпроекты.</p><Button variant="outline" onClick={() => projectQuery.refetch()} className="mt-4"><RefreshCw />Повторить</Button></div> : <AdminProjects projects={projects} works={rows} onSaved={refresh} />}
         </TabsContent>
         <TabsContent value="stats" className="mt-8"><AdminStats /></TabsContent>
+        <TabsContent value="news" className="mt-8"><AdminNews onSaved={(m) => refresh(m)} /></TabsContent>
+        <TabsContent value="cv" className="mt-8"><AdminCv initial={resolveCv(data.settings.cv)} busy={busy} onSave={(cv) => run(() => saveSiteJson("cv", cv), "Резюме сохранено")} /></TabsContent>
+        <TabsContent value="dicts" className="mt-8">
+          <AdminTaxonomy title="Жанры" hint="Жанры — основные фильтры раздела «Все работы». Можно переименовать, упорядочить, скрыть или добавить новый." initial={resolveTerms(data.settings.genres, genreDefaults)} busy={busy} onSave={(t) => run(() => saveSiteJson("genres", t), "Жанры сохранены")} />
+          <AdminTaxonomy title="Направления (стили)" hint="Выпадающий фильтр «Направление» и выбор в карточке работы." initial={resolveTerms(data.settings.styles, styleDefaults)} busy={busy} onSave={(t) => run(() => saveSiteJson("styles", t), "Направления сохранены")} />
+        </TabsContent>
         <TabsContent value="orders" className="mt-8">
           <div className="flex flex-wrap items-center justify-between gap-4"><h2 className="font-display text-3xl">Заказы <span className="font-sans text-sm text-muted-foreground">({data.orders.length})</span></h2><Select value={orderFilter} onValueChange={setOrderFilter}><SelectTrigger aria-label="Фильтр заказов" className="h-11 w-full bg-card sm:w-52"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Все заказы</SelectItem>{Object.entries(statusLabel).map(([key, value]) => <SelectItem key={key} value={key}>{value.split(" — ")[0]}</SelectItem>)}</SelectContent></Select></div>
           {visibleOrders.length === 0 ? <div className="mt-8 border-y border-border py-16 text-center"><Package className="mx-auto size-8 text-muted-foreground" /><p className="mt-4 text-sm text-muted-foreground">{data.orders.length === 0 ? "Заказов пока нет" : "Нет заказов с этим статусом"}</p></div> : <ul className="mt-6 border-t border-border">{visibleOrders.map((order) => {
@@ -109,7 +121,6 @@ function Admin() {
           })}</ul>}
         </TabsContent>
         <TabsContent value="settings" className="mt-8">
-          <AdminDirections initial={resolveDirections(data.settings.collection_directions)} busy={busy} onSave={(d) => run(() => saveCollectionDirections(d), "Направления сохранены")} />
           <section className="mb-10 border-b border-border pb-8">
             <h2 className="font-display text-3xl">Меню коллекции</h2>
             <div role="group" aria-label="Расположение меню коллекции" className="mt-5 inline-grid max-w-full grid-cols-2 border border-border p-1">

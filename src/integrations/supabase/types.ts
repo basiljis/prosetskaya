@@ -14,21 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      artwork_import: {
-        Row: {
-          id: string
-          payload: Json
-        }
-        Insert: {
-          id: string
-          payload: Json
-        }
-        Update: {
-          id?: string
-          payload?: Json
-        }
-        Relationships: []
-      }
       artwork_prices: {
         Row: {
           artwork_id: string
@@ -129,6 +114,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      favorites: {
+        Row: {
+          artwork_id: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          artwork_id: string
+          created_at?: string
+          user_id?: string
+        }
+        Update: {
+          artwork_id?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      news: {
+        Row: {
+          body_en: string
+          body_ru: string
+          created_at: string
+          event_date: string
+          id: string
+          image_url: string
+          kind: string
+          published: boolean
+          title_en: string
+          title_ru: string
+        }
+        Insert: {
+          body_en?: string
+          body_ru?: string
+          created_at?: string
+          event_date?: string
+          id?: string
+          image_url?: string
+          kind?: string
+          published?: boolean
+          title_en?: string
+          title_ru: string
+        }
+        Update: {
+          body_en?: string
+          body_ru?: string
+          created_at?: string
+          event_date?: string
+          id?: string
+          image_url?: string
+          kind?: string
+          published?: boolean
+          title_en?: string
+          title_ru?: string
+        }
+        Relationships: []
       }
       orders: {
         Row: {
@@ -278,25 +320,34 @@ export type Database = {
         Row: {
           collection_directions: Json
           collection_menu_position: string
+          cv: Json | null
+          genres: Json
           id: number
           online_payment_enabled: boolean
           show_prices: boolean
+          styles: Json
           updated_at: string
         }
         Insert: {
           collection_directions?: Json
           collection_menu_position?: string
+          cv?: Json | null
+          genres?: Json
           id?: number
           online_payment_enabled?: boolean
           show_prices?: boolean
+          styles?: Json
           updated_at?: string
         }
         Update: {
           collection_directions?: Json
           collection_menu_position?: string
+          cv?: Json | null
+          genres?: Json
           id?: number
           online_payment_enabled?: boolean
           show_prices?: boolean
+          styles?: Json
           updated_at?: string
         }
         Relationships: []

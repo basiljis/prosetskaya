@@ -22,3 +22,21 @@ export function styleLabel(s: string | null | undefined, lang: Lang) { return s 
 export function filterByTaxonomy<T extends { genre?: string | null; style?: string | null }>(works: readonly T[], genre: string, style: string): readonly T[] {
   return works.filter((w) => (genre === "all" || w.genre === genre) && (style === "all" || w.style === style));
 }
+
+/** Admin-editable dictionary entry (genre or style). */
+export type Term = { key: string; ru: string; en: string; hidden: boolean };
+
+/** Saved dictionary order/labels first, then built-in terms the admin has not saved yet. */
+export function resolveTerms(value: unknown, defaults: Record<string, { ru: string; en: string }>): Term[] {
+  const saved = (Array.isArray(value) ? value : []).filter((t): t is Term => !!t && typeof t.key === "string" && t.key.trim() !== "");
+  const keys = new Set(saved.map((t) => t.key));
+  return [
+    ...saved.map((t) => ({ key: t.key, ru: t.ru?.trim() || defaults[t.key]?.ru || t.key, en: t.en?.trim() || defaults[t.key]?.en || t.ru || t.key, hidden: !!t.hidden })),
+    ...Object.entries(defaults).filter(([k]) => !keys.has(k)).map(([key, v]) => ({ key, ...v, hidden: false })),
+  ];
+}
+
+export function termKey(label: string) {
+  const map: Record<string, string> = { а:"a",б:"b",в:"v",г:"g",д:"d",е:"e",ё:"e",ж:"zh",з:"z",и:"i",й:"y",к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",с:"s",т:"t",у:"u",ф:"f",х:"h",ц:"c",ч:"ch",ш:"sh",щ:"sch",ы:"y",э:"e",ю:"yu",я:"ya" };
+  return label.toLowerCase().split("").map((c) => map[c] ?? c).join("").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || `term-${Date.now()}`;
+}

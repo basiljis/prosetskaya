@@ -6,10 +6,10 @@ import type { Category, Lang } from "@/lib/artworks";
 import { copy } from "@/lib/gallery-copy";
 import type { CollectionMenuPosition } from "@/lib/collection-layout";
 import type { Direction } from "@/lib/directions";
-import { genres, styles } from "@/lib/genres";
+import type { Term } from "@/lib/genres";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export function CollectionFilters({ position, category, lang, directions, query, onQuery, onChange, genre = "all", style = "all", onGenre, onStyle }: { genre?: string; style?: string; onGenre?: (g: string) => void; onStyle?: (s: string) => void; position: CollectionMenuPosition; category: Category; lang: Lang; directions: Direction[]; query: string; onQuery: (q: string) => void; onChange: (category: Category) => void }) {
+export function CollectionFilters({ position, category, lang, directions, query, onQuery, onChange, genre = "all", style = "all", onGenre, onStyle, styleTerms = [] }: { styleTerms?: Term[]; genre?: string; style?: string; onGenre?: (g: string) => void; onStyle?: (s: string) => void; position: CollectionMenuPosition; category: Category; lang: Lang; directions: Direction[]; query: string; onQuery: (q: string) => void; onChange: (category: Category) => void }) {
   const t = copy[lang];
   const left = position === "left";
   const [open, setOpen] = useState(false);
@@ -29,9 +29,8 @@ export function CollectionFilters({ position, category, lang, directions, query,
         {visible.map((d) => <Pill key={d.key} d={d} lang={lang} active={category === d.key} left={left} onClick={() => onChange(d.key)} />)}
       </div>
     </div>
-    {onGenre && onStyle && <div className={`mt-2 grid grid-cols-2 gap-2 md:flex ${left ? "lg:mt-4 lg:grid lg:grid-cols-1" : ""}`}>
-      <Facet label={lang === "ru" ? "Жанр" : "Genre"} all={lang === "ru" ? "Все жанры" : "All genres"} value={genre} items={genres} lang={lang} onChange={onGenre} />
-      <Facet label={lang === "ru" ? "Направление" : "Style"} all={lang === "ru" ? "Все направления" : "All styles"} value={style} items={styles} lang={lang} onChange={onStyle} />
+    {onStyle && <div className={`mt-2 flex gap-2 ${left ? "lg:mt-4" : ""}`}>
+      <Facet label={lang === "ru" ? "Направление" : "Style"} all={lang === "ru" ? "Все направления" : "All styles"} value={style} items={Object.fromEntries(styleTerms.filter((t) => !t.hidden).map((t) => [t.key, t]))} lang={lang} onChange={onStyle} />
     </div>}
     {open && <div className="mt-2 grid gap-1 border-t border-border pt-2 md:hidden">{visible.map((d) => <button key={d.key} type="button" onClick={() => { onChange(d.key); setOpen(false); }} aria-pressed={category === d.key} className={`border-l-2 px-3 py-2 text-left text-sm ${category === d.key ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>{d[lang]}</button>)}</div>}
   </div>;

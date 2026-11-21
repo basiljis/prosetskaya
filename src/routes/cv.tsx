@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowUpRight, Download } from "lucide-react";
 import { useEffect, useState } from "react";
-import cv from "@/data/cv.json";
+import { useShop } from "@/hooks/use-shop";
+import { resolveCv } from "@/lib/cv";
 import cvPdf from "@/assets/prosetskaya-cv.pdf.asset.json";
 import portraitAsset from "@/assets/prosetskaya/portrait.jpg.asset.json";
 import { artist, type Lang } from "@/lib/artworks";
@@ -19,6 +20,7 @@ export const Route = createFileRoute("/cv")({
 });
 
 function CvPage() {
+  const cv = resolveCv(useShop().data?.cv);
   const [lang, setLang] = useState<Lang>("ru");
   useEffect(() => {
     const saved = localStorage.getItem("prosetskaya-lang");
