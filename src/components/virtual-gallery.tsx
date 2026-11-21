@@ -1,8 +1,9 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { ContactShadows, Environment, Lightformer, MeshReflectorMaterial } from "@react-three/drei";
+import { ContactShadows, Environment, Lightformer } from "@react-three/drei";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import type { Artwork, Lang } from "@/lib/artworks";
+import { copy } from "@/lib/gallery-copy";
 import { CEIL, EYE, layoutRoom, type Hung } from "@/lib/exhibition-layout";
 
 const CAM_DIST = 2.8;
@@ -41,6 +42,12 @@ function useGlow() {
   }), []);
 }
 
+function wrapAll(g: CanvasRenderingContext2D, text: string, maxW: number) {
+  const out: string[] = []; let line = "";
+  for (const word of text.split(/\s+/)) { const t = line ? `${line} ${word}` : word; if (g.measureText(t).width > maxW && line) { out.push(line); line = word; } else line = t; }
+  if (line) out.push(line); return out;
+}
+
 function wrap(g: CanvasRenderingContext2D, text: string, maxW: number) {
   const out: string[] = []; let line = "";
   for (const word of text.split(/\s+/)) { const t = line ? `${line} ${word}` : word; if (g.measureText(t).width > maxW && line) { out.push(line); line = word; } else line = t; }
@@ -50,7 +57,7 @@ function wrap(g: CanvasRenderingContext2D, text: string, maxW: number) {
 /** Museum wall label: title (with a red dot when sold), year, medium, size — printed on a matte card. */
 function useLabel(work: Artwork, lang: Lang) {
   return useMemo(() => canvasTex(640, 400, (g) => {
-    g.fillStyle = "#fbfaf7"; g.fillRect(0, 0, 640, 400);
+    g.fillStyle = "#efe4cf"; g.fillRect(0, 0, 640, 400); for (let k = 0; k < 120; k++) { g.strokeStyle = `rgba(150,110,60,${0.03 + Math.random() * 0.05})`; g.beginPath(); const yy = Math.random() * 400; g.moveTo(0, yy); g.bezierCurveTo(200, yy + 6, 420, yy - 6, 640, yy + 3); g.stroke(); } g.fillStyle = "#e8742a"; g.fillRect(0, 0, 14, 400);
     const sold = work.sourceAvailability === "sold";
     let x = 44, y = 62;
     g.fillStyle = "#1c1a18"; g.font = "500 30px 'Helvetica Neue', Arial, sans-serif";
@@ -158,6 +165,22 @@ export function VirtualGallery({ works, lang, index, onIndex, distance = 1, rese
   const len = D + FRONT, midZ = (FRONT - D) / 2;
   const glow = useGlow();
   const ring = useRef<THREE.Mesh>(null);
+  // Museum-style introductory wall text: artist name and a short statement, painted on the entrance wall.
+  const intro = useMemo(() => canvasTex(1024, 1100, (g) => {
+    const c = copy[lang]; g.textBaseline = "alphabetic";
+    g.fillStyle = "#24272a"; g.font = "300 104px 'Helvetica Neue', Arial, sans-serif";
+    g.fillText(c.firstName, 0, 120); g.fillText(c.lastName, 0, 240);
+    g.fillStyle = "#e8742a"; g.fillRect(0, 290, 120, 8);
+    let y = 380; g.fillStyle = "#2b2e31"; g.font = "italic 300 40px 'Helvetica Neue', Arial, sans-serif";
+    for (const l of wrap(g, c.artistNote, 960)) { g.fillText(l, 0, y); y += 54; }
+    y += 30; g.font = "300 32px 'Helvetica Neue', Arial, sans-serif"; g.fillStyle = "#3a3e42";
+    for (const para of [c.bio, c.bioSecond]) { for (const l of wrapAll(g, para, 960)) { g.fillText(l, 0, y); y += 46; } y += 26; }
+  }), [lang]);
+  const title = useMemo(() => canvasTex(1024, 160, (g) => { g.fillStyle = "#2b2e31"; g.font = "300 96px 'Helvetica Neue', Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(lang === "ru" ? "Юлия Просецкая" : "Yulia Prosetskaya", 512, 84); }), [lang]);
+  // Open-cell black ceiling grid with a darker void above, as in the reference museum.
+  const grid = useMemo(() => { const t = canvasTex(256, 256, (g) => { g.fillStyle = "#0d0d0e"; g.fillRect(0, 0, 256, 256); g.strokeStyle = "#262628"; g.lineWidth = 5; for (let k = 0; k <= 256; k += 32) { g.beginPath(); g.moveTo(k, 0); g.lineTo(k, 256); g.moveTo(0, k); g.lineTo(256, k); g.stroke(); } }); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(W / 2, len / 2); return t; }, [W, len]);
+  // Cove (закарнизная) light: a soft wash along the top of every wall.
+  const cove = useMemo(() => canvasTex(4, 128, (g) => { const gr = g.createLinearGradient(0, 0, 0, 128); gr.addColorStop(0, "rgba(255,250,240,.28)"); gr.addColorStop(1, "rgba(255,250,240,0)"); g.fillStyle = gr; g.fillRect(0, 0, 4, 128); }), []);
   const bounds = useMemo(() => ({ x: W / 2 - 1.2, zMin: -D + 1.2, zMax: FRONT - 0.4 }), [W, D]);
   const target = useMemo(() => {
     const h = hungs[index];
@@ -168,16 +191,14 @@ export function VirtualGallery({ works, lang, index, onIndex, distance = 1, rese
   }, [hungs, index, D, W, distance]);
   const floor = useMemo(() => {
     const t = canvasTex(1024, 1024, (g) => {
-      // polished concrete: faint low-frequency clouding, fine aggregate speckle, thin saw-cut joint per 3 m slab
-      g.fillStyle = "#8d8a85"; g.fillRect(0, 0, 1024, 1024);
-      for (let i = 0; i < 60; i++) { const r = 150 + Math.random() * 250, v = Math.random() < 0.5 ? 120 : 160; const gr = g.createRadialGradient(0, 0, 0, 0, 0, r); gr.addColorStop(0, `rgba(${v},${v - 2},${v - 5},.06)`); gr.addColorStop(1, "rgba(0,0,0,0)"); for (const ox of [0, 1024, -1024]) for (const oy of [0, 1024, -1024]) { g.save(); g.translate(Math.random() * 1024 + ox * 0, Math.random() * 1024 + oy * 0); g.fillStyle = gr; g.fillRect(-r, -r, r * 2, r * 2); g.restore(); } }
+      // charcoal needle-felt carpet, as in the Museum of Russian Impressionism halls: dense fine fibre noise, no shine
+      g.fillStyle = "#2c2b2a"; g.fillRect(0, 0, 1024, 1024);
       const img = g.getImageData(0, 0, 1024, 1024), px = img.data;
-      for (let i = 0; i < px.length; i += 4) { const n = (Math.random() - 0.5) * 14; px[i] = px[i]! + n; px[i + 1] = px[i + 1]! + n; px[i + 2] = px[i + 2]! + n; }
+      for (let i = 0; i < px.length; i += 4) { const n = (Math.random() - 0.5) * 22; px[i] = px[i]! + n; px[i + 1] = px[i + 1]! + n; px[i + 2] = px[i + 2]! + n * 0.9; }
       g.putImageData(img, 0, 0);
-      for (let i = 0; i < 2500; i++) { const v = Math.random() < 0.5 ? 70 : 185; g.fillStyle = `rgba(${v},${v},${v - 4},.35)`; const r = 0.6 + Math.random() * 1.4; g.beginPath(); g.arc(Math.random() * 1024, Math.random() * 1024, r, 0, 7); g.fill(); }
-      g.fillStyle = "rgba(40,38,35,.55)"; g.fillRect(0, 0, 1024, 2); g.fillRect(0, 0, 2, 1024);
+      for (let i = 0; i < 40; i++) { const r = 120 + Math.random() * 200; const gr = g.createRadialGradient(0, 0, 0, 0, 0, r); gr.addColorStop(0, `rgba(${Math.random() < 0.5 ? "0,0,0" : "90,88,84"},.05)`); gr.addColorStop(1, "rgba(0,0,0,0)"); g.save(); g.translate(Math.random() * 1024, Math.random() * 1024); g.fillStyle = gr; g.fillRect(-r, -r, r * 2, r * 2); g.restore(); }
     });
-    t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(W / 3, len / 3); return t;
+    t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(W / 2, len / 2); return t;
   }, [W, len]);
   const plaster = useMemo(() => {
     const t = canvasTex(256, 256, (g) => { g.fillStyle = "#808080"; g.fillRect(0, 0, 256, 256); for (let i = 0; i < 5000; i++) { const v = 110 + Math.random() * 36; g.fillStyle = `rgba(${v},${v},${v},.35)`; g.fillRect(Math.random() * 256, Math.random() * 256, 2, 2); } }, false);
@@ -189,7 +210,7 @@ export function VirtualGallery({ works, lang, index, onIndex, distance = 1, rese
     { p: [-W / 2 + 0.003, 0, midZ], r: [0, Math.PI / 2, 0], w: len }, { p: [W / 2 - 0.003, 0, midZ], r: [0, -Math.PI / 2, 0], w: len },
     { p: [0, 0, -D + 0.003], r: [0, 0, 0], w: W }, { p: [0, 0, FRONT - 0.003], r: [0, Math.PI, 0], w: W },
   ];
-  const wallMat = <meshStandardMaterial color="#d4d8dc" roughness={0.97} bumpMap={plaster} bumpScale={0.12} />;
+  const wallMat = <meshStandardMaterial color="#c3cad1" roughness={0.97} bumpMap={plaster} bumpScale={0.12} />;
   const door = 1.8;
   return <Canvas shadows dpr={[1, 1.5]} gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.25 }} camera={{ position: [0, EYE, 0.6], fov: 46 }} onCreated={({ gl }) => { gl.domElement.parentElement?.setAttribute("data-scene-ready", ""); }} aria-label={lang === "ru" ? "Виртуальный выставочный зал" : "Virtual exhibition hall"}>
     <color attach="background" args={["#1c1c1e"]} />
@@ -200,12 +221,12 @@ export function VirtualGallery({ works, lang, index, onIndex, distance = 1, rese
       <Lightformer form="rect" intensity={2} position={[0, 6, midZ]} rotation-x={Math.PI / 2} scale={[W, len, 1]} />
       <Lightformer form="rect" intensity={0.5} color="#fff1dd" position={[0, 2, 6]} scale={[W, 3, 1]} />
     </Environment>
-    <mesh rotation-x={-Math.PI / 2} position={[0, 0, midZ]} receiveShadow onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("gallery-walk", { detail: { x: e.point.x, z: e.point.z } })); }} onPointerMove={(e) => { const r = ring.current; if (r) { r.visible = true; r.position.set(e.point.x, 0.01, e.point.z); } }} onPointerOut={() => { if (ring.current) ring.current.visible = false; }}><planeGeometry args={[W, len]} /><MeshReflectorMaterial map={floor} mirror={0.2} blur={[600, 300]} resolution={512} mixBlur={1} mixStrength={0.8} roughness={0.7} depthScale={0.6} minDepthThreshold={0.4} maxDepthThreshold={1.3} color="#77736e" metalness={0.05} /></mesh>
+    <mesh rotation-x={-Math.PI / 2} position={[0, 0, midZ]} receiveShadow onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new CustomEvent("gallery-walk", { detail: { x: e.point.x, z: e.point.z } })); }} onPointerMove={(e) => { const r = ring.current; if (r) { r.visible = true; r.position.set(e.point.x, 0.01, e.point.z); } }} onPointerOut={() => { if (ring.current) ring.current.visible = false; }}><planeGeometry args={[W, len]} /><meshStandardMaterial map={floor} roughness={1} color="#9a9894" envMapIntensity={0.2} /></mesh>
     <mesh ref={ring} rotation-x={-Math.PI / 2} visible={false}><ringGeometry args={[0.22, 0.27, 40]} /><meshBasicMaterial color="#ffffff" transparent opacity={0.7} depthWrite={false} toneMapped={false} /></mesh>
     <ContactShadows position={[0, 0.002, midZ]} scale={[W, len]} opacity={0.3} blur={2.5} far={2} resolution={512} frames={1} />
     {/* ceiling + skylight panels with deep frames */}
-    <mesh rotation-x={Math.PI / 2} position={[0, CEIL, midZ]}><planeGeometry args={[W, len]} /><meshBasicMaterial color="#1c1c1e" /></mesh>
-    {(() => { const n = Math.max(2, Math.round(W / 2.4)); return Array.from({ length: n }, (_, i) => -W / 2 + (i + 0.5) * (W / n)); })().map((x: number) => <mesh key={`led${x}`} rotation-x={Math.PI / 2} position={[x, CEIL - 0.005, midZ]}><planeGeometry args={[0.08, len - 1.2]} /><meshBasicMaterial color="#2a2a2c" /></mesh>)}
+    <mesh rotation-x={Math.PI / 2} position={[0, CEIL, midZ]}><planeGeometry args={[W, len]} /><meshBasicMaterial map={grid} color="#ffffff" /></mesh>
+    {(() => { const n = Math.max(2, Math.round(W / 2.4)); return Array.from({ length: n }, (_, i) => -W / 2 + (i + 0.5) * (W / n)); })().filter(() => false).map((x: number) => <mesh key={`led${x}`} rotation-x={Math.PI / 2} position={[x, CEIL - 0.005, midZ]}><planeGeometry args={[0.08, len - 1.2]} /><meshBasicMaterial color="#2a2a2c" /></mesh>)}
     {/* walls: left, right, back, and entrance with an opening */}
     <mesh position={[-W / 2, CEIL / 2, midZ]} rotation-y={Math.PI / 2} receiveShadow><planeGeometry args={[len, CEIL]} />{wallMat}</mesh>
     <mesh position={[W / 2, CEIL / 2, midZ]} rotation-y={-Math.PI / 2} receiveShadow><planeGeometry args={[len, CEIL]} />{wallMat}</mesh>
@@ -234,16 +255,21 @@ export function VirtualGallery({ works, lang, index, onIndex, distance = 1, rese
         {/* casing */}
         {[-1, 1].map((sd) => <mesh key={`c${sd}`} position={[sd * (door / 2 + 0.045), H / 2, FRONT - 0.015]}><boxGeometry args={[0.09, H + 0.09, 0.03]} />{paint}</mesh>)}
         <mesh position={[0, H + 0.045, FRONT - 0.015]}><boxGeometry args={[door + 0.18, 0.09, 0.03]} />{paint}</mesh>
+        {/* doorway click → next hall */}
+        <mesh position={[0, H / 2, FRONT + 0.05]} onClick={(e) => { e.stopPropagation(); window.dispatchEvent(new Event("gallery-next-hall")); }} onPointerOver={() => (document.body.style.cursor = "pointer")} onPointerOut={() => (document.body.style.cursor = "")}><planeGeometry args={[door, H]} /><meshBasicMaterial transparent opacity={0} depthWrite={false} side={THREE.DoubleSide} /></mesh>
         {/* glimpse of the next room through the doorway */}
         <mesh position={[0, H / 2, FRONT + 2.5]} rotation-y={Math.PI}><planeGeometry args={[door + 2, H + 1]} /><meshStandardMaterial color="#e9e7e2" side={THREE.DoubleSide} /></mesh>
         <mesh rotation-x={-Math.PI / 2} position={[0, 0.001, FRONT + 1.25]}><planeGeometry args={[door + 2, 2.5]} /><meshStandardMaterial color="#8a5a34" roughness={0.5} /></mesh>
       </group>;
     })()}
+    <mesh position={[0, CEIL - 0.75, -D + 0.01]}><planeGeometry args={[3.2, 0.5]} /><meshBasicMaterial map={title} transparent depthWrite={false} /></mesh>
+    <mesh position={[-(W + door) / 4, 1.75, FRONT - 0.01]} rotation-y={Math.PI}><planeGeometry args={[Math.min(2.2, (W - door) / 2 - 0.5), Math.min(2.2, (W - door) / 2 - 0.5) * 1100 / 1024]} /><meshBasicMaterial map={intro} transparent depthWrite={false} /></mesh>
     {/* skirting */}
     {[-1, 1].map((s) => <mesh key={`k${s}`} position={[s * (W / 2 - 0.01), 0.0125, midZ]}><boxGeometry args={[0.02, 0.025, len]} /><meshBasicMaterial color="#3a3836" /></mesh>)}
     <mesh position={[0, 0.0125, -D + 0.01]}><boxGeometry args={[W, 0.025, 0.02]} /><meshBasicMaterial color="#3a3836" /></mesh>
     {aoStrips.map((a, i) => <group key={`ao${i}`} position={a.p} rotation={a.r}>
       <mesh position={[0, 0.35, 0]}><planeGeometry args={[a.w, 0.7]} /><meshBasicMaterial map={ao} transparent depthWrite={false} /></mesh>
+      <mesh position={[0, CEIL - 0.45, 0.002]}><planeGeometry args={[a.w, 0.9]} /><meshBasicMaterial map={cove} transparent depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} /></mesh>
       <mesh position={[0, CEIL - 0.25, 0]} rotation-z={Math.PI}><planeGeometry args={[a.w, 0.5]} /><meshBasicMaterial map={ao} transparent opacity={0.6} depthWrite={false} /></mesh>
     </group>)}
     {/* track-light spots aimed at each work */}

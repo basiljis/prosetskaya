@@ -5,6 +5,7 @@ import { ArtworkCaption } from "@/components/artwork-caption";
 import { Button } from "@/components/ui/button";
 import { useArtworks } from "@/hooks/use-artworks";
 import type { Lang } from "@/lib/artworks";
+import { genres, genreLabel } from "@/lib/genres";
 import { EXHIBITION_LIMIT } from "@/lib/exhibition-layout";
 
 const VirtualGallery = lazy(() => import("@/components/virtual-gallery").then((m) => ({ default: m.VirtualGallery })));
@@ -22,6 +23,8 @@ export const Route = createFileRoute("/exhibition")({
   ] }),
   component: Exhibition,
 });
+
+const ru0 = (l: Lang) => l === "ru";
 
 function Exhibition() {
   const all = useArtworks();
@@ -41,6 +44,22 @@ function Exhibition() {
     const list = (ids ?? []).map((id) => by.get(id)).filter((w) => !!w);
     return list.slice(0, EXHIBITION_MAX);
   }, [all, ids]);
+  // Halls: one per genre that has works, like the collection menu; "own" is the visitor's own selection.
+  const [own, setOwn] = useState<string[] | null>(null);
+  useEffect(() => { if (ids && own === null) setOwn(ids); }, [ids, own]);
+  const halls = useMemo(() => [
+    ...(own && own.length ? [{ key: "own", label: ru0(lang) ? "Ваш выбор" : "Your selection", ids: own }] : []),
+    ...Object.keys(genres).map((g) => ({ key: g, label: genreLabel(g, lang), ids: all.filter((w) => w.genre === g).slice(0, EXHIBITION_MAX).map((w) => w.id) })).filter((h) => h.ids.length > 0),
+  ], [all, own, lang]);
+  const [hall, setHall] = useState("own");
+  const enterHall = (key: string) => {
+    const h = halls.find((x) => x.key === key); if (!h) return;
+    setHall(key); setIds(h.ids); sessionStorage.setItem(EXHIBITION_KEY, JSON.stringify(h.ids)); setAuto(false); setIndex(-1); setResetKey((k) => k + 1);
+  };
+  useEffect(() => {
+    const next = () => { const i = halls.findIndex((h) => h.key === hall); const n = halls[(i + 1) % halls.length]; if (n) enterHall(n.key); };
+    window.addEventListener("gallery-next-hall", next); return () => window.removeEventListener("gallery-next-hall", next);
+  });
   const go = (d: number) => setIndex((i) => (i + d + works.length) % works.length);
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if (e.key === "ArrowRight") go(1); if (e.key === "ArrowLeft") go(-1); if (e.key === "Escape") overview(); };
@@ -56,11 +75,16 @@ function Exhibition() {
     </Suspense>}
     <header className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between p-4 md:p-6">
       <Button asChild variant="editorial" className="pointer-events-auto bg-background/85 px-3 text-xs backdrop-blur"><Link to="/" hash="works"><ArrowLeft />{ru ? "В коллекцию" : "Collection"}</Link></Button>
-      <p className="bg-background/85 px-3 py-2 text-[11px] uppercase tracking-[0.2em] backdrop-blur">{ru ? "Виртуальная выставка" : "Virtual exhibition"} · {works.length}</p>
+      <label className="pointer-events-auto flex items-center gap-2 bg-background/85 px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] backdrop-blur" title={ru ? "Перейти в другой зал" : "Go to another hall"}>
+        <span className="hidden sm:inline">{ru ? "Зал" : "Hall"}</span>
+        <select value={hall} onChange={(e) => enterHall(e.target.value)} aria-label={ru ? "Выбрать зал" : "Choose hall"} className="cursor-pointer bg-transparent py-0.5 text-[11px] uppercase tracking-[0.15em] outline-none">
+          {halls.map((h) => <option key={h.key} value={h.key}>{h.label} · {h.ids.length}</option>)}
+        </select>
+      </label>
     </header>
     <footer className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 p-4 md:p-6">
       {work ? <div className="w-[min(92vw,420px)] bg-background/90 p-4 shadow-lg backdrop-blur"><ArtworkCaption work={work} lang={lang} /></div>
-        : <p className="bg-background/85 px-4 py-2 text-center text-xs text-muted-foreground backdrop-blur">{ru ? "Тяните или крутите колёсико (↑↓), чтобы ходить · нажмите на пол или на картину" : "Drag or scroll (↑↓) to walk · click the floor or a painting"}</p>}
+        : <p className="bg-background/85 px-4 py-2 text-center text-xs text-muted-foreground backdrop-blur">{ru ? "Тяните или крутите колёсико (↑↓) · нажмите на пол, картину или дверь — следующий зал" : "Drag or scroll (↑↓) · click the floor, a painting, or the door for the next hall"}</p>}
       <div className="flex items-center gap-1 rounded-full bg-background/90 p-1 text-[11px] shadow-lg backdrop-blur" role="group" aria-label={ru ? "Расстояние до стены" : "Distance from wall"}>
         <span className="px-2 text-muted-foreground">{ru ? "Расстояние" : "Distance"}</span>
         {([[0.55, ru ? "Близко" : "Close"], [1, ru ? "Средне" : "Medium"], [1.7, ru ? "Далеко" : "Far"]] as const).map(([v, l]) => <button key={v} type="button" onClick={() => { setDistance(v); if (index < 0) setIndex(0); }} aria-pressed={distance === v} className={`rounded-full px-3 py-1.5 transition-colors ${distance === v ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>{l}</button>)}
