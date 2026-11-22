@@ -3,14 +3,14 @@ import { LegalPage } from "@/components/legal-page";
 
 export const Route = createFileRoute("/terms")({
   head: () => ({ meta: [
-    { property: "og:url", content: "https://prosetskaya.lovable.app/terms" },
+    { property: "og:url", content: "https://prosetskaya.ru/terms" },
     { title: "Пользовательское соглашение — Юлия Просецкая" },
     { name: "description", content: "Условия использования сайта художницы Юлии Просецкой, порядок покупки работ и авторские права." },
     { property: "og:title", content: "Пользовательское соглашение — Юлия Просецкая" },
     { property: "og:description", content: "Условия использования сайта и покупки работ." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
-  ], links: [{ rel: "canonical", href: "https://prosetskaya.lovable.app/terms" }] }),
+  ], links: [{ rel: "canonical", href: "https://prosetskaya.ru/terms" }] }),
   component: () => <LegalPage title="Пользовательское соглашение" sections={[
     { h: "Предмет соглашения", p: "Соглашение регулирует использование сайта художницы Юлии Просецкой. Пользуясь сайтом, вы принимаете его условия." },
     { h: "Авторские права", p: "Все изображения работ, тексты и материалы сайта принадлежат автору. Копирование и использование без письменного согласия запрещено." },

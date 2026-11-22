@@ -27,9 +27,9 @@ export const Route = createFileRoute("/projects/$projectId")({
       { name: "twitter:card", content: "summary_large_image" },
       ...(image?.startsWith("https://") ? [{ property: "og:image", content: image }, { name: "twitter:image", content: image }] : []),
       ...(!project ? [{ name: "robots", content: "noindex" }] : []),
-      ...(project ? [{ property: "og:url", content: `https://prosetskaya.lovable.app/projects/${project.id}` }] : []),
-    ], links: project ? [{ rel: "canonical", href: `https://prosetskaya.lovable.app/projects/${project.id}` }] : [],
-    scripts: project ? [{ type: "application/ld+json", children: JSON.stringify({ "@context": "https://schema.org", "@type": "CreativeWork", name: project.title_ru, description, creator: { "@type": "Person", name: "Юлия Просецкая" }, url: `https://prosetskaya.lovable.app/projects/${project.id}`, ...(image?.startsWith("https://") ? { image } : {}) }) }] : [] };
+      ...(project ? [{ property: "og:url", content: `https://prosetskaya.ru/projects/${project.id}` }] : []),
+    ], links: project ? [{ rel: "canonical", href: `https://prosetskaya.ru/projects/${project.id}` }] : [],
+    scripts: project ? [{ type: "application/ld+json", children: JSON.stringify({ "@context": "https://schema.org", "@type": "CreativeWork", name: project.title_ru, description, creator: { "@type": "Person", name: "Юлия Просецкая" }, url: `https://prosetskaya.ru/projects/${project.id}`, ...(image?.startsWith("https://") ? { image } : {}) }) }] : [] };
   },
   component: ProjectPage,
 });

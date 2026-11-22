@@ -1,0 +1,29 @@
+services:
+  edge:
+    build: ./edge
+    ports:
+      - "8082:8080"
+    depends_on:
+      - app
+    volumes:
+      - maintenance_flags:/etc/nginx/flags
+    restart: always
+
+  app:
+    build:
+      context: .
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-https://api.prosetskaya.ru}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
+        VITE_SUPABASE_PROJECT_ID: ${VITE_SUPABASE_PROJECT_ID:-oxqeowztnvhatzfivttk}
+    expose:
+      - "3000"
+    environment:
+      # Server-side code calls the backend directly (outgoing traffic from RU servers is not blocked).
+      SUPABASE_URL: https://oxqeowztnvhatzfivttk.supabase.co
+      SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+    restart: always
+
+volumes:
+  maintenance_flags:

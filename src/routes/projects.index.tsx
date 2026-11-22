@@ -12,13 +12,13 @@ import { ExpandableText } from "@/components/expandable-text";
 export const Route = createFileRoute("/projects/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(publicProjectsOptions),
   head: () => ({ meta: [
-    { property: "og:url", content: "https://prosetskaya.lovable.app/projects" },
+    { property: "og:url", content: "https://prosetskaya.ru/projects" },
     { title: "Спецпроекты — Юлия Просецкая" },
     { name: "description", content: "Арт-проект «Лужники», эскиз для «Тавриды», работы для гостиниц и индивидуальные проекты Юлии Просецкой." },
     { property: "og:title", content: "Спецпроекты — Юлия Просецкая" },
     { property: "og:description", content: "Живопись, росписи и авторские проекты для общественных и частных пространств." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
-  ], links: [{ rel: "canonical", href: "https://prosetskaya.lovable.app/projects" }] }),
+  ], links: [{ rel: "canonical", href: "https://prosetskaya.ru/projects" }] }),
   component: ProjectsPage,
 });
 

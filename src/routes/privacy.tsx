@@ -3,14 +3,14 @@ import { LegalPage } from "@/components/legal-page";
 
 export const Route = createFileRoute("/privacy")({
   head: () => ({ meta: [
-    { property: "og:url", content: "https://prosetskaya.lovable.app/privacy" },
+    { property: "og:url", content: "https://prosetskaya.ru/privacy" },
     { title: "Политика конфиденциальности — Юлия Просецкая" },
     { name: "description", content: "Как сайт художницы Юлии Просецкой обрабатывает и защищает персональные данные посетителей и покупателей." },
     { property: "og:title", content: "Политика конфиденциальности — Юлия Просецкая" },
     { property: "og:description", content: "Обработка персональных данных на сайте художницы." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary" },
-  ], links: [{ rel: "canonical", href: "https://prosetskaya.lovable.app/privacy" }] }),
+  ], links: [{ rel: "canonical", href: "https://prosetskaya.ru/privacy" }] }),
   component: () => <LegalPage title="Политика конфиденциальности" sections={[
     { h: "Общие положения", p: "Настоящая политика определяет порядок обработки персональных данных посетителей сайта в соответствии с Федеральным законом № 152-ФЗ «О персональных данных». Оператор — ИП Просецкая Юлия Владимировна." },
     { h: "Какие данные мы получаем", p: "Имя, адрес электронной почты, номер телефона и текст сообщения, которые вы указываете в формах обратной связи и запроса о покупке, а также данные, необходимые для доставки заказа." },
