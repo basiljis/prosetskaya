@@ -78,6 +78,11 @@ function useLabel(work: Artwork, lang: Lang) {
 function Painting({ hung, work, lang, glow, onPick }: { hung: Hung; work: Artwork; lang: Lang; glow: THREE.Texture; onPick: () => void }) {
   const tex = useArtTexture(work.image);
   const label = useLabel(work, lang);
+  const button = useMemo(() => canvasTex(640, 140, (g) => {
+    g.fillStyle = "#1c1a18"; g.fillRect(0, 0, 640, 140);
+    g.fillStyle = "#ffffff"; g.font = "500 52px 'Helvetica Neue', Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+    g.fillText(lang === "ru" ? "ОПИСАНИЕ  →" : "DETAILS  →", 320, 72);
+  }), [lang]);
   const depth = 0.04, fw = 0.018;
   const ly = Math.max(-hung.h / 2 + 0.08, -0.2);
   return <group position={[hung.x + hung.nx * 0.005, EYE, hung.z + hung.nz * 0.005]} rotation={[0, hung.rotY, 0]}>
@@ -93,6 +98,8 @@ function Painting({ hung, work, lang, glow, onPick }: { hung: Hung; work: Artwor
     </mesh>
     {/* wall label */}
     <mesh position={[hung.w / 2 + 0.32, ly, 0.006]} onClick={(e) => { e.stopPropagation(); onPick(); }}><boxGeometry args={[0.32, 0.2, 0.006]} /><meshStandardMaterial map={label} emissiveMap={label} emissive="#ffffff" emissiveIntensity={0.45} roughness={0.95} /></mesh>
+    {/* details button under the label */}
+    <mesh position={[hung.w / 2 + 0.32, ly - 0.15, 0.006]} onClick={(e) => { e.stopPropagation(); onPick(); }} onPointerOver={() => (document.body.style.cursor = "pointer")} onPointerOut={() => (document.body.style.cursor = "")}><boxGeometry args={[0.32, 0.07, 0.006]} /><meshStandardMaterial map={button} emissiveMap={button} emissive="#ffffff" emissiveIntensity={0.6} roughness={0.9} /></mesh>
   </group>;
 }
 

@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, ChevronLeft, Undo2, ChevronRight, Pause, Play } from "lucide-react";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { ArtworkCaption } from "@/components/artwork-caption";
 import { ArtworkViewer } from "@/components/artwork-viewer";
 import { useProjects } from "@/hooks/use-projects";
 import { Button } from "@/components/ui/button";
@@ -89,8 +88,7 @@ function Exhibition() {
       </label>
     </header>
     <footer className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 p-4 md:p-6">
-      {work ? <div className="w-[min(92vw,420px)] bg-background/90 p-4 shadow-lg backdrop-blur"><ArtworkCaption work={work} lang={lang} /><Button variant="editorial" className="mt-3 h-auto border-b border-current px-0 pb-1 text-xs" onClick={() => { setAuto(false); setViewerIndex(index); }}>{ru ? "Описание картины" : "Artwork details"}</Button></div>
-        : <p className="bg-background/85 px-4 py-2 text-center text-xs text-muted-foreground backdrop-blur">{ru ? "Тяните или крутите колёсико (↑↓) · нажмите на пол, картину или дверь — следующий зал" : "Drag or scroll (↑↓) · click the floor, a painting, or the door for the next hall"}</p>}
+      {!work && <p className="bg-background/85 px-4 py-2 text-center text-xs text-muted-foreground backdrop-blur">{ru ? "Тяните или крутите колёсико (↑↓) · нажмите на пол, картину или дверь — следующий зал" : "Drag or scroll (↑↓) · click the floor, a painting, or the door for the next hall"}</p>}
       <div className="flex items-center gap-1 rounded-full bg-background/90 p-1 text-[11px] shadow-lg backdrop-blur" role="group" aria-label={ru ? "Расстояние до стены" : "Distance from wall"}>
         <span className="px-2 text-muted-foreground">{ru ? "Расстояние" : "Distance"}</span>
         {([[0.55, ru ? "Близко" : "Close"], [1, ru ? "Средне" : "Medium"], [1.7, ru ? "Далеко" : "Far"]] as const).map(([v, l]) => <button key={v} type="button" onClick={() => { setDistance(v); if (index < 0) setIndex(0); }} aria-pressed={distance === v} className={`rounded-full px-3 py-1.5 transition-colors ${distance === v ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>{l}</button>)}

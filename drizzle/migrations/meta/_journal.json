@@ -78,6 +78,13 @@
       "when": 1795291360847,
       "tag": "0010_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1795341040608,
+      "tag": "0011_hide_duplicate_artworks",
+      "breakpoints": true
     }
   ]
 }

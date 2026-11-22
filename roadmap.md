@@ -63,3 +63,4 @@
 - [ ] Newsletter sending: blocked on email domain setup
 - [x] Move favourite heart off the artwork image
 - [x] Tooltips with hints on icon buttons across the site
+- [x] Экскурсия: убрать нижнюю плашку описания, кнопка «Описание» у таблички справа от картины

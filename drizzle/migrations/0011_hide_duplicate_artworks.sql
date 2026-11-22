@@ -1,0 +1,1 @@
+UPDATE public.artworks SET hidden = true WHERE id IN ('drive-124','drive-125','drive-128','drive-129','drive-130','drive-131','drive-132','drive-133','drive-134','drive-135','drive-136','drive-137','drive-138','work-3ec9b0398e05','work-8b25cdc3a9de');
