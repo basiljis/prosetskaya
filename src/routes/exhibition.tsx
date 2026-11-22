@@ -1,4 +1,3 @@
-import { useShop } from "@/hooks/use-shop";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, ChevronLeft, Undo2, ChevronRight, Pause, Play } from "lucide-react";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
