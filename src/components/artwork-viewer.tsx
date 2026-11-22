@@ -10,6 +10,9 @@ import { availability, boutique } from "@/lib/boutique";
 import { RoomPreview } from "@/components/room-preview";
 import { InquiryDialog } from "@/components/inquiry-dialog";
 import { canPreviewInRoom, fallbackProjects, type Project } from "@/lib/projects";
+import { CheckoutDialog } from "@/components/checkout-dialog";
+import { useShop } from "@/hooks/use-shop";
+import { rub } from "@/lib/shop";
 
 const backgrounds = [
   { surface: "bg-viewer-light text-viewer-light-foreground", swatch: "bg-viewer-light", label: "lightBg" },
@@ -17,12 +20,14 @@ const backgrounds = [
   { surface: "bg-viewer-gray text-viewer-gray-foreground", swatch: "bg-viewer-gray", label: "grayBg" },
 ] as const;
 
-export function ArtworkViewer({ works, index, lang, onChange, onClose, viewOnly = false, projects = fallbackProjects }: {
-  works: readonly Artwork[]; index: number; lang: Lang; projects?: readonly Project[]; viewOnly?: boolean; onChange: (index: number) => void; onClose: () => void;
+export function ArtworkViewer({ works, index, lang, onChange, onClose, viewOnly = false, projects = fallbackProjects, purchaseActions = false }: {
+  works: readonly Artwork[]; index: number; lang: Lang; projects?: readonly Project[]; viewOnly?: boolean; purchaseActions?: boolean; onChange: (index: number) => void; onClose: () => void;
 }) {
   const [background, setBackground] = useState(1);
   const [room, setRoom] = useState(false);
   const [inquiry, setInquiry] = useState(false);
+  const [checkout, setCheckout] = useState(false);
+  const shop = useShop().data;
   const b = boutique[lang];
   const work = works[index];
   const t = copy[lang];
@@ -31,13 +36,13 @@ export function ArtworkViewer({ works, index, lang, onChange, onClose, viewOnly 
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (inquiry) return;
+      if (inquiry || checkout) return;
       if (event.key === "ArrowLeft") { event.preventDefault(); go(-1); }
       if (event.key === "ArrowRight") { event.preventDefault(); go(1); }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [go, inquiry]);
+  }, [go, inquiry, checkout]);
 
   if (!work) return null;
   return (
@@ -64,10 +69,13 @@ export function ArtworkViewer({ works, index, lang, onChange, onClose, viewOnly 
             <ArtworkCaption work={work} lang={lang} className="max-w-xl" />
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
               <span className="text-[10px] opacity-60">{canPurchaseArtwork(work) ? (availability(work) === "print" ? b.print : b.original) : work.catalogueOnly ? (lang === "ru" ? "Авторский проект" : "Artist project") : work.sourceAvailability === "museum" ? (lang === "ru" ? "В музейной коллекции" : "In a museum collection") : work.sourceAvailability === "private" ? (lang === "ru" ? "В частной коллекции" : "In a private collection") : (lang === "ru" ? "Продана" : "Sold")}</span>
-              <Button variant="artwork" onClick={() => setInquiry(true)} className="border border-current px-4 py-2 text-xs">{canPurchaseArtwork(work) ? b.inquire : lang === "ru" ? "Написать Юлии" : "Write to Yulia"}<ArrowUpRight /></Button>
+              {purchaseActions && shop?.showPrices && shop.prices[work.id] ? <span className="text-sm">{rub(shop.prices[work.id])}</span> : null}
+              <Button variant="artwork" onClick={() => setInquiry(true)} className="border border-current px-4 py-2 text-xs">{purchaseActions ? (lang === "ru" ? "Вопрос" : "Ask") : canPurchaseArtwork(work) ? b.inquire : lang === "ru" ? "Написать Юлии" : "Write to Yulia"}<ArrowUpRight /></Button>
+              {purchaseActions && canPurchaseArtwork(work) && !shop?.reserved.has(work.id) && <Button variant="default" onClick={() => setCheckout(true)} className="px-4 text-xs">{lang === "ru" ? "Купить" : "Buy"}<ArrowUpRight /></Button>}
             </div>
           </div>
           {inquiry && <InquiryDialog work={work} lang={lang} onClose={() => setInquiry(false)} />}
+          {checkout && <CheckoutDialog work={work} price={shop?.prices[work.id] ?? null} online={!!shop?.online} onClose={() => setCheckout(false)} />}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

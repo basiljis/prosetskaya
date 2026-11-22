@@ -30,3 +30,5 @@
 - Project pages can split works into sub-sections by medium via MURAL_SECTIONS in the project route (e.g. murals: walls/ceilings).
 - Newsletter subscribers live in Cloud `subscribers` keyed by email; anonymous signup and self-unsubscribe go through security-definer RPCs (subscribe, set_my_subscription), letter HTML is built by src/lib/newsletter.ts.
 - Icon-button hints come from one global HintLayer in __root that styles title/aria-label, so new buttons get tooltips by setting title.
+- Exhibition painting clicks use the shared ArtworkViewer with optional purchase actions; pause scene input while it is open to preserve the visitor's position and avoid competing keyboard handlers.
+- Scope homepage project highlights through projectsForDisplay; the full projects page keeps the complete live catalogue so omitted homepage categories remain accessible.

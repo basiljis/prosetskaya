@@ -44,8 +44,8 @@ export function CheckoutDialog({ work, price, online, onClose }: { work: Artwork
   return (
     <Dialog.Root open onOpenChange={(o) => !o && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-[80] bg-foreground/50 backdrop-blur-sm" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-[81] max-h-[92vh] w-[min(94vw,520px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto bg-background p-7 text-foreground shadow-2xl md:p-9">
+        <Dialog.Overlay className="fixed inset-0 z-[95] bg-foreground/50 backdrop-blur-sm" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-[96] max-h-[92vh] w-[min(94vw,520px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto bg-background p-7 text-foreground shadow-2xl md:p-9">
           <Dialog.Close className="absolute right-4 top-4" aria-label={en ? "Close" : "Закрыть"}><X className="size-5" /></Dialog.Close>
           <div className="flex gap-4"><img src={work.image} alt="" className="size-20 object-cover" /><div><Dialog.Title className="font-display text-3xl">{en ? work.en : work.ru}</Dialog.Title><Dialog.Description className="mt-1 text-xs text-muted-foreground">{en ? work.mediumEn : work.mediumRu}, {work.size} {en ? "cm" : "см"} · {price ? rub(price) : (en ? "price on request" : "цена по запросу")}</Dialog.Description></div></div>
           {email === undefined ? null : email === null ? (

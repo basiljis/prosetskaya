@@ -23,6 +23,11 @@ export function projectGroupOf(id: string) {
   return projectGroups.find((g) => (g.ids as readonly string[]).includes(id))?.id ?? "public";
 }
 
+/** The homepage highlights major commissions; the full catalogue retains every project. */
+export function projectsForDisplay(projects: readonly Project[], fullCatalogue = false) {
+  return fullCatalogue ? projects : projects.filter((p) => !["logos", "illustration-projects", "other-projects"].includes(p.id));
+}
+
 const sources = ["dlya-sportkompleksa", "dlya-seti-gostinic", "razrabotka-eskiza-dlya-proekta-tavrida", "individualnye-proekty", "proekty", "illyustracii", "razrabotka-logotipov"];
 const names = [
   ["luzhniki", "Арт-проект «Лужники»", "Luzhniki art project"],

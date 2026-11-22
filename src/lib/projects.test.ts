@@ -1,8 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { artworks } from "./artworks";
-import { canPreviewInRoom, fallbackProjects, worksForProject } from "./projects";
+import { canPreviewInRoom, fallbackProjects, projectsForDisplay, worksForProject } from "./projects";
 
 describe("Special project grouping and interior settings", () => {
+  for (const id of ["logos", "illustration-projects", "other-projects"]) {
+    it(`shows ${id} only in the full special-project catalogue`, () => {
+      expect(projectsForDisplay(fallbackProjects).some((p) => p.id === id)).toBe(false);
+      expect(projectsForDisplay(fallbackProjects, true).some((p) => p.id === id)).toBe(true);
+    });
+  }
+  it("keeps the main commissions on the homepage", () => {
+    expect(projectsForDisplay(fallbackProjects).map((p) => p.id)).toEqual(["luzhniki", "hotels", "tavrida", "individual"]);
+  });
   it("groups all eight Luzhniki works under one project", () => {
     const project = fallbackProjects.find((p) => p.id === "luzhniki");
     expect(project).toBeDefined();

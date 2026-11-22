@@ -97,7 +97,7 @@ function Painting({ hung, work, lang, glow, onPick }: { hung: Hung; work: Artwor
 }
 
 /** Camera: glides to the selected work; dragging switches to free walking (horizontal = turn, vertical = step forward/back). */
-function Rig({ target, bounds, resetKey }: { target: THREE.Vector3 & { look?: THREE.Vector3 }; bounds: { x: number; zMin: number; zMax: number }; resetKey: number }) {
+function Rig({ target, bounds, resetKey, paused }: { target: THREE.Vector3 & { look?: THREE.Vector3 }; bounds: { x: number; zMin: number; zMax: number }; resetKey: number; paused: boolean }) {
   const { camera, gl } = useThree();
   const look = useRef(new THREE.Vector3(0, EYE, -5));
   const free = useRef(false);
@@ -105,6 +105,7 @@ function Rig({ target, bounds, resetKey }: { target: THREE.Vector3 & { look?: TH
   const pos = useRef(new THREE.Vector3());
   useEffect(() => { free.current = false; }, [target, resetKey]);
   useEffect(() => {
+    if (paused) return;
     const el = gl.domElement; let down: { x: number; y: number } | null = null; let moved = false;
     const onDown = (e: PointerEvent) => { down = { x: e.clientX, y: e.clientY }; moved = false; };
     const onMove = (e: PointerEvent) => {
@@ -141,8 +142,9 @@ function Rig({ target, bounds, resetKey }: { target: THREE.Vector3 & { look?: TH
     el.style.cursor = "grab"; el.style.touchAction = "none";
     el.addEventListener("pointerdown", onDown); window.addEventListener("pointermove", onMove); window.addEventListener("pointerup", onUp); el.addEventListener("click", onClick, true);
     return () => { el.removeEventListener("pointerdown", onDown); window.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp); el.removeEventListener("click", onClick, true); window.removeEventListener("gallery-walk", onWalk); el.removeEventListener("wheel", onWheel); window.removeEventListener("keydown", onKey); };
-  }, [camera, gl, bounds]);
+  }, [camera, gl, bounds, paused]);
   useFrame((_, d) => {
+    if (paused) return;
     const dt = Math.min(d, 0.05);
     if (free.current) {
       const k = 1 - Math.exp(-3 * dt);
@@ -158,7 +160,7 @@ function Rig({ target, bounds, resetKey }: { target: THREE.Vector3 & { look?: TH
   return null;
 }
 
-export function VirtualGallery({ works, lang, index, onIndex, distance = 1, resetKey = 0, hallName = "" }: { works: readonly Artwork[]; lang: Lang; index: number; onIndex: (i: number) => void; distance?: number; resetKey?: number; hallName?: string }) {
+export function VirtualGallery({ works, lang, index, onIndex, distance = 1, resetKey = 0, hallName = "", paused = false }: { works: readonly Artwork[]; lang: Lang; index: number; onIndex: (i: number) => void; distance?: number; resetKey?: number; hallName?: string; paused?: boolean }) {
   const room = useMemo(() => layoutRoom(works), [works]);
   const { width: W, depth: D, hung: hungs } = room;
   const FRONT = 1.6; // entrance wall behind the starting viewpoint
@@ -282,6 +284,6 @@ export function VirtualGallery({ works, lang, index, onIndex, distance = 1, rese
     <mesh position={[0, CEIL - 0.02, -D + 1.3]}><boxGeometry args={[W - 2.6, 0.035, 0.035]} /><meshStandardMaterial color="#111" /></mesh>
 
     {hungs.map((h, i) => <Painting key={h.id} hung={h} work={works[i]!} lang={lang} glow={glow} onPick={() => onIndex(i)} />)}
-    <Rig target={target} bounds={bounds} resetKey={resetKey} />
+    <Rig target={target} bounds={bounds} resetKey={resetKey} paused={paused} />
   </Canvas>;
 }

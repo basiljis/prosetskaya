@@ -30,7 +30,7 @@ import { ProjectCatalogue } from "@/components/project-catalogue";
 import { SubscribeForm } from "@/components/subscribe-form";
 import { EXHIBITION_LIMIT } from "@/lib/exhibition-layout";
 import { useProjects } from "@/hooks/use-projects";
-import { projectIntro } from "@/lib/projects";
+import { projectIntro, projectsForDisplay } from "@/lib/projects";
 import { ExpandableText } from "@/components/expandable-text";
 
 export const Route = createFileRoute("/")({
@@ -51,6 +51,7 @@ const featuredWorks = featuredIds.map((id) => staticArtworks.find((work) => work
 function Index() {
   const artworks = useArtworks();
   const projects = useProjects();
+  const featuredProjects = projectsForDisplay(projects);
   const [lang, setLang] = useState<Lang>("ru");
   const [dark, setDark] = useState(false);
   const [ready, setReady] = useState(false);
@@ -187,7 +188,7 @@ function Index() {
       <section id="projects" className="gallery-shell border-t border-border py-10 md:py-16">
         <SectionMarker number="02">{b.projectsLabel}</SectionMarker>
         <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end"><div><h2 className="section-heading font-display">{b.projectsLabel}<span className="ml-3 align-top font-sans text-sm text-primary">({projects.length})</span></h2><ExpandableText text={projectIntro[lang]} lang={lang} className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground" /></div><div className="flex shrink-0 flex-wrap gap-5"><Button asChild variant="editorial" className="h-auto border-b border-foreground px-0 pb-2 text-xs"><Link to="/projects">{lang === "ru" ? "Все спецпроекты" : "All special projects"}<ArrowUpRight /></Link></Button><ContactDialog lang={lang} topics><Button variant="editorial" className="h-auto border-b border-foreground px-0 pb-2 text-xs">{lang === "ru" ? "Предложить проект" : "Propose a project"}<ArrowUpRight /></Button></ContactDialog></div></div>
-        <ProjectCatalogue projects={projects} works={artworks} lang={lang} />
+        <ProjectCatalogue projects={featuredProjects} works={artworks} lang={lang} />
       </section>
 
       <section id="about" className="border-t border-border py-10 md:py-16">

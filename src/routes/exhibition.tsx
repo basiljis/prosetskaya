@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, ChevronLeft, Undo2, ChevronRight, Pause, Play } from "lucide-react";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { ArtworkCaption } from "@/components/artwork-caption";
+import { ArtworkViewer } from "@/components/artwork-viewer";
+import { useProjects } from "@/hooks/use-projects";
 import { Button } from "@/components/ui/button";
 import { useArtworks } from "@/hooks/use-artworks";
 import type { Lang } from "@/lib/artworks";
@@ -28,6 +30,8 @@ const ru0 = (l: Lang) => l === "ru";
 
 function Exhibition() {
   const all = useArtworks();
+  const projects = useProjects();
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [lang, setLang] = useState<Lang>("ru");
   const [ids, setIds] = useState<string[] | null>(null);
   const [index, setIndex] = useState(-1);
@@ -57,11 +61,13 @@ function Exhibition() {
     setHall(key); setIds(h.ids); sessionStorage.setItem(EXHIBITION_KEY, JSON.stringify(h.ids)); setAuto(false); setIndex(-1); setResetKey((k) => k + 1);
   };
   useEffect(() => {
+    if (viewerIndex !== null) return;
     const next = () => { const i = halls.findIndex((h) => h.key === hall); const n = halls[(i + 1) % halls.length]; if (n) enterHall(n.key); };
     window.addEventListener("gallery-next-hall", next); return () => window.removeEventListener("gallery-next-hall", next);
   });
   const go = (d: number) => setIndex((i) => (i + d + works.length) % works.length);
   useEffect(() => {
+    if (viewerIndex !== null) return;
     const k = (e: KeyboardEvent) => { if (e.key === "ArrowRight") go(1); if (e.key === "ArrowLeft") go(-1); if (e.key === "Escape") overview(); };
     window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k);
   });
@@ -71,7 +77,7 @@ function Exhibition() {
   return <main className="fixed inset-0 bg-background text-foreground">
     {ids !== null && works.length === 0 && <div className="grid h-full place-items-center p-6 text-center"><div><p className="font-display text-3xl">{ru ? "Выберите работы для выставки" : "Choose works for the exhibition"}</p><p className="mt-3 text-sm text-muted-foreground">{ru ? "Отметьте жанр или направление в коллекции, затем нажмите значок выставки." : "Pick a genre or style in the collection, then press the exhibition icon."}</p><Button asChild className="mt-6"><Link to="/" hash="works">{ru ? "К коллекции" : "To the collection"}</Link></Button></div></div>}
     {ids !== null && works.length > 0 && <Suspense fallback={<p className="grid h-full place-items-center text-sm text-muted-foreground">{ru ? "Готовим зал…" : "Preparing the hall…"}</p>}>
-      <div className="absolute inset-0"><VirtualGallery works={works} lang={lang} index={index} distance={distance} resetKey={resetKey} hallName={halls.find((h) => h.key === hall)?.label ?? ""} onIndex={(i) => { setIndex(i); setAuto(false); }} /></div>
+      <div className="absolute inset-0"><VirtualGallery works={works} lang={lang} index={index} distance={distance} resetKey={resetKey} paused={viewerIndex !== null} hallName={halls.find((h) => h.key === hall)?.label ?? ""} onIndex={(i) => { setIndex(i); setAuto(false); setViewerIndex(i); }} /></div>
     </Suspense>}
     <header className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between p-4 md:p-6">
       <Button asChild variant="editorial" className="pointer-events-auto bg-background/85 px-3 text-xs backdrop-blur"><Link to="/" hash="works"><ArrowLeft />{ru ? "В коллекцию" : "Collection"}</Link></Button>
@@ -83,7 +89,7 @@ function Exhibition() {
       </label>
     </header>
     <footer className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 p-4 md:p-6">
-      {work ? <div className="w-[min(92vw,420px)] bg-background/90 p-4 shadow-lg backdrop-blur"><ArtworkCaption work={work} lang={lang} /></div>
+      {work ? <div className="w-[min(92vw,420px)] bg-background/90 p-4 shadow-lg backdrop-blur"><ArtworkCaption work={work} lang={lang} /><Button variant="editorial" className="mt-3 h-auto border-b border-current px-0 pb-1 text-xs" onClick={() => { setAuto(false); setViewerIndex(index); }}>{ru ? "Описание картины" : "Artwork details"}</Button></div>
         : <p className="bg-background/85 px-4 py-2 text-center text-xs text-muted-foreground backdrop-blur">{ru ? "Тяните или крутите колёсико (↑↓) · нажмите на пол, картину или дверь — следующий зал" : "Drag or scroll (↑↓) · click the floor, a painting, or the door for the next hall"}</p>}
       <div className="flex items-center gap-1 rounded-full bg-background/90 p-1 text-[11px] shadow-lg backdrop-blur" role="group" aria-label={ru ? "Расстояние до стены" : "Distance from wall"}>
         <span className="px-2 text-muted-foreground">{ru ? "Расстояние" : "Distance"}</span>
@@ -97,5 +103,6 @@ function Exhibition() {
         <Button variant="ghost" size="icon" className="rounded-full" aria-label={ru ? "Следующая работа" : "Next artwork"} onClick={() => { setAuto(false); go(1); }}><ChevronRight /></Button>
       </div>
     </footer>
+    {viewerIndex !== null && <ArtworkViewer works={works} index={viewerIndex} lang={lang} projects={projects} purchaseActions onChange={(i) => { setViewerIndex(i); setIndex(i); }} onClose={() => setViewerIndex(null)} />}
   </main>;
 }
