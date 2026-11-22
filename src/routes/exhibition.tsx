@@ -68,7 +68,7 @@ function Exhibition() {
   const go = (d: number) => setIndex((i) => (i + d + works.length) % works.length);
   useEffect(() => {
     if (viewerIndex !== null) return;
-    const k = (e: KeyboardEvent) => { if (e.key === "ArrowRight") go(1); if (e.key === "ArrowLeft") go(-1); if (e.key === "Escape") overview(); };
+    const k = (e: KeyboardEvent) => { if (e.defaultPrevented) return; if (e.key === "ArrowRight") go(1); if (e.key === "ArrowLeft") go(-1); if (e.key === "Escape") overview(); };
     window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k);
   });
   useEffect(() => { if (!auto) return; const t = setInterval(() => go(1), 5000); return () => clearInterval(t); });
