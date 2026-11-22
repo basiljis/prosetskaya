@@ -29,7 +29,7 @@ export function RoomPreview({ work, lang }: { work: Artwork; lang: Lang }) {
           ))}
         </span>
       </figcaption>
-      <div className={`relative w-full overflow-hidden ${vertical ? "aspect-[1088/1600] max-h-[70vh] max-w-[calc(70vh*0.68)]" : "aspect-[1920/1088] max-h-full"}`}>
+      <div className={`relative w-full overflow-hidden ${vertical ? "aspect-[1088/1600] max-h-[70vh] max-w-[calc(70vh*0.68)]" : "aspect-[1920/1088] max-w-[calc((100dvh-11rem)*1920/1088)]"}`}>
         <img src={(vertical ? portraitPhotos : photos)[room.id]} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div
           className="room-artwork absolute left-1/2 -translate-x-1/2"
