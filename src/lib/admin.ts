@@ -100,3 +100,14 @@ export async function saveSiteJson(key: "genres" | "styles" | "cv", value: unkno
   const { data, error } = await supabase.from("site_settings").update({ [key]: value, updated_at: new Date().toISOString() } as unknown as { updated_at: string }).eq("id", 1).select("id").single();
   if (error || !data) throw new Error("Изменения не сохранены. Попробуйте ещё раз.");
 }
+
+export type AdminUser = { id: string; email: string; created_at: string; last_sign_in_at: string | null; roles: string[] };
+export async function loadAdminUsers(): Promise<AdminUser[]> {
+  const { data, error } = await supabase.rpc("admin_list_users");
+  if (error) throw new Error("Не удалось загрузить пользователей.");
+  return (data ?? []) as AdminUser[];
+}
+export async function setAdminUserRole(userId: string, role: "admin" | "user", on: boolean) {
+  const { error } = await supabase.rpc("admin_set_role", { _user_id: userId, _role: role, _on: on });
+  if (error) throw new Error(error.message.includes("own admin") ? "Нельзя снять роль администратора с себя." : "Не удалось изменить роль.");
+}

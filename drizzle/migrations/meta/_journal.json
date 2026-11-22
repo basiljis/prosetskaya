@@ -85,6 +85,13 @@
       "when": 1795341040608,
       "tag": "0011_hide_duplicate_artworks",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1795341929710,
+      "tag": "0012_admin_user_management",
+      "breakpoints": true
     }
   ]
 }

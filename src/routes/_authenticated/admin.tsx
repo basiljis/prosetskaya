@@ -17,6 +17,7 @@ import { AdminPriceEditor } from "@/components/admin-price-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { AdminUsers } from "@/components/admin-users";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { artworks as staticArtworks } from "@/lib/artworks";
@@ -123,6 +124,7 @@ function Admin() {
           })}</ul>}
         </TabsContent>
         <TabsContent value="settings" className="mt-8">
+          <AdminUsers />
           <section className="mb-10 border-b border-border pb-8">
             <h2 className="font-display text-3xl">Меню коллекции</h2>
             <div role="group" aria-label="Расположение меню коллекции" className="mt-5 inline-grid max-w-full grid-cols-2 border border-border p-1">
