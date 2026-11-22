@@ -20,13 +20,13 @@ const backgrounds = [
   { surface: "bg-viewer-gray text-viewer-gray-foreground", swatch: "bg-viewer-gray", label: "grayBg" },
 ] as const;
 
-export function ArtworkViewer({ works, index, lang, onChange, onClose, viewOnly = false, projects = fallbackProjects, purchaseActions = false }: {
-  works: readonly Artwork[]; index: number; lang: Lang; projects?: readonly Project[]; viewOnly?: boolean; purchaseActions?: boolean; onChange: (index: number) => void; onClose: () => void;
+export function ArtworkViewer({ works, index, lang, onChange, onClose, viewOnly = false, projects = fallbackProjects, purchaseActions = false, initialAction }: {
+  works: readonly Artwork[]; index: number; lang: Lang; projects?: readonly Project[]; viewOnly?: boolean; purchaseActions?: boolean; initialAction?: "room" | "inquiry" | "checkout" | undefined; onChange: (index: number) => void; onClose: () => void;
 }) {
   const [background, setBackground] = useState(1);
-  const [room, setRoom] = useState(false);
-  const [inquiry, setInquiry] = useState(false);
-  const [checkout, setCheckout] = useState(false);
+  const [room, setRoom] = useState(initialAction === "room");
+  const [inquiry, setInquiry] = useState(initialAction === "inquiry");
+  const [checkout, setCheckout] = useState(initialAction === "checkout");
   const shop = useShop().data;
   const b = boutique[lang];
   const work = works[index];

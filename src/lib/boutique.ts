@@ -3,7 +3,7 @@ import type { Artwork, Lang } from "@/lib/artworks";
 /** Wall width shown in the room preview, in centimetres. */
 export const ROOMS = [
   { id: "living", ru: "Гостиная", en: "Living room", wallCm: 470, bottomPct: 52, furniture: { ru: "Диван 240 × 95 см", en: "Sofa 240 × 95 cm" }, portrait: { wallCm: 300, bottomPct: 46 } },
-  { id: "dining", ru: "Столовая", en: "Dining room", wallCm: 398, bottomPct: 46, furniture: { ru: "Консоль 180 × 80 см", en: "Console 180 × 80 cm" }, portrait: { wallCm: 250, bottomPct: 43 } },
+  { id: "dining", ru: "Столовая", en: "Dining room", wallCm: 398, bottomPct: 58, furniture: { ru: "Консоль 180 × 80 см", en: "Console 180 × 80 cm" }, portrait: { wallCm: 250, bottomPct: 56 } },
 ] as const;
 
 /** Real artwork width/height in cm, using the catalogue size and the photo's proportions. */

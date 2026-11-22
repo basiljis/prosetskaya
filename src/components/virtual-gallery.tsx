@@ -1,3 +1,4 @@
+import { canPurchaseArtwork } from "@/lib/artworks";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { ContactShadows, Environment, Lightformer } from "@react-three/drei";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -75,14 +76,19 @@ function useLabel(work: Artwork, lang: Lang) {
   }), [work, lang]);
 }
 
-function Painting({ hung, work, lang, glow, onPick }: { hung: Hung; work: Artwork; lang: Lang; glow: THREE.Texture; onPick: () => void }) {
+function Painting({ hung, work, lang, glow, onPick }: { hung: Hung; work: Artwork; lang: Lang; glow: THREE.Texture; onPick: (action?: GalleryAction) => void }) {
   const tex = useArtTexture(work.image);
   const label = useLabel(work, lang);
-  const button = useMemo(() => canvasTex(640, 140, (g) => {
-    g.fillStyle = "#1c1a18"; g.fillRect(0, 0, 640, 140);
-    g.fillStyle = "#ffffff"; g.font = "500 52px 'Helvetica Neue', Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
-    g.fillText(lang === "ru" ? "ОПИСАНИЕ  →" : "DETAILS  →", 320, 72);
-  }), [lang]);
+  const buttons = useMemo(() => {
+    const ru = lang === "ru";
+    const list: { action: GalleryAction; text: string; dark: boolean }[] = [{ action: "room", text: ru ? "В ИНТЕРЬЕРЕ" : "IN INTERIOR", dark: true }, { action: "inquiry", text: ru ? "ВОПРОС" : "ASK", dark: false }];
+    if (canPurchaseArtwork(work)) list.push({ action: "checkout", text: ru ? "КУПИТЬ" : "BUY", dark: true });
+    return list.map((b) => ({ ...b, tex: canvasTex(640, 120, (g) => {
+      g.fillStyle = b.dark ? "#1c1a18" : "#ffffff"; g.fillRect(0, 0, 640, 120);
+      if (!b.dark) { g.strokeStyle = "#1c1a18"; g.lineWidth = 6; g.strokeRect(3, 3, 634, 114); }
+      g.fillStyle = b.dark ? "#ffffff" : "#1c1a18"; g.font = "500 46px 'Helvetica Neue', Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(b.text, 320, 62);
+    }) }));
+  }, [work, lang]);
   const depth = 0.04, fw = 0.018;
   const ly = Math.max(-hung.h / 2 + 0.08, -0.2);
   return <group position={[hung.x + hung.nx * 0.005, EYE, hung.z + hung.nz * 0.005]} rotation={[0, hung.rotY, 0]}>
@@ -98,8 +104,8 @@ function Painting({ hung, work, lang, glow, onPick }: { hung: Hung; work: Artwor
     </mesh>
     {/* wall label */}
     <mesh position={[hung.w / 2 + 0.32, ly, 0.006]} onClick={(e) => { e.stopPropagation(); onPick(); }}><boxGeometry args={[0.32, 0.2, 0.006]} /><meshStandardMaterial map={label} emissiveMap={label} emissive="#ffffff" emissiveIntensity={0.45} roughness={0.95} /></mesh>
-    {/* details button under the label */}
-    <mesh position={[hung.w / 2 + 0.32, ly - 0.15, 0.006]} onClick={(e) => { e.stopPropagation(); onPick(); }} onPointerOver={() => (document.body.style.cursor = "pointer")} onPointerOut={() => (document.body.style.cursor = "")}><boxGeometry args={[0.32, 0.07, 0.006]} /><meshStandardMaterial map={button} emissiveMap={button} emissive="#ffffff" emissiveIntensity={0.6} roughness={0.9} /></mesh>
+    {/* action buttons under the label */}
+    {buttons.map((b, k) => <mesh key={b.action} position={[hung.w / 2 + 0.32, ly - 0.14 - k * 0.075, 0.006]} onClick={(e) => { e.stopPropagation(); onPick(b.action); }} onPointerOver={() => (document.body.style.cursor = "pointer")} onPointerOut={() => (document.body.style.cursor = "")}><boxGeometry args={[0.32, 0.06, 0.006]} /><meshStandardMaterial map={b.tex} emissiveMap={b.tex} emissive="#ffffff" emissiveIntensity={0.6} roughness={0.9} /></mesh>)}
   </group>;
 }
 
@@ -167,7 +173,9 @@ function Rig({ target, bounds, resetKey, paused }: { target: THREE.Vector3 & { l
   return null;
 }
 
-export function VirtualGallery({ works, lang, index, onIndex, distance = 1, resetKey = 0, hallName = "", paused = false }: { works: readonly Artwork[]; lang: Lang; index: number; onIndex: (i: number) => void; distance?: number; resetKey?: number; hallName?: string; paused?: boolean }) {
+export type GalleryAction = "room" | "inquiry" | "checkout";
+
+export function VirtualGallery({ works, lang, index, onIndex, distance = 1, resetKey = 0, hallName = "", paused = false }: { works: readonly Artwork[]; lang: Lang; index: number; onIndex: (i: number, action?: GalleryAction) => void; distance?: number; resetKey?: number; hallName?: string; paused?: boolean }) {
   const room = useMemo(() => layoutRoom(works), [works]);
   const { width: W, depth: D, hung: hungs } = room;
   const FRONT = 1.6; // entrance wall behind the starting viewpoint
@@ -290,7 +298,7 @@ export function VirtualGallery({ works, lang, index, onIndex, distance = 1, rese
     {[-1, 1].map((s) => <mesh key={`rail${s}`} position={[s * (W / 2 - 1.3), CEIL - 0.02, midZ]}><boxGeometry args={[0.035, 0.035, len - 0.6]} /><meshStandardMaterial color="#111" /></mesh>)}
     <mesh position={[0, CEIL - 0.02, -D + 1.3]}><boxGeometry args={[W - 2.6, 0.035, 0.035]} /><meshStandardMaterial color="#111" /></mesh>
 
-    {hungs.map((h, i) => <Painting key={h.id} hung={h} work={works[i]!} lang={lang} glow={glow} onPick={() => onIndex(i)} />)}
+    {hungs.map((h, i) => <Painting key={h.id} hung={h} work={works[i]!} lang={lang} glow={glow} onPick={(a) => onIndex(i, a)} />)}
     <Rig target={target} bounds={bounds} resetKey={resetKey} paused={paused} />
   </Canvas>;
 }

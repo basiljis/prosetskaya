@@ -64,3 +64,4 @@
 - [x] Move favourite heart off the artwork image
 - [x] Tooltips with hints on icon buttons across the site
 - [x] Экскурсия: убрать нижнюю плашку описания, кнопка «Описание» у таблички справа от картины
+- [x] Экскурсия: у таблички кнопки «В интерьере», «Вопрос», «Купить» (если не продана)
