@@ -1,7 +1,11 @@
+import { useShop } from "@/hooks/use-shop";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, ChevronLeft, Undo2, ChevronRight, Pause, Play } from "lucide-react";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { ArtworkViewer } from "@/components/artwork-viewer";
+import { InquiryDialog } from "@/components/inquiry-dialog";
+import { useShop } from "@/hooks/use-shop";
+import { CheckoutDialog } from "@/components/checkout-dialog";
 import { useProjects } from "@/hooks/use-projects";
 import { Button } from "@/components/ui/button";
 import { useArtworks } from "@/hooks/use-artworks";
@@ -32,6 +36,8 @@ function Exhibition() {
   const all = useArtworks();
   const projects = useProjects();
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  const [dialog, setDialog] = useState<{ action: "inquiry" | "checkout"; i: number } | null>(null);
+  const shop = useShop().data;
   const [viewerAction, setViewerAction] = useState<GalleryAction | undefined>(undefined);
   const [lang, setLang] = useState<Lang>("ru");
   const [ids, setIds] = useState<string[] | null>(null);
@@ -62,13 +68,13 @@ function Exhibition() {
     setHall(key); setIds(h.ids); sessionStorage.setItem(EXHIBITION_KEY, JSON.stringify(h.ids)); setAuto(false); setIndex(-1); setResetKey((k) => k + 1);
   };
   useEffect(() => {
-    if (viewerIndex !== null) return;
+    if (viewerIndex !== null || dialog !== null) return;
     const next = () => { const i = halls.findIndex((h) => h.key === hall); const n = halls[(i + 1) % halls.length]; if (n) enterHall(n.key); };
     window.addEventListener("gallery-next-hall", next); return () => window.removeEventListener("gallery-next-hall", next);
   });
   const go = (d: number) => setIndex((i) => (i + d + works.length) % works.length);
   useEffect(() => {
-    if (viewerIndex !== null) return;
+    if (viewerIndex !== null || dialog !== null) return;
     const k = (e: KeyboardEvent) => { if (e.defaultPrevented) return; if (e.key === "ArrowRight") go(1); if (e.key === "ArrowLeft") go(-1); if (e.key === "Escape") overview(); };
     window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k);
   });
@@ -78,7 +84,7 @@ function Exhibition() {
   return <main className="fixed inset-0 bg-background text-foreground">
     {ids !== null && works.length === 0 && <div className="grid h-full place-items-center p-6 text-center"><div><p className="font-display text-3xl">{ru ? "Выберите работы для выставки" : "Choose works for the exhibition"}</p><p className="mt-3 text-sm text-muted-foreground">{ru ? "Отметьте жанр или направление в коллекции, затем нажмите значок выставки." : "Pick a genre or style in the collection, then press the exhibition icon."}</p><Button asChild className="mt-6"><Link to="/" hash="works">{ru ? "К коллекции" : "To the collection"}</Link></Button></div></div>}
     {ids !== null && works.length > 0 && <Suspense fallback={<p className="grid h-full place-items-center text-sm text-muted-foreground">{ru ? "Готовим зал…" : "Preparing the hall…"}</p>}>
-      <div className="absolute inset-0"><VirtualGallery works={works} lang={lang} index={index} distance={distance} resetKey={resetKey} paused={viewerIndex !== null} hallName={halls.find((h) => h.key === hall)?.label ?? ""} onIndex={(i, a) => { setIndex(i); setAuto(false); setViewerAction(a); setViewerIndex(i); }} /></div>
+      <div className="absolute inset-0"><VirtualGallery works={works} lang={lang} index={index} distance={distance} resetKey={resetKey} paused={viewerIndex !== null || dialog !== null} hallName={halls.find((h) => h.key === hall)?.label ?? ""} onIndex={(i, a) => { setIndex(i); setAuto(false); if (a === "inquiry" || a === "checkout") setDialog({ action: a, i }); else { setViewerAction(a); setViewerIndex(i); } }} /></div>
     </Suspense>}
     <header className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between p-4 md:p-6">
       <Button asChild variant="editorial" className="pointer-events-auto bg-background/85 px-3 text-xs backdrop-blur"><Link to="/" hash="works"><ArrowLeft />{ru ? "В коллекцию" : "Collection"}</Link></Button>
@@ -103,6 +109,8 @@ function Exhibition() {
         <Button variant="ghost" size="icon" className="rounded-full" aria-label={ru ? "Следующая работа" : "Next artwork"} onClick={() => { setAuto(false); go(1); }}><ChevronRight /></Button>
       </div>
     </footer>
+    {dialog?.action === "inquiry" && works[dialog.i] && <InquiryDialog work={works[dialog.i]!} lang={lang} onClose={() => setDialog(null)} />}
+    {dialog?.action === "checkout" && works[dialog.i] && <CheckoutDialog work={works[dialog.i]!} price={shop?.prices[works[dialog.i]!.id] ?? null} online={!!shop?.online} onClose={() => setDialog(null)} />}
     {viewerIndex !== null && <ArtworkViewer works={works} index={viewerIndex} lang={lang} projects={projects} purchaseActions initialAction={viewerAction} onChange={(i) => { setViewerIndex(i); setIndex(i); }} onClose={() => { setViewerIndex(null); setViewerAction(undefined); }} />}
   </main>;
 }

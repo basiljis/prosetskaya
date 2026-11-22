@@ -1,6 +1,6 @@
 import { canPurchaseArtwork } from "@/lib/artworks";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { ContactShadows, Environment, Lightformer } from "@react-three/drei";
+import { ContactShadows, Environment, Html, Lightformer } from "@react-three/drei";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import type { Artwork, Lang } from "@/lib/artworks";
@@ -79,15 +79,27 @@ function useLabel(work: Artwork, lang: Lang) {
 function Painting({ hung, work, lang, glow, onPick }: { hung: Hung; work: Artwork; lang: Lang; glow: THREE.Texture; onPick: (action?: GalleryAction) => void }) {
   const tex = useArtTexture(work.image);
   const label = useLabel(work, lang);
+  const [hover, setHover] = useState<string | null>(null);
   const buttons = useMemo(() => {
     const ru = lang === "ru";
-    const list: { action: GalleryAction; text: string; dark: boolean }[] = [{ action: "room", text: ru ? "В ИНТЕРЬЕРЕ" : "IN INTERIOR", dark: true }, { action: "inquiry", text: ru ? "ВОПРОС" : "ASK", dark: false }];
-    if (canPurchaseArtwork(work)) list.push({ action: "checkout", text: ru ? "КУПИТЬ" : "BUY", dark: true });
-    return list.map((b) => ({ ...b, tex: canvasTex(640, 120, (g) => {
-      g.fillStyle = b.dark ? "#1c1a18" : "#ffffff"; g.fillRect(0, 0, 640, 120);
-      if (!b.dark) { g.strokeStyle = "#1c1a18"; g.lineWidth = 6; g.strokeRect(3, 3, 634, 114); }
-      g.fillStyle = b.dark ? "#ffffff" : "#1c1a18"; g.font = "500 46px 'Helvetica Neue', Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(b.text, 320, 62);
-    }) }));
+    const list: { action: GalleryAction; tip: string; w: number; draw: (g: CanvasRenderingContext2D, W: number) => void }[] = [
+      { action: "room", tip: ru ? "Посмотреть в интерьере" : "View in interior", w: 0.2, draw: (g, W) => { g.font = "500 46px 'Helvetica Neue', Arial, sans-serif"; g.fillText(ru ? "В ИНТЕРЬЕРЕ" : "IN INTERIOR", W / 2, 62); } },
+      { action: "inquiry", tip: ru ? "Задать вопрос" : "Ask a question", w: 0.055, draw: (g, W) => { g.font = "600 84px 'Helvetica Neue', Arial, sans-serif"; g.fillText("?", W / 2, 66); } },
+    ];
+    if (canPurchaseArtwork(work)) list.push({ action: "checkout", tip: ru ? "Купить" : "Buy", w: 0.055, draw: (g, W) => {
+      // shopping bag icon
+      const c = W / 2; g.lineWidth = 7; g.strokeRect(c - 30, 42, 60, 52); g.beginPath(); g.arc(c, 42, 16, Math.PI, 0); g.stroke();
+    } });
+    let x = -0.16;
+    return list.map((b) => {
+      const W = Math.round((b.w / 0.06) * 120);
+      const tex = canvasTex(W, 120, (g) => {
+        g.fillStyle = "#1c1a18"; g.fillRect(0, 0, W, 120);
+        g.fillStyle = "#ffffff"; g.strokeStyle = "#ffffff"; g.textAlign = "center"; g.textBaseline = "middle"; b.draw(g, W);
+      });
+      const cx = x + b.w / 2; x += b.w + 0.0075;
+      return { ...b, tex, cx };
+    });
   }, [work, lang]);
   const depth = 0.04, fw = 0.018;
   const ly = Math.max(-hung.h / 2 + 0.08, -0.2);
@@ -105,7 +117,9 @@ function Painting({ hung, work, lang, glow, onPick }: { hung: Hung; work: Artwor
     {/* wall label */}
     <mesh position={[hung.w / 2 + 0.32, ly, 0.006]} onClick={(e) => { e.stopPropagation(); onPick(); }}><boxGeometry args={[0.32, 0.2, 0.006]} /><meshStandardMaterial map={label} emissiveMap={label} emissive="#ffffff" emissiveIntensity={0.45} roughness={0.95} /></mesh>
     {/* action buttons under the label */}
-    {buttons.map((b, k) => <mesh key={b.action} position={[hung.w / 2 + 0.32, ly - 0.14 - k * 0.075, 0.006]} onClick={(e) => { e.stopPropagation(); onPick(b.action); }} onPointerOver={() => (document.body.style.cursor = "pointer")} onPointerOut={() => (document.body.style.cursor = "")}><boxGeometry args={[0.32, 0.06, 0.006]} /><meshStandardMaterial map={b.tex} emissiveMap={b.tex} emissive="#ffffff" emissiveIntensity={0.6} roughness={0.9} /></mesh>)}
+    {buttons.map((b) => <mesh key={b.action} position={[hung.w / 2 + 0.32 + b.cx, ly - 0.14, 0.006]} onClick={(e) => { e.stopPropagation(); onPick(b.action); }} onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = "pointer"; setHover(b.action); }} onPointerOut={() => { document.body.style.cursor = ""; setHover(null); }}><boxGeometry args={[b.w, 0.06, 0.006]} /><meshStandardMaterial map={b.tex} emissiveMap={b.tex} emissive="#ffffff" emissiveIntensity={0.6} roughness={0.9} />
+      {hover === b.action && <Html position={[0, 0.06, 0.01]} center zIndexRange={[20, 0]} style={{ pointerEvents: "none" }}><span className="whitespace-nowrap rounded-sm bg-foreground px-2 py-1 text-[11px] text-background shadow">{b.tip}</span></Html>}
+    </mesh>)}
   </group>;
 }
 
