@@ -12,7 +12,7 @@
                ├─ prosetskaya.ru      → app:3000 (сайт с серверным рендерингом)
                │    • при 502/503/504 → maintenance.html
                │    • /__l5e/*        → изображения картин (кешируются на сервере 30 дней)
-               └─ api.prosetskaya.ru  → https://oxqeowztnvhatzfivttk.supabase.co
+               └─ api.prosetskaya.ru  → https://pgssrcadvcwxmvuhfozu.supabase.co
                                         (Auth / REST / Storage / Realtime)
 ```
 
@@ -36,7 +36,7 @@
 |------------|----------|
 | `VITE_SUPABASE_URL` | `https://api.prosetskaya.ru` (по умолчанию уже так) |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | публичный ключ из `.env` проекта (`sb_publishable_...`) |
-| `VITE_SUPABASE_PROJECT_ID` | `oxqeowztnvhatzfivttk` (по умолчанию уже так) |
+| `VITE_SUPABASE_PROJECT_ID` | `pgssrcadvcwxmvuhfozu` (по умолчанию уже так) |
 | `SUPABASE_SERVICE_ROLE_KEY` | см. «Ограничения» |
 
 `.env` в репозитории НЕ меняем — он нужен для предпросмотра в Lovable. Значения для продакшена
