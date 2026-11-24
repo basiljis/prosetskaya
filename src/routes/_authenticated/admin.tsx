@@ -17,6 +17,7 @@ import { AdminPriceEditor } from "@/components/admin-price-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { NotificationBell } from "@/components/notification-bell";
 import { AdminUsers } from "@/components/admin-users";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -44,6 +45,9 @@ function Admin() {
   const [busy, setBusy] = useState(false);
   const [search, setSearch] = useState("");
   const [workFilter, setWorkFilter] = useState("all");
+  const [saleFilter, setSaleFilter] = useState("all");
+  const [styleFilter, setStyleFilter] = useState("all");
+  const [genreFilter, setGenreFilter] = useState("all");
   const [orderFilter, setOrderFilter] = useState("all");
   const [webhook, setWebhook] = useState("");
   const { data, isLoading, isError, refetch } = useQuery({ queryKey: ["admin"], queryFn: loadAdminData, retry: 1 });
@@ -73,14 +77,15 @@ function Admin() {
   if (!data) return <SimplePage title="Нет доступа"><LockKeyhole className="mt-8 size-8 text-muted-foreground" /><p className="mt-5 text-sm leading-7 text-muted-foreground">Управление галереей доступно только администратору.</p><Button asChild variant="outline" className="mt-6"><Link to="/account">Мой кабинет<ArrowUpRight /></Link></Button></SimplePage>;
 
   const artworks = rows;
-  const visibleWorks = rows.filter((work) => work.title_ru.toLowerCase().includes(search.trim().toLowerCase()) && matchesWorkFilter(work, workFilter));
+  const visibleWorks = rows.filter((work) => work.title_ru.toLowerCase().includes(search.trim().toLowerCase()) && matchesWorkFilter(work, workFilter) && matchesSale(work, saleFilter) && (styleFilter === "all" || work.style === styleFilter) && (genreFilter === "all" || work.genre === genreFilter));
+  const styleTermsA = resolveTerms(data.settings.styles, styleDefaults); const genreTermsA = resolveTerms(data.settings.genres, genreDefaults);
   const activeOrders = data.orders.filter((order) => order.status !== "cancelled" && order.status !== "completed");
   const visibleOrders = data.orders.filter((order) => orderFilter === "all" || order.status === orderFilter);
   const pricedCount = artworks.filter((work) => data.prices[work.id] != null).length;
 
   return (
     <SimplePage title="Управление галереей" kicker="Юлия Просецкая / Администратор" wide>
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3"><span className="flex items-center gap-2 text-xs text-muted-foreground"><LockKeyhole className="size-4" />Закрытый кабинет</span><Button asChild variant="editorial" className="px-0 text-xs"><Link to="/">Открыть сайт<ArrowUpRight /></Link></Button></div>
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3"><span className="flex items-center gap-3 text-xs text-muted-foreground"><NotificationBell admin /><LockKeyhole className="size-4" />Закрытый кабинет</span><Button asChild variant="editorial" className="px-0 text-xs"><Link to="/">Открыть сайт<ArrowUpRight /></Link></Button></div>
       {(note || error) && <p role={error ? "alert" : "status"} className={`mt-5 flex items-center gap-2 text-sm leading-6 ${error ? "text-destructive" : "text-primary"}`}>{!error && <CheckCircle2 className="size-4 shrink-0" />}{error || note}</p>}
       <Tabs defaultValue="works" className="mt-8">
         <TabsList aria-label="Разделы управления" className="grid h-auto w-full grid-cols-2 rounded-none border-b border-border bg-transparent p-0 sm:grid-cols-4 lg:grid-cols-8">
@@ -89,6 +94,11 @@ function Admin() {
         <TabsContent value="works" className="mt-8">
           <div className="flex flex-wrap items-center justify-between gap-5"><h2 className="font-display text-3xl">Картины и цены <span className="font-sans text-sm text-muted-foreground">({rows.length})</span></h2><div className="relative w-full sm:w-72"><Search className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground" /><Input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} aria-label="Поиск картины" placeholder="Найти картину" className="h-11 bg-card pl-10 shadow-none" /></div></div>
           <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Фильтр картин">{workFilters.map(([k, label]) => <Button key={k} type="button" size="sm" variant={workFilter === k ? "default" : "outline"} aria-pressed={workFilter === k} onClick={() => { setWorkFilter(k); setPage(1); }}>{label} <span className="opacity-60">{rows.filter((w) => matchesWorkFilter(w, k)).length}</span></Button>)}</div>
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            <Select value={saleFilter} onValueChange={(v) => { setSaleFilter(v); setPage(1); }}><SelectTrigger aria-label="Фильтр по продаже" className="h-10 bg-card"><SelectValue /></SelectTrigger><SelectContent>{saleFilters.map(([k, l]) => <SelectItem key={k} value={k}>{l} ({rows.filter((w) => matchesSale(w, k)).length})</SelectItem>)}</SelectContent></Select>
+            <Select value={genreFilter} onValueChange={(v) => { setGenreFilter(v); setPage(1); }}><SelectTrigger aria-label="Фильтр по жанру" className="h-10 bg-card"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Все жанры</SelectItem>{genreTermsA.map((t) => <SelectItem key={t.key} value={t.key}>{t.ru} ({rows.filter((w) => w.genre === t.key).length})</SelectItem>)}</SelectContent></Select>
+            <Select value={styleFilter} onValueChange={(v) => { setStyleFilter(v); setPage(1); }}><SelectTrigger aria-label="Фильтр по направлению" className="h-10 bg-card"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Все направления</SelectItem>{styleTermsA.map((t) => <SelectItem key={t.key} value={t.key}>{t.ru} ({rows.filter((w) => w.style === t.key).length})</SelectItem>)}</SelectContent></Select>
+          </div>
           <div className="mt-6"><AdminUpload genres={resolveTerms(data.settings.genres, genreDefaults)} styles={resolveTerms(data.settings.styles, styleDefaults)} projects={projects} onSaved={refresh} /></div>
           <ul className="mt-6 border-t border-border">{pageSlice(visibleWorks, page, 40).map((work) => <AdminPriceEditor key={work.id} work={work} price={data.prices[work.id] ?? null} projects={projects} onSaved={refresh} />)}</ul>
           <Pager page={Math.min(page, pageCount(visibleWorks.length, 40))} pages={pageCount(visibleWorks.length, 40)} label="Страницы картин" onChange={(n) => { setPage(n); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
@@ -150,4 +160,10 @@ function Summary({ icon, label, value }: { icon: ReactNode; label: string; value
 const workFilters = [["all", "Все"], ["no-size", "Нет размера"], ["no-genre", "Нет жанра"], ["no-style", "Нет направления"], ["hidden", "Скрытые"]] as const;
 function matchesWorkFilter(w: { size: string; genre?: string | null; style?: string | null; hidden: boolean }, f: string) {
   return f === "no-size" ? !w.size.trim() : f === "no-genre" ? !w.genre : f === "no-style" ? !w.style : f === "hidden" ? w.hidden : true;
+}
+
+const saleFilters = [["all", "Продажа: все"], ["sale", "В продаже"], ["sold", "Проданы"], ["not-for-sale", "Не продаются (коллекции, проекты)"]] as const;
+function matchesSale(w: { source_availability: string | null; catalogue_only: boolean }, f: string) {
+  const sold = w.source_availability === "sold" || w.source_availability === "private" || w.source_availability === "museum";
+  return f === "sale" ? !sold && !w.catalogue_only : f === "sold" ? w.source_availability === "sold" : f === "not-for-sale" ? w.catalogue_only || w.source_availability === "private" || w.source_availability === "museum" : true;
 }
