@@ -2,9 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const schema = z.object({ email: z.string().trim().email().max(255), password: z.string().min(8).max(72), admin: z.boolean() });
+const schema = z.object({ email: z.string().trim().email().max(255), admin: z.boolean(), origin: z.string().url() });
 
-/** Admin creates an account with a confirmed email; admin role checked as the caller before using the privileged client. */
+/** Invite only after verifying the caller as admin. No automatic email confirmation or shared password. */
 export const createUserAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: z.input<typeof schema>) => schema.parse(input))
@@ -12,8 +12,13 @@ export const createUserAccount = createServerFn({ method: "POST" })
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     if (!isAdmin) return { ok: false as const, error: "Только администратор может добавлять пользователей." };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({ email: data.email.toLowerCase(), password: data.password, email_confirm: true });
+    const requestOrigin = (await import("@tanstack/react-start/server")).getRequest().headers.get("origin");
+    if (!requestOrigin || requestOrigin !== new URL(data.origin).origin) return { ok: false as const, error: "Не удалось проверить адрес сайта." };
+    const { data: created, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email.toLowerCase(), { redirectTo: `${requestOrigin}/reset-password` });
     if (error || !created.user) return { ok: false as const, error: error?.message.includes("already") ? "Пользователь с такой почтой уже есть." : "Не удалось создать пользователя." };
-    if (data.admin) await supabaseAdmin.from("user_roles").upsert({ user_id: created.user.id, role: "admin" }, { onConflict: "user_id,role" });
+    if (data.admin) {
+      const { error: roleError } = await context.supabase.rpc("admin_set_role", { _user_id: created.user.id, _role: "admin", _on: true });
+      if (roleError) return { ok: false as const, error: "Приглашение отправлено, но роль не сохранена. Назначьте её в списке пользователей." };
+    }
     return { ok: true as const };
   });

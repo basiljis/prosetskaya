@@ -17,7 +17,6 @@ import { AdminPriceEditor } from "@/components/admin-price-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { NotificationBell } from "@/components/notification-bell";
 import { AdminUsers } from "@/components/admin-users";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -50,7 +49,7 @@ function Admin() {
   const [genreFilter, setGenreFilter] = useState("all");
   const [orderFilter, setOrderFilter] = useState("all");
   const [webhook, setWebhook] = useState("");
-  const { data, isLoading, isError, refetch } = useQuery({ queryKey: ["admin"], queryFn: loadAdminData, retry: 1 });
+  const { data, isLoading, isError, refetch } = useQuery({ queryKey: ["admin"], queryFn: loadAdminData, retry: 1, refetchInterval: 15_000 });
   const rows = useQuery({ queryKey: ["admin-artworks"], queryFn: loadAdminArtworks, enabled: !!data }).data ?? [];
   const projectQuery = useQuery({ queryKey: ["admin-projects"], queryFn: loadAdminProjects, enabled: !!data });
   const projects = projectQuery.data ?? [];
@@ -58,7 +57,7 @@ function Admin() {
   useEffect(() => { setWebhook(`${window.location.origin}/api/public/yookassa`); }, []);
   const refresh = (message: string) => {
     setNote(message); setError("");
-    void Promise.all(["admin", "admin-artworks", "admin-projects", "projects", "public-projects", "artworks", "shop", "account"].map((key) => qc.invalidateQueries({ queryKey: [key] })));
+    void Promise.all(["admin", "admin-artworks", "admin-projects", "projects", "public-projects", "artworks", "shop", "account", "bell"].map((key) => qc.invalidateQueries({ queryKey: [key] })));
   };
   const run = async (action: () => Promise<void>, message: string) => {
     setBusy(true); setNote(""); setError("");
@@ -85,13 +84,13 @@ function Admin() {
 
   return (
     <SimplePage title="Управление галереей" kicker="Юлия Просецкая / Администратор" wide>
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3"><span className="flex items-center gap-3 text-xs text-muted-foreground"><NotificationBell admin /><LockKeyhole className="size-4" />Закрытый кабинет</span><Button asChild variant="editorial" className="px-0 text-xs"><Link to="/">Открыть сайт<ArrowUpRight /></Link></Button></div>
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3"><span className="flex items-center gap-3 text-xs text-muted-foreground"><LockKeyhole className="size-4" />Закрытый кабинет</span><Button asChild variant="editorial" className="px-0 text-xs"><Link to="/">Открыть сайт<ArrowUpRight /></Link></Button></div>
       {(note || error) && <p role={error ? "alert" : "status"} className={`mt-5 flex items-center gap-2 text-sm leading-6 ${error ? "text-destructive" : "text-primary"}`}>{!error && <CheckCircle2 className="size-4 shrink-0" />}{error || note}</p>}
-      <Tabs defaultValue="works" className="mt-8">
-        <TabsList aria-label="Разделы управления" className="grid h-auto w-full grid-cols-2 rounded-none border-b border-border bg-transparent p-0 sm:grid-cols-4 lg:grid-cols-8">
-          {[{ value: "works", label: "Картины", icon: Image }, { value: "projects", label: "Спецпроекты", icon: PanelTop }, { value: "orders", label: "Заказы", icon: Package }, { value: "stats", label: "Статистика", icon: BarChart3 }, { value: "news", label: "Новости", icon: Newspaper }, { value: "cv", label: "Резюме", icon: BookOpen }, { value: "dicts", label: "Справочники", icon: Tags }, { value: "settings", label: "Настройки", icon: Settings }].map((tab) => <TabsTrigger key={tab.value} value={tab.value} className="h-12 gap-2 rounded-none border-b-2 border-transparent px-2 text-xs data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none sm:text-sm"><tab.icon className="size-4" />{tab.label}</TabsTrigger>)}
+      <Tabs defaultValue="works" className="mt-8 items-start gap-x-8 md:grid md:grid-cols-[170px_minmax(0,1fr)]">
+        <TabsList aria-label="Разделы управления" className="grid h-auto w-full grid-cols-2 rounded-none border-b border-border bg-transparent p-0 sm:grid-cols-4 md:sticky md:top-6 md:col-start-1 md:row-start-1 md:flex md:flex-col md:border-b-0 md:border-r md:pr-3">
+          {[{ value: "works", label: "Картины", icon: Image }, { value: "projects", label: "Спецпроекты", icon: PanelTop }, { value: "orders", label: "Заказы", icon: Package }, { value: "stats", label: "Статистика", icon: BarChart3 }, { value: "news", label: "Новости", icon: Newspaper }, { value: "cv", label: "Резюме", icon: BookOpen }, { value: "dicts", label: "Справочники", icon: Tags }, { value: "settings", label: "Настройки", icon: Settings }].map((tab) => <TabsTrigger key={tab.value} value={tab.value} className="h-12 w-full gap-2 md:justify-start rounded-none border-b-2 border-transparent px-2 text-xs data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none sm:text-sm"><tab.icon className="size-4" />{tab.label}</TabsTrigger>)}
         </TabsList>
-        <TabsContent value="works" className="mt-8">
+        <TabsContent value="works" className="mt-8 min-w-0 w-full md:col-start-2 md:row-start-1 md:mt-0">
           <div className="flex flex-wrap items-center justify-between gap-5"><h2 className="font-display text-3xl">Картины и цены <span className="font-sans text-sm text-muted-foreground">({rows.length})</span></h2><div className="relative w-full sm:w-72"><Search className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground" /><Input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} aria-label="Поиск картины" placeholder="Найти картину" className="h-11 bg-card pl-10 shadow-none" /></div></div>
           <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Фильтр картин">{workFilters.map(([k, label]) => <Button key={k} type="button" size="sm" variant={workFilter === k ? "default" : "outline"} aria-pressed={workFilter === k} onClick={() => { setWorkFilter(k); setPage(1); }}>{label} <span className="opacity-60">{rows.filter((w) => matchesWorkFilter(w, k)).length}</span></Button>)}</div>
           <div className="mt-3 grid gap-2 sm:grid-cols-3">
@@ -104,10 +103,10 @@ function Admin() {
           <Pager page={Math.min(page, pageCount(visibleWorks.length, 40))} pages={pageCount(visibleWorks.length, 40)} label="Страницы картин" onChange={(n) => { setPage(n); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
           {visibleWorks.length === 0 && <p className="py-12 text-center text-sm text-muted-foreground">Картины не найдены.</p>}
         </TabsContent>
-        <TabsContent value="projects" className="mt-8">
+        <TabsContent value="projects" className="mt-8 min-w-0 w-full md:col-start-2 md:row-start-1 md:mt-0">
           {projectQuery.isLoading ? <p role="status" className="text-sm text-muted-foreground">Загружаем спецпроекты…</p> : projectQuery.isError ? <div><p role="alert" className="text-sm text-destructive">Не удалось загрузить спецпроекты.</p><Button variant="outline" onClick={() => projectQuery.refetch()} className="mt-4"><RefreshCw />Повторить</Button></div> : <AdminProjects projects={projects} works={rows} onSaved={refresh} />}
         </TabsContent>
-        <TabsContent value="stats" className="mt-8">
+        <TabsContent value="stats" className="mt-8 min-w-0 w-full md:col-start-2 md:row-start-1 md:mt-0">
       <div className="mb-10 grid grid-cols-2 gap-x-5 border-y border-border py-6 md:grid-cols-4">
         <Summary icon={<Image />} label="Работ в галерее" value={String(artworks.length)} />
         <Summary icon={<Package />} label="Активных заказов" value={String(activeOrders.length)} />
@@ -116,13 +115,13 @@ function Admin() {
       </div>
           <AdminStats />
         </TabsContent>
-        <TabsContent value="news" className="mt-8"><AdminNews onSaved={(m) => refresh(m)} /></TabsContent>
-        <TabsContent value="cv" className="mt-8"><AdminCv initial={resolveCv(data.settings.cv)} busy={busy} onSave={(cv) => run(() => saveSiteJson("cv", cv), "Резюме сохранено")} /></TabsContent>
-        <TabsContent value="dicts" className="mt-8">
+        <TabsContent value="news" className="mt-8 min-w-0 w-full md:col-start-2 md:row-start-1 md:mt-0"><AdminNews onSaved={(m) => refresh(m)} /></TabsContent>
+        <TabsContent value="cv" className="mt-8 min-w-0 w-full md:col-start-2 md:row-start-1 md:mt-0"><AdminCv initial={resolveCv(data.settings.cv)} busy={busy} onSave={(cv) => run(() => saveSiteJson("cv", cv), "Резюме сохранено")} /></TabsContent>
+        <TabsContent value="dicts" className="mt-8 min-w-0 w-full md:col-start-2 md:row-start-1 md:mt-0">
           <AdminTaxonomy title="Жанры" hint="Жанры — основные фильтры раздела «Все работы». Можно переименовать, упорядочить, скрыть или добавить новый." initial={resolveTerms(data.settings.genres, genreDefaults)} busy={busy} onSave={(t) => run(() => saveSiteJson("genres", t), "Жанры сохранены")} />
           <AdminTaxonomy title="Направления (стили)" hint="Выпадающий фильтр «Направление» и выбор в карточке работы." initial={resolveTerms(data.settings.styles, styleDefaults)} busy={busy} onSave={(t) => run(() => saveSiteJson("styles", t), "Направления сохранены")} />
         </TabsContent>
-        <TabsContent value="orders" className="mt-8">
+        <TabsContent value="orders" className="mt-8 min-w-0 w-full md:col-start-2 md:row-start-1 md:mt-0">
           <div className="flex flex-wrap items-center justify-between gap-4"><h2 className="font-display text-3xl">Заказы <span className="font-sans text-sm text-muted-foreground">({data.orders.length})</span></h2><Select value={orderFilter} onValueChange={setOrderFilter}><SelectTrigger aria-label="Фильтр заказов" className="h-11 w-full bg-card sm:w-52"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Все заказы</SelectItem>{Object.entries(statusLabel).map(([key, value]) => <SelectItem key={key} value={key}>{value.split(" — ")[0]}</SelectItem>)}</SelectContent></Select></div>
           {visibleOrders.length === 0 ? <div className="mt-8 border-y border-border py-16 text-center"><Package className="mx-auto size-8 text-muted-foreground" /><p className="mt-4 text-sm text-muted-foreground">{data.orders.length === 0 ? "Заказов пока нет" : "Нет заказов с этим статусом"}</p></div> : <ul className="mt-6 border-t border-border">{visibleOrders.map((order) => {
             const work = staticArtworks.find((item) => item.id === order.artwork_id) ?? rows.map((r) => ({ id: r.id, image: r.image_url })).find((item) => item.id === order.artwork_id);
@@ -133,7 +132,7 @@ function Admin() {
             </li>;
           })}</ul>}
         </TabsContent>
-        <TabsContent value="settings" className="mt-8">
+        <TabsContent value="settings" className="mt-8 min-w-0 w-full md:col-start-2 md:row-start-1 md:mt-0">
           <AdminUsers />
           <section className="mb-10 border-b border-border pb-8">
             <h2 className="font-display text-3xl">Меню коллекции</h2>
@@ -164,6 +163,5 @@ function matchesWorkFilter(w: { size: string; genre?: string | null; style?: str
 
 const saleFilters = [["all", "Продажа: все"], ["sale", "В продаже"], ["sold", "Проданы"], ["not-for-sale", "Не продаются (коллекции, проекты)"]] as const;
 function matchesSale(w: { source_availability: string | null; catalogue_only: boolean }, f: string) {
-  const sold = w.source_availability === "sold" || w.source_availability === "private" || w.source_availability === "museum";
-  return f === "sale" ? !sold && !w.catalogue_only : f === "sold" ? w.source_availability === "sold" : f === "not-for-sale" ? w.catalogue_only || w.source_availability === "private" || w.source_availability === "museum" : true;
+  return f === "sale" ? !w.source_availability && !w.catalogue_only : f === "sold" ? w.source_availability === "sold" : f === "not-for-sale" ? w.catalogue_only || w.source_availability === "private" || w.source_availability === "museum" : true;
 }

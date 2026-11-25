@@ -4,40 +4,46 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { statusLabel } from "@/lib/shop";
+import { unreadOrders } from "@/lib/order-notifications";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-const SEEN_KEY = "prosetskaya-orders-seen";
-
-/** Bell for buyers (status changes since last view) and admins (new requests awaiting a reply). */
-export function NotificationBell({ admin }: { admin: boolean }) {
-  const [seen, setSeen] = useState<string>("");
+/** Session-keyed query respects order RLS; no visitor gets another user's notices. */
+export function NotificationBell() {
+  const [seen, setSeen] = useState("");
   const [open, setOpen] = useState(false);
-  useEffect(() => { setSeen(localStorage.getItem(SEEN_KEY) ?? ""); }, []);
-  const { data = [] } = useQuery({
-    queryKey: ["bell", admin], refetchInterval: 60_000,
-    queryFn: async () => {
-      const { data: u } = await supabase.auth.getUser();
-      if (!u.user) return [];
-      let q = supabase.from("orders").select("id, artwork_title, status, updated_at, created_at, customer_name").order("updated_at", { ascending: false }).limit(20);
-      q = admin ? q.eq("status", "new") : q.eq("user_id", u.user.id);
-      const { data: rows } = await q;
-      return rows ?? [];
-    },
-  });
-  const items = admin ? data : data.filter((o) => o.updated_at > o.created_at && (!seen || o.updated_at > seen));
-  const toggle = () => {
-    setOpen(!open);
-    if (!open && !admin && data[0]) { localStorage.setItem(SEEN_KEY, data[0].updated_at); }
-    if (open && !admin && data[0]) setSeen(data[0].updated_at);
+  const identity = useQuery({ queryKey: ["bell-identity"], staleTime: 30_000, queryFn: async () => {
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) return null;
+    const { data: admin } = await supabase.rpc("has_role", { _user_id: data.user.id, _role: "admin" });
+    return { id: data.user.id, admin: !!admin };
+  } });
+  const user = identity.data;
+  const key = `prosetskaya-orders-seen:${user?.id ?? ""}`;
+  useEffect(() => { setSeen(localStorage.getItem(key) ?? ""); }, [key]);
+  const orders = useQuery({ queryKey: ["bell", user?.id, user?.admin], enabled: !!user, refetchInterval: 15_000, queryFn: async () => {
+    if (!user) return [];
+    let q = supabase.from("orders").select("id, artwork_title, status, updated_at, created_at, customer_name").order("updated_at", { ascending: false }).limit(100);
+    q = user.admin ? q.eq("status", "new") : q.eq("user_id", user.id);
+    const { data, error } = await q;
+    if (error) throw error;
+    return data ?? [];
+  } });
+  if (!user) return null;
+  const rows = orders.data ?? [];
+  const unread = unreadOrders(rows, user.admin, seen);
+  const toggle = (value: boolean) => {
+    setOpen(value);
+    if (!value && rows[0]) { const last = rows[0].updated_at; localStorage.setItem(key, last); setSeen(last); }
   };
-  return <div className="relative">
-    <button type="button" onClick={toggle} title={admin ? "Новые заявки" : "Уведомления о заказах"} aria-label={admin ? "Новые заявки" : "Уведомления о заказах"} className="relative grid size-10 place-items-center rounded-full border border-border hover:bg-muted">
+  return <Popover open={open} onOpenChange={toggle}><PopoverTrigger asChild>
+    <Button variant="editorial" size="icon" title="Уведомления" aria-label="Уведомления" className="relative size-9 shrink-0 rounded-full">
       <Bell className="size-4" />
-      {items.length > 0 && <span className="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] text-primary-foreground">{items.length}</span>}
-    </button>
-    {open && <div className="absolute right-0 z-40 mt-2 w-72 border border-border bg-card p-3 text-sm shadow-lg">
-      <p className="mb-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">{admin ? "Новые заявки" : "Изменения заказов"}</p>
-      {items.length === 0 ? <p className="text-xs text-muted-foreground">Нет новых уведомлений</p> : <ul className="space-y-2">{items.map((o) => <li key={o.id} className="border-b border-border pb-2 last:border-0"><p>{o.artwork_title}</p><p className="text-xs text-muted-foreground">{admin ? `${o.customer_name} · ${new Date(o.created_at).toLocaleDateString("ru-RU")}` : statusLabel[o.status]}</p></li>)}</ul>}
-      {admin && <Link to="/admin" className="mt-3 block text-xs underline">Открыть заказы</Link>}
-    </div>}
-  </div>;
+      {unread.length > 0 && <span className="absolute -right-0.5 top-0 grid min-w-4 place-items-center rounded-full bg-primary px-1 text-[9px] text-primary-foreground">{unread.length}</span>}
+    </Button>
+  </PopoverTrigger><PopoverContent align="end" className="z-[110] w-[min(320px,90vw)]">
+    <p className="mb-3 text-xs uppercase text-muted-foreground">{user.admin ? "Новые заявки" : "Мои заказы"}</p>
+    {orders.isError ? <p role="alert" className="text-xs text-destructive">Не удалось загрузить уведомления.</p> : orders.isLoading ? <p className="text-xs">Загрузка…</p> : rows.length === 0 ? <p className="text-xs text-muted-foreground">Нет уведомлений</p> : <ul className="max-h-72 space-y-3 overflow-y-auto">{rows.map((o) => <li key={o.id} className="border-b border-border pb-3 text-sm last:border-0"><p className="font-medium">{o.artwork_title}</p><p className="mt-1 text-xs text-muted-foreground">{user.admin ? `${o.customer_name} · ` : ""}{statusLabel[o.status] ?? o.status}</p></li>)}</ul>}
+    <Button asChild variant="editorial" className="mt-3 px-0 text-xs"><Link to={user.admin ? "/admin" : "/account"} onClick={() => toggle(false)}>{user.admin ? "Открыть заявки" : "Мои заказы"}</Link></Button>
+  </PopoverContent></Popover>;
 }

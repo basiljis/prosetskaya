@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
@@ -23,11 +25,11 @@ export function AdminUsers() {
     finally { setBusy(null); }
   };
   const create = useServerFn(createUserAccount);
-  const [nu, setNu] = useState({ email: "", password: "", admin: false });
+  const [nu, setNu] = useState({ email: "", admin: false });
   const add = async (e: React.FormEvent) => {
     e.preventDefault(); setBusy("new");
-    try { const r = await create({ data: nu }); if (!r.ok) toast.error(r.error); else { toast.success(`Пользователь ${nu.email} добавлен`); setNu({ email: "", password: "", admin: false }); await load(); } }
-    catch { toast.error("Не удалось создать пользователя. Пароль — не короче 8 символов."); }
+    try { const r = await create({ data: { ...nu, origin: window.location.origin } }); if (!r.ok) toast.error(r.error); else { toast.success(`Приглашение отправлено на ${nu.email}`); setNu({ email: "", admin: false }); await load(); } }
+    catch { toast.error("Не удалось отправить приглашение."); }
     finally { setBusy(null); }
   };
   const list = (users ?? []).filter((u) => u.email.toLowerCase().includes(q.trim().toLowerCase()));
@@ -35,14 +37,13 @@ export function AdminUsers() {
     <section className="mb-10 border-b border-border pb-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div><h2 className="font-display text-3xl">Пользователи и роли</h2><p className="mt-2 text-sm text-muted-foreground">Все зарегистрированные аккаунты. Включите переключатель, чтобы дать доступ к админ-панели.</p></div>
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Поиск по почте" className="h-10 w-64 border-b border-border bg-transparent text-sm outline-none focus:border-primary" />
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Поиск по почте" className="h-10 w-64 border-b border-border bg-transparent text-sm outline-none focus:border-primary" />
       </div>
       <form onSubmit={add} className="mt-6 flex flex-wrap items-end gap-3 border border-border p-4">
         <p className="w-full text-xs uppercase tracking-[0.12em] text-muted-foreground">Добавить пользователя</p>
-        <input required type="email" value={nu.email} onChange={(e) => setNu({ ...nu, email: e.target.value })} placeholder="Почта" aria-label="Почта нового пользователя" className="h-10 min-w-56 flex-1 border-b border-border bg-transparent text-sm outline-none focus:border-primary" />
-        <input required minLength={8} type="text" value={nu.password} onChange={(e) => setNu({ ...nu, password: e.target.value })} placeholder="Пароль (от 8 символов)" aria-label="Пароль нового пользователя" className="h-10 min-w-48 flex-1 border-b border-border bg-transparent text-sm outline-none focus:border-primary" />
+        <Input required type="email" value={nu.email} onChange={(e) => setNu({ ...nu, email: e.target.value })} placeholder="Почта" aria-label="Почта нового пользователя" className="h-10 min-w-56 flex-1 border-b border-border bg-transparent text-sm outline-none focus:border-primary" />
         <label className="flex h-10 items-center gap-2 text-sm"><Switch checked={nu.admin} onCheckedChange={(v) => setNu({ ...nu, admin: v })} />Администратор</label>
-        <button type="submit" disabled={busy === "new"} className="h-10 bg-primary px-5 text-sm text-primary-foreground disabled:opacity-50">{busy === "new" ? "Создаём…" : "Добавить"}</button>
+        <Button type="submit" disabled={busy === "new"} className="h-10 bg-primary px-5 text-sm text-primary-foreground disabled:opacity-50">{busy === "new" ? "Отправляем…" : "Пригласить"}</Button>
       </form>
       {!users ? <p className="mt-6 text-sm text-muted-foreground">Загрузка…</p> : (
         <div className="mt-6 overflow-x-auto">
