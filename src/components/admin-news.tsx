@@ -1,3 +1,4 @@
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Eye, EyeOff, Loader2, Mail, Plus, Trash2, Users } from "lucide-react";
@@ -28,13 +29,13 @@ export function AdminNews({ onSaved }: { onSaved: (m: string) => void }) {
   };
   const toggle = async (n: NewsItem) => { const { error } = await supabase.from("news").update({ published: !n.published }).eq("id", n.id); if (error) setErr("Не удалось изменить."); else done(n.published ? "Новость скрыта" : "Новость опубликована"); };
   const remove = async (n: NewsItem) => { if (!confirm(`Удалить «${n.title_ru}»?`)) return; const { error } = await supabase.from("news").delete().eq("id", n.id); if (error) setErr("Не удалось удалить."); else done("Новость удалена"); };
-  return <div>
+  return <Tabs defaultValue="list"><TabsList className="mb-6"><TabsTrigger value="list">Новости</TabsTrigger><TabsTrigger value="new">Добавить новость</TabsTrigger><TabsTrigger value="subscribers">Подписчики</TabsTrigger></TabsList><TabsContent value="subscribers">
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border border-border bg-card p-4">
       <p className="flex items-center gap-2 text-sm"><Users className="size-4 text-primary" />Подписчиков: <b>{active.length}</b>{(subs.data?.length ?? 0) > active.length && <span className="text-xs text-muted-foreground">(отписались: {(subs.data?.length ?? 0) - active.length})</span>}</p>
       <Button variant="outline" size="sm" onClick={() => setShowSubs(!showSubs)}>{showSubs ? "Скрыть список" : "Показать список"}</Button>
       {showSubs && <ul className="max-h-64 w-full overflow-auto border-t border-border pt-2 text-xs">{(subs.data ?? []).map((x) => <li key={x.email} className={`flex justify-between py-1 ${x.subscribed ? "" : "text-muted-foreground line-through"}`}><span>{x.email}</span><span>{new Date(x.created_at).toLocaleDateString("ru-RU")}</span></li>)}</ul>}
     </div>
-    <form onSubmit={submit} className="grid gap-3 border border-border bg-card p-5 md:grid-cols-2">
+    </TabsContent><TabsContent value="new"><form onSubmit={submit} className="grid gap-3 border border-border bg-card p-5 md:grid-cols-2">
       <h2 className="font-display text-3xl md:col-span-2">Новая новость</h2>
       <select name="kind" defaultValue="work" className="h-10 border border-input bg-card px-2 text-sm">{Object.entries(newsKind).map(([k, v]) => <option key={k} value={k}>{v.ru}</option>)}</select>
       <Input name="event_date" placeholder="Дата, напр. 12–30 декабря 2026" />
@@ -44,14 +45,14 @@ export function AdminNews({ onSaved }: { onSaved: (m: string) => void }) {
       <Button disabled={busy} className="h-10">{busy ? <Loader2 className="animate-spin" /> : <Plus />}Опубликовать</Button>
       {err && <p role="alert" className="text-sm text-destructive md:col-span-2">{err}</p>}
     </form>
-    <ul className="mt-8 border-t border-border">{(q.data ?? []).map((n) => <li key={n.id} className={`flex items-center gap-4 border-b border-border py-3 ${n.published ? "" : "opacity-50"}`}>
+    </TabsContent><TabsContent value="list"><ul className="mt-8 border-t border-border">{(q.data ?? []).map((n) => <li key={n.id} className={`flex items-center gap-4 border-b border-border py-3 ${n.published ? "" : "opacity-50"}`}>
       {n.image_url ? <img src={n.image_url} alt="" className="size-12 object-cover" /> : <span className="size-12 bg-muted" />}
       <div className="min-w-0 flex-1"><p className="truncate text-sm">{n.title_ru}</p><p className="text-xs text-muted-foreground">{newsKind[n.kind].ru} · {new Date(n.created_at).toLocaleDateString("ru-RU")}</p></div>
       <Button variant="ghost" size="icon" onClick={() => setMail(n)} aria-label="Рассылка" title="Рассылка"><Mail /></Button>
       <Button variant="ghost" size="icon" onClick={() => toggle(n)} aria-label={n.published ? "Скрыть" : "Показать"}>{n.published ? <Eye /> : <EyeOff />}</Button>
       <Button variant="ghost" size="icon" onClick={() => remove(n)} aria-label="Удалить"><Trash2 /></Button>
     </li>)}</ul>
-    <Dialog open={!!mail} onOpenChange={(o) => !o && setMail(null)}>
+    </TabsContent><Dialog open={!!mail} onOpenChange={(o) => !o && setMail(null)}>
       <DialogContent className="max-h-[92vh] max-w-3xl overflow-auto">
         <DialogHeader><DialogTitle>Рассылка: {mail?.title_ru}</DialogTitle></DialogHeader>
         {mail && <iframe title="Предпросмотр письма" srcDoc={buildNewsletterHtml(mail, "ru", window.location.origin)} className="h-[60vh] w-full border border-border bg-background" />}
@@ -59,5 +60,5 @@ export function AdminNews({ onSaved }: { onSaved: (m: string) => void }) {
       </DialogContent>
     </Dialog>
     {q.data?.length === 0 && <p className="mt-6 text-sm text-muted-foreground">Новостей пока нет.</p>}
-  </div>;
+  </Tabs>;
 }

@@ -1,3 +1,4 @@
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { Loader2, Plus, Save, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,17 +14,17 @@ export function AdminCv({ initial, busy, onSave }: { initial: Cv; busy: boolean;
   return <div className="space-y-6">
     <h2 className="font-display text-3xl">Резюме художницы</h2>
     <p className="text-xs text-muted-foreground">Изменения сразу видны на странице резюме. PDF-файл для скачивания обновляется отдельно.</p>
-    <div className="grid gap-4 md:grid-cols-2">
+    <Tabs defaultValue="intro"><TabsList className="flex h-auto flex-wrap justify-start"><TabsTrigger value="intro">Вступление</TabsTrigger>{cv.sections.map((sec, i) => <TabsTrigger key={i} value={`section-${i}`}>{sec.ru || `Раздел ${i + 1}`}</TabsTrigger>)}</TabsList><TabsContent value="intro"><div className="grid gap-4 md:grid-cols-2">
       <label className={L}>Вступление<Textarea rows={4} value={cv.lead} onChange={(e) => set({ lead: e.target.value })} className="bg-card text-foreground" /></label>
       <label className={L}>Вступление (англ.)<Textarea rows={4} value={cv.leadEn} onChange={(e) => set({ leadEn: e.target.value })} className="bg-card text-foreground" /></label>
       <label className={L}>Факты<Textarea rows={2} value={cv.facts} onChange={(e) => set({ facts: e.target.value })} className="bg-card text-foreground" /></label>
       <label className={L}>Факты (англ.)<Textarea rows={2} value={cv.factsEn} onChange={(e) => set({ factsEn: e.target.value })} className="bg-card text-foreground" /></label>
     </div>
-    {cv.sections.map((s, i) => <section key={i} className="border border-border bg-card p-4">
+    </TabsContent>{cv.sections.map((s, i) => <TabsContent key={i} value={`section-${i}`}><section key={i} className="border border-border bg-card p-4">
       <div className="flex gap-2"><Input value={s.ru} onChange={(e) => setSec(i, { ru: e.target.value })} aria-label="Раздел" /><Input value={s.en} onChange={(e) => setSec(i, { en: e.target.value })} aria-label="Раздел (англ.)" /><Button variant="ghost" size="icon" aria-label="Удалить раздел" onClick={() => set({ sections: cv.sections.filter((_, j) => j !== i) })}><Trash2 /></Button></div>
       <label className={`${L} mt-3`}>Пункты — каждый с новой строки<Textarea rows={Math.min(14, s.items.length + 2)} value={s.items.join("\n")} onChange={(e) => setSec(i, { items: e.target.value.split("\n") })} className="bg-background text-foreground" /></label>
       <label className={`${L} mt-3`}>Пункты (англ.) — в том же порядке<Textarea rows={Math.min(14, (s.itemsEn ?? []).length + 2)} value={(s.itemsEn ?? []).join("\n")} onChange={(e) => setSec(i, { itemsEn: e.target.value.split("\n") })} className="bg-background text-foreground" /></label>
-    </section>)}
+    </section></TabsContent>)}</Tabs>
     <div className="flex gap-3"><Button variant="outline" onClick={() => set({ sections: [...cv.sections, { ru: "Новый раздел", en: "New section", items: [], itemsEn: [] }] })}><Plus />Раздел</Button>
       <Button disabled={busy} onClick={() => onSave({ ...cv, sections: cv.sections.map((s) => ({ ...s, items: s.items.map((x) => x.trim()).filter(Boolean), itemsEn: (s.itemsEn ?? []).map((x) => x.trim()).filter(Boolean) })) })}>{busy ? <Loader2 className="animate-spin" /> : <Save />}Сохранить резюме</Button></div>
   </div>;

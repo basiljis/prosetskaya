@@ -34,7 +34,7 @@ export function CheckoutDialog({ work, price, online, onClose }: { work: Artwork
         returnUrl: `${window.location.origin}/account`,
       } });
       if (!res.ok) { setError(res.error); return; }
-      qc.invalidateQueries({ queryKey: ["shop"] });
+      ["shop", "account", "admin", "bell"].forEach((key) => { void qc.invalidateQueries({ queryKey: [key] }); });
       if ("paymentUrl" in res && res.paymentUrl) { window.location.assign(res.paymentUrl); return; }
       setDone(true);
     } catch { setError((en ? "Please check that all fields are filled in correctly." : "Проверьте, что все поля заполнены верно.")); }
