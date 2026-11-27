@@ -8,7 +8,7 @@ export const Route = createFileRoute("/api/public/yookassa")({
         const body = (await request.json().catch(() => null)) as { object?: { id?: string } } | null;
         const paymentId = body?.object?.id;
         if (!paymentId || !/^[\w-]{10,64}$/.test(paymentId)) return new Response("bad request", { status: 400 });
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { supabaseAdmin } = await import("@/lib/backend/client.server");
         const { data: order } = await supabaseAdmin.from("orders").select("id").eq("payment_id", paymentId).maybeSingle();
         if (!order) return new Response("ok");
         const { data: creds } = await supabaseAdmin.from("payment_settings").select("yookassa_shop_id, yookassa_secret_key").eq("id", 1).single();

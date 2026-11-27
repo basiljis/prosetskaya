@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/backend/client";
 import { collectionMenuPosition } from "@/lib/collection-layout";
 import { resolveDirections } from "@/lib/directions";
 import { genres, resolveTerms, styles } from "@/lib/genres";

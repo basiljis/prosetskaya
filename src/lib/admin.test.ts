@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { loadAdminData, saveAdminPayment, saveAdminPrice, saveAdminSetting, saveCollectionMenuPosition, saveAdminProject, saveAdminArtwork } from "./admin";
 
 const mocks = vi.hoisted(() => ({ getUser: vi.fn(), rpc: vi.fn(), from: vi.fn() }));
-vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth: { getUser: mocks.getUser }, rpc: mocks.rpc, from: mocks.from } }));
+vi.mock("@/lib/backend/client", () => ({ supabase: { auth: { getUser: mocks.getUser }, rpc: mocks.rpc, from: mocks.from } }));
 
 describe("Admin access and persistence", () => {
   beforeEach(() => { vi.resetAllMocks(); });

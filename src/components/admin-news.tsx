@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Eye, EyeOff, Loader2, Mail, Plus, Trash2, Users } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { buildNewsletterHtml } from "@/lib/newsletter";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/backend/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

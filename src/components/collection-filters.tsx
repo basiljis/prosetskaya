@@ -1,6 +1,6 @@
 import type React from "react";
 import { useState, type ReactNode } from "react";
-import { ChevronDown, Palette, Search, Shapes, X } from "lucide-react";
+import { Calendar, ChevronDown, Palette, Search, Shapes, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,24 +10,25 @@ import { copy } from "@/lib/gallery-copy";
 import type { CollectionMenuPosition } from "@/lib/collection-layout";
 import type { Term } from "@/lib/genres";
 
-type Props = { position: CollectionMenuPosition; lang: Lang; genreTerms: Term[]; styleTerms: Term[] | null; genre: string[]; style: string[]; onGenre: (v: string[]) => void; onStyle: (v: string[]) => void; query: string; onQuery: (q: string) => void; extra?: React.ReactNode };
+type Props = { position: CollectionMenuPosition; lang: Lang; genreTerms: Term[]; styleTerms: Term[] | null; genre: string[]; style: string[]; onGenre: (v: string[]) => void; onStyle: (v: string[]) => void; query: string; onQuery: (q: string) => void; years?: string[]; selectedYears?: string[]; onYears?: (v: string[]) => void; extra?: React.ReactNode };
 
 /** Collection filters: multi-select dropdowns for genre and style plus search. */
-export function CollectionFilters({ position, lang, genreTerms, styleTerms, genre, style, onGenre, onStyle, query, onQuery, extra }: Props) {
+export function CollectionFilters({ position, lang, genreTerms, styleTerms, genre, style, onGenre, onStyle, query, onQuery, extra, years, selectedYears = [], onYears }: Props) {
   const t = copy[lang];
   const left = position === "left";
   const ru = lang === "ru";
   const ph = ru ? "Поиск по названию, году" : "Search title, year";
-  const any = genre.length + style.length > 0;
+  const any = genre.length + style.length + selectedYears.length > 0;
   const [searching, setSearching] = useState(false);
   const s = searching || !!query;
   return <div className={`sticky top-[120px] z-20 self-start border-y border-border bg-background py-2.5 lg:py-4 ${left ? "lg:top-[132px] lg:border-y-0 lg:border-r lg:pr-6" : ""}`} role="group" aria-label={t.practices}>
     {left && <p className="mb-4 hidden text-xs font-medium lg:block">{t.collection}</p>}
-    <div className={`flex flex-nowrap items-center gap-2 sm:flex-wrap ${left ? "lg:flex-col lg:items-stretch" : ""}`}>
+    <div className={`flex flex-wrap items-center gap-2 ${left ? "lg:flex-col lg:items-stretch" : ""}`}>
       <Multi icon={<Shapes className="size-4" />} compact={s} onOpen={() => setSearching(false)} label={ru ? "Жанр" : "Genre"} all={ru ? "Все жанры" : "All genres"} terms={genreTerms} value={genre} onChange={onGenre} lang={lang} />
       {styleTerms && <Multi icon={<Palette className="size-4" />} compact={s} onOpen={() => setSearching(false)} label={ru ? "Направление" : "Style"} all={ru ? "Все направления" : "All styles"} terms={styleTerms} value={style} onChange={onStyle} lang={lang} />}
+      {years && onYears && <Multi icon={<Calendar className="size-4" />} compact={s} onOpen={() => setSearching(false)} label={ru ? "Год" : "Year"} all={ru ? "Все годы" : "All years"} terms={years.map((y) => ({ key: y, ru: y, en: y, hidden: false }))} value={selectedYears} onChange={onYears} lang={lang} />}
       {extra}
-      {any && <button type="button" onClick={() => { onGenre([]); onStyle([]); }} className="px-2 text-xs text-muted-foreground underline-offset-4 hover:text-primary hover:underline">{ru ? "Сбросить" : "Reset"}</button>}
+      {any && <button type="button" onClick={() => { onGenre([]); onStyle([]); onYears?.([]); }} className="px-2 text-xs text-muted-foreground underline-offset-4 hover:text-primary hover:underline">{ru ? "Сбросить" : "Reset"}</button>}
       <div className={`relative min-w-0 sm:block sm:w-56 sm:flex-none ${s ? "flex-1" : "hidden"} ${left ? "lg:w-full" : "sm:ml-auto"}`}>
         <Search className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
         <Input autoFocus={searching} value={query} onChange={(e) => onQuery(e.target.value)} placeholder={ph} aria-label={ph} className="h-9 rounded-full bg-transparent pl-9 pr-8 text-xs shadow-none" />

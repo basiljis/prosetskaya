@@ -1,3 +1,4 @@
+import { matchesYear, yearOptions } from "@/lib/year-filter";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
@@ -44,6 +45,7 @@ function Admin() {
   const [busy, setBusy] = useState(false);
   const [search, setSearch] = useState("");
   const [workFilter, setWorkFilter] = useState("all");
+  const [yearFilter, setYearFilter] = useState("all");
   const [saleFilter, setSaleFilter] = useState("all");
   const [styleFilter, setStyleFilter] = useState("all");
   const [genreFilter, setGenreFilter] = useState("all");
@@ -76,7 +78,7 @@ function Admin() {
   if (!data) return <SimplePage title="Нет доступа"><LockKeyhole className="mt-8 size-8 text-muted-foreground" /><p className="mt-5 text-sm leading-7 text-muted-foreground">Управление галереей доступно только администратору.</p><Button asChild variant="outline" className="mt-6"><Link to="/account">Мой кабинет<ArrowUpRight /></Link></Button></SimplePage>;
 
   const artworks = rows;
-  const visibleWorks = rows.filter((work) => work.title_ru.toLowerCase().includes(search.trim().toLowerCase()) && matchesWorkFilter(work, workFilter) && matchesSale(work, saleFilter) && (styleFilter === "all" || work.style === styleFilter) && (genreFilter === "all" || work.genre === genreFilter));
+  const visibleWorks = rows.filter((work) => work.title_ru.toLowerCase().includes(search.trim().toLowerCase()) && matchesWorkFilter(work, workFilter) && matchesYear(work, yearFilter === "all" ? [] : [yearFilter]) && matchesSale(work, saleFilter) && (styleFilter === "all" || work.style === styleFilter) && (genreFilter === "all" || work.genre === genreFilter));
   const styleTermsA = resolveTerms(data.settings.styles, styleDefaults); const genreTermsA = resolveTerms(data.settings.genres, genreDefaults);
   const activeOrders = data.orders.filter((order) => order.status !== "cancelled" && order.status !== "completed");
   const visibleOrders = data.orders.filter((order) => orderFilter === "all" || order.status === orderFilter);
@@ -93,7 +95,8 @@ function Admin() {
         <TabsContent value="works" className="mt-8 min-w-0 w-full md:col-start-2 md:row-start-1 md:mt-0">
           <div className="flex flex-wrap items-center justify-between gap-5"><h2 className="font-display text-3xl">Картины и цены <span className="font-sans text-sm text-muted-foreground">({rows.length})</span></h2><div className="relative w-full sm:w-72"><Search className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground" /><Input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} aria-label="Поиск картины" placeholder="Найти картину" className="h-11 bg-card pl-10 shadow-none" /></div></div>
           <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Фильтр картин">{workFilters.map(([k, label]) => <Button key={k} type="button" size="sm" variant={workFilter === k ? "default" : "outline"} aria-pressed={workFilter === k} onClick={() => { setWorkFilter(k); setPage(1); }}>{label} <span className="opacity-60">{rows.filter((w) => matchesWorkFilter(w, k)).length}</span></Button>)}</div>
-          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <Select value={yearFilter} onValueChange={(v) => { setYearFilter(v); setPage(1); }}><SelectTrigger aria-label="Фильтр по году" className="h-10 bg-card"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Все годы</SelectItem>{yearOptions(rows).map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent></Select>
             <Select value={saleFilter} onValueChange={(v) => { setSaleFilter(v); setPage(1); }}><SelectTrigger aria-label="Фильтр по продаже" className="h-10 bg-card"><SelectValue /></SelectTrigger><SelectContent>{saleFilters.map(([k, l]) => <SelectItem key={k} value={k}>{l} ({rows.filter((w) => matchesSale(w, k)).length})</SelectItem>)}</SelectContent></Select>
             <Select value={genreFilter} onValueChange={(v) => { setGenreFilter(v); setPage(1); }}><SelectTrigger aria-label="Фильтр по жанру" className="h-10 bg-card"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Все жанры</SelectItem>{genreTermsA.map((t) => <SelectItem key={t.key} value={t.key}>{t.ru} ({rows.filter((w) => w.genre === t.key).length})</SelectItem>)}</SelectContent></Select>
             <Select value={styleFilter} onValueChange={(v) => { setStyleFilter(v); setPage(1); }}><SelectTrigger aria-label="Фильтр по направлению" className="h-10 bg-card"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Все направления</SelectItem>{styleTermsA.map((t) => <SelectItem key={t.key} value={t.key}>{t.ru} ({rows.filter((w) => w.style === t.key).length})</SelectItem>)}</SelectContent></Select>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/backend/client";
 import { Button } from "@/components/ui/button";
 import { summarize, type Visit } from "@/lib/visits";
 

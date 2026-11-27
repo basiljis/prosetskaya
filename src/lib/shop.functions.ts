@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuth } from "@/lib/backend/auth-middleware";
 
 const orderSchema = z.object({
   artworkId: z.string().min(1).max(80),
@@ -37,7 +37,7 @@ export const createOrder = createServerFn({ method: "POST" })
     }
     if (data.method === "invoice") return { ok: true as const, orderId: order.id };
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("@/lib/backend/client.server");
     const { data: creds } = await supabaseAdmin.from("payment_settings").select("yookassa_shop_id, yookassa_secret_key").eq("id", 1).single();
     if (!creds?.yookassa_shop_id || !creds.yookassa_secret_key) {
       await supabaseAdmin.from("orders").update({ status: "cancelled" }).eq("id", order.id);

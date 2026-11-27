@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuth } from "@/lib/backend/auth-middleware";
 
 const schema = z.object({ email: z.string().trim().email().max(255), admin: z.boolean(), origin: z.string().url() });
 
@@ -11,7 +11,7 @@ export const createUserAccount = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     if (!isAdmin) return { ok: false as const, error: "Только администратор может добавлять пользователей." };
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin } = await import("@/lib/backend/client.server");
     const requestOrigin = (await import("@tanstack/react-start/server")).getRequest().headers.get("origin");
     if (!requestOrigin || requestOrigin !== new URL(data.origin).origin) return { ok: false as const, error: "Не удалось проверить адрес сайта." };
     const { data: created, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email.toLowerCase(), { redirectTo: `${requestOrigin}/reset-password` });

@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/backend/client";
 import { collectionMenuPosition, type CollectionMenuPosition } from "@/lib/collection-layout";
 import type { Project } from "@/lib/projects";
 

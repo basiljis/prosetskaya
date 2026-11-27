@@ -13,6 +13,7 @@ services:
     build:
       context: .
       args:
+        VITE_EXTERNAL_SUPABASE_URL: ${VITE_EXTERNAL_SUPABASE_URL:-https://api.prosetskaya.ru}
         VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-https://api.prosetskaya.ru}
         VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
         VITE_SUPABASE_PROJECT_ID: ${VITE_SUPABASE_PROJECT_ID:-pgssrcadvcwxmvuhfozu}
@@ -22,7 +23,7 @@ services:
       # Server-side code calls the backend directly (outgoing traffic from RU servers is not blocked).
       SUPABASE_URL: https://pgssrcadvcwxmvuhfozu.supabase.co
       SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
-      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+      EXTERNAL_SUPABASE_SECRET_KEY: ${EXTERNAL_SUPABASE_SECRET_KEY:-}
     restart: always
 
 volumes:

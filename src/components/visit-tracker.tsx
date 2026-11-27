@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/backend/client";
 import { deviceOf } from "@/lib/visits";
 
 /** Records one anonymous page visit per route change; admin pages are skipped. */

@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/backend/client";
 
 /** Signed-in visitor's liked artworks; null user means favourites need sign-in. */
 export function useFavorites() {

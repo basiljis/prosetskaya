@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/backend/client";
 import { SimplePage } from "@/components/simple-page";
 import { useArtworks } from "@/hooks/use-artworks";
 import { useFavorites } from "@/hooks/use-favorites";

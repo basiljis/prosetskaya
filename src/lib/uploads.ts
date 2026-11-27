@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/backend/client";
 import { optimizeImage } from "@/lib/image-optimize";
 
 /** Optimizes, then uploads an image to the private artworks bucket and returns a long-lived link for public display. */

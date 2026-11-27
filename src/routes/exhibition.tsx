@@ -1,3 +1,5 @@
+import { matchesYear, yearOptions } from "@/lib/year-filter";
+import { Checkbox } from "@/components/ui/checkbox";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, ChevronLeft, Undo2, ChevronRight, Pause, Play, Layers, Box } from "lucide-react";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
@@ -35,6 +37,9 @@ function Exhibition() {
   const [selectionName, setSelectionName] = useState<string[]>([]);
   const [choosing, setChoosing] = useState(false);
   const [genre, setGenre] = useState<string[]>([]); const [style, setStyle] = useState<string[]>([]); const [query, setQuery] = useState("");
+  const [years, setYears] = useState<string[]>([]);
+  const [picked, setPicked] = useState<string[]>([]);
+  const [choosePage, setChoosePage] = useState(0);
   const [page, setPage] = useState(0); const [index, setIndex] = useState(-1); const [auto, setAuto] = useState(false);
   const [distance, setDistance] = useState(1); const [resetKey, setResetKey] = useState(0);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
@@ -44,7 +49,7 @@ function Exhibition() {
   const main = all.filter((w) => !isProjectWork(w));
   const genreTerms = (shop?.genres ?? resolveTerms([], genres)).filter((t) => !t.hidden && main.some((w) => w.genre === t.key));
   const styleTerms = (shop?.styles ?? resolveTerms([], styles)).filter((t) => !t.hidden && main.some((w) => w.style === t.key));
-  const selected = searchWorks(filterByTaxonomy(main, genre, style), query);
+  const selected = searchWorks(filterByTaxonomy(main.filter((w) => matchesYear(w, years)), genre, style), query);
   useEffect(() => {
     setLang(localStorage.getItem("prosetskaya-lang") === "en" ? "en" : "ru");
     try {
@@ -83,7 +88,10 @@ function Exhibition() {
   });
   useEffect(() => { if (!auto || paused) return; const t = window.setInterval(() => go(1), 5000); return () => window.clearInterval(t); });
   const dialogWork = dialog ? works[dialog.i] : undefined;
-  const ready = genre.length + style.length > 0 && selected.length > 0;
+  const selectedIds = picked.filter((id) => main.some((w) => w.id === id));
+  const ready = (genre.length + style.length + years.length > 0 && selected.length > 0) || selectedIds.length > 0;
+  const launchIds = selectedIds.length ? selectedIds : selected.map((w) => w.id);
+  useEffect(() => { setChoosePage(0); }, [genre, style, query, years]);
   return <main className="fixed inset-0 bg-background text-foreground">
     {!choosing && works.length > 0 && <Suspense fallback={<p className="grid h-full place-items-center text-sm">{ru ? "Готовим зал…" : "Preparing the hall…"}</p>}>
       <div className="absolute inset-0"><VirtualGallery key={`${ids?.[0]}:${page}`} works={works} lang={lang} index={index} distance={distance} resetKey={resetKey} paused={paused} hallName={hallName} onIndex={(i, a) => { setIndex(i); setAuto(false); if (a === "inquiry" || a === "checkout") setDialog({ action: a, i }); else { setViewerAction(a); setViewerIndex(i); } }} /></div>
@@ -94,9 +102,11 @@ function Exhibition() {
     </header>
     {(choosing || (ids !== null && !works.length)) && <div className="flex h-full items-center justify-center overflow-y-auto px-4 py-24"><section className="w-full max-w-3xl">
       <h1 className="font-display text-4xl">{ru ? "Виртуальная выставка" : "Virtual exhibition"}</h1>
-      <div className="mt-8"><CollectionFilters position="top" lang={lang} genreTerms={genreTerms} styleTerms={styleTerms} genre={genre} style={style} onGenre={setGenre} onStyle={setStyle} query={query} onQuery={setQuery} /></div>
-      <div className="mt-6 flex items-center justify-between gap-3"><span className="text-sm text-muted-foreground">{ru ? "Работ" : "Artworks"}: {ready ? selected.length : "—"}</span><Button disabled={!ready} onClick={() => setSelection(selected.map((w) => w.id), (["ru", "en"] as const).map((l) => [...genreTerms.filter((t) => genre.includes(t.key)), ...styleTerms.filter((t) => style.includes(t.key))].map((t) => t[l]).join(" · ")))}><Box />{ru ? "Войти в зал" : "Enter gallery"}</Button></div>
-      {ready && <div className="mt-8 grid grid-cols-3 gap-3 sm:grid-cols-6">{selected.slice(0, 6).map((w) => <img key={w.id} src={w.image} alt={w[lang]} className="aspect-square w-full object-contain" />)}</div>}
+      <div className="mt-8"><CollectionFilters position="top" lang={lang} genreTerms={genreTerms} styleTerms={styleTerms} genre={genre} style={style} onGenre={setGenre} onStyle={setStyle} query={query} onQuery={setQuery} years={yearOptions(main)} selectedYears={years} onYears={setYears} /></div>
+      <div className="mt-6 flex items-center justify-between gap-3"><span className="text-sm text-muted-foreground">{ru ? "Работ" : "Artworks"}: {launchIds.length}</span><Button disabled={!ready} onClick={() => setSelection(launchIds, (["ru", "en"] as const).map((l) => [...genreTerms.filter((t) => genre.includes(t.key)), ...styleTerms.filter((t) => style.includes(t.key))].map((t) => t[l]).concat(years).join(" · ") || (l === "ru" ? "Выбранные картины" : "Selected artworks")))}><Box />{ru ? "Войти в зал" : "Enter gallery"}</Button></div>
+      <div className="mt-5 flex flex-wrap gap-2"><Button variant="outline" size="sm" onClick={() => setPicked([...new Set([...picked, ...selected.map((w) => w.id)])])}>{ru ? "Выбрать предложенные" : "Select suggested"}</Button><Button variant="editorial" size="sm" onClick={() => setPicked([])}>{ru ? "Снять выбор" : "Clear selection"}</Button><span className="py-2 text-xs text-muted-foreground">{ru ? "Выбрано" : "Selected"}: {selectedIds.length}</span></div>
+      <div className="mt-5 grid max-h-[40dvh] grid-cols-2 gap-4 overflow-y-auto pr-1 sm:grid-cols-4">{selected.slice(choosePage * 24, (choosePage + 1) * 24).map((w) => <label key={w.id} className={`cursor-pointer border p-2 ${picked.includes(w.id) ? "border-primary bg-muted" : "border-border"}`}><img src={w.image} alt={w[lang]} loading="lazy" className="aspect-square w-full object-contain" /><span className="mt-2 flex items-start gap-2 text-xs"><Checkbox checked={picked.includes(w.id)} onCheckedChange={() => setPicked(picked.includes(w.id) ? picked.filter((id) => id !== w.id) : [...picked, w.id])} /><span>{w[lang]}</span></span></label>)}</div>
+      <div className="mt-4 flex items-center justify-between"><Button size="sm" variant="outline" disabled={!choosePage} onClick={() => setChoosePage(choosePage - 1)}><ChevronLeft />{ru ? "Назад" : "Previous"}</Button><span className="text-xs">{choosePage + 1} / {Math.max(1, Math.ceil(selected.length / 24))}</span><Button size="sm" variant="outline" disabled={(choosePage + 1) * 24 >= selected.length} onClick={() => setChoosePage(choosePage + 1)}>{ru ? "Далее" : "Next"}<ChevronRight /></Button></div>
     </section></div>}
     {!choosing && works.length > 0 && <footer className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 p-3 md:p-6">
       <div className="flex max-w-full items-center gap-1 bg-background/90 p-1" role="group" aria-label={ru ? "Расстояние до стены" : "Distance from wall"}>

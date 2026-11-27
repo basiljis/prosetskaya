@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Bell } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/backend/client";
 import { statusLabel } from "@/lib/shop";
 import { unreadOrders } from "@/lib/order-notifications";
 import { Button } from "@/components/ui/button";

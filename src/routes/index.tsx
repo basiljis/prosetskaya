@@ -1,3 +1,4 @@
+import { matchesYear, yearOptions } from "@/lib/year-filter";
 import { NotificationBell } from "@/components/notification-bell";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -67,6 +68,7 @@ function Index() {
   const [buyId, setBuyId] = useState<string | null>(null);
   const buyWork = artworks.find((w) => w.id === buyId);
   const directions = shop?.directions ?? resolveDirections([]);
+  const [years, setYears] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [genre, setGenre] = useState<string[]>([]);
   const [style, setStyle] = useState<string[]>([]);
@@ -77,7 +79,7 @@ function Index() {
   const styleTerms = shop?.styles ?? resolveTerms([], styleDefaults);
   const genreOptions = genreTerms.filter((g) => !g.hidden && mainWorks.some((w) => w.genre === g.key));
   const styleOptions = styleTerms.filter((g) => !g.hidden && mainWorks.some((w) => w.style === g.key));
-  const filtered = searchWorks(filterByTaxonomy(mainWorks, genre, shop?.showStyleFilter === false ? [] : style), query);
+  const filtered = searchWorks(filterByTaxonomy(mainWorks.filter((w) => matchesYear(w, years)), genre, shop?.showStyleFilter === false ? [] : style), query);
   const pageWorks = pageSlice(filtered, page, PAGE);
   const featured = featuredWorks[featuredIndex];
   const left = artworks.find((work) => work.id === "anniversary-bouquet");
@@ -166,7 +168,7 @@ function Index() {
         <SectionMarker number="01">{t.collection}</SectionMarker>
         <div className="flex items-end justify-between gap-6"><div><h2 className="section-heading font-display">{t.allWorks}<span className="ml-3 align-top font-sans text-sm text-primary">({String(filtered.length).padStart(2, "0")})</span></h2></div><div className="flex items-end gap-6"><p className="hidden max-w-60 text-xs leading-6 text-muted-foreground md:block">{t.artistNote}</p></div></div>
         <div className={`mt-5 grid gap-y-8 ${shop?.collectionMenuPosition === "left" ? "lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-x-9" : ""}`}>
-        <CollectionFilters position={shop?.collectionMenuPosition ?? "top"} lang={lang} genreTerms={genreOptions} styleTerms={shop?.showStyleFilter === false ? null : styleOptions} genre={genre} style={style} onGenre={(v) => { setGenre(v); setPage(1); }} onStyle={(v) => { setStyle(v); setPage(1); }} query={query} onQuery={(q) => { setQuery(q); setPage(1); }} extra={<Button asChild variant="default" className="h-9 shrink-0 px-3 text-xs" title={lang === "ru" ? "Виртуальная выставка" : "Virtual exhibition"}><Link to="/exhibition" onClick={() => { const ready = genre.length + style.length > 0; sessionStorage.setItem("prosetskaya-exhibition", JSON.stringify(ready ? filtered.map((w) => w.id) : [])); const names = (["ru", "en"] as const).map((l) => [...genreTerms.filter((t) => genre.includes(t.key)), ...styleTerms.filter((t) => style.includes(t.key))].map((t) => t[l]).join(" · ")); sessionStorage.setItem("prosetskaya-exhibition-name", JSON.stringify(names)); }}><Box /><span className="hidden sm:inline">{lang === "ru" ? "Виртуальная выставка" : "Virtual exhibition"}</span><span className="sm:hidden">{lang === "ru" ? "Выставка" : "Exhibition"}</span></Link></Button>} />
+        <CollectionFilters position={shop?.collectionMenuPosition ?? "top"} lang={lang} genreTerms={genreOptions} styleTerms={shop?.showStyleFilter === false ? null : styleOptions} genre={genre} style={style} onGenre={(v) => { setGenre(v); setPage(1); }} onStyle={(v) => { setStyle(v); setPage(1); }} query={query} onQuery={(q) => { setQuery(q); setPage(1); }} years={yearOptions(mainWorks)} selectedYears={years} onYears={(v) => { setYears(v); setPage(1); }} extra={<Button asChild variant="default" className="h-9 shrink-0 rounded-full px-4 text-xs" title={lang === "ru" ? "Виртуальная выставка" : "Virtual exhibition"}><Link to="/exhibition" onClick={() => { const ready = genre.length + style.length + years.length > 0; sessionStorage.setItem("prosetskaya-exhibition", JSON.stringify(ready ? filtered.map((w) => w.id) : [])); const names = (["ru", "en"] as const).map((l) => [...genreTerms.filter((t) => genre.includes(t.key)), ...styleTerms.filter((t) => style.includes(t.key))].map((t) => t[l]).join(" · ")); sessionStorage.setItem("prosetskaya-exhibition-name", JSON.stringify(names)); }}><Box /><span className="hidden sm:inline">{lang === "ru" ? "Виртуальная выставка" : "Virtual exhibition"}</span><span className="sm:hidden">{lang === "ru" ? "Выставка" : "Exhibition"}</span></Link></Button>} />
         <div className={`grid min-w-0 grid-cols-1 gap-x-9 gap-y-10 sm:grid-cols-2 ${shop?.collectionMenuPosition === "left" ? "2xl:grid-cols-3" : "lg:grid-cols-3"}`}>
           {pageWorks.length === 0 && <p className="col-span-full py-16 text-center text-sm text-muted-foreground">{lang === "ru" ? "Ничего не найдено" : "Nothing found"}</p>}
           {pageWorks.map((work) => <article key={work.id} className="gallery-column min-w-0">

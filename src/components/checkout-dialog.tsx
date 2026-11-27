@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/backend/client";
 import { createOrder } from "@/lib/shop.functions";
 import { rub } from "@/lib/shop";
 import type { Artwork } from "@/lib/artworks";

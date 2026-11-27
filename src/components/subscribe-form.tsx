@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { ArrowRight, Check, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/backend/client";
 import type { Lang } from "@/lib/artworks";
 
 export function SubscribeForm({ lang }: { lang: Lang }) {

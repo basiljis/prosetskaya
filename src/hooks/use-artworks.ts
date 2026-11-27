@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/backend/client";
 import { artworks as fallback, type Artwork } from "@/lib/artworks";
 import { rowToArtwork, type ArtworkRow } from "@/lib/artwork-rows";
 

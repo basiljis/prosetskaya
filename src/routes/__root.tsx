@@ -1,3 +1,4 @@
+import { supabase } from "@/lib/backend/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -121,6 +122,16 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      if (event === "SIGNED_OUT") { queryClient.removeQueries({ queryKey: ["bell"] }); queryClient.removeQueries({ queryKey: ["bell-identity"] }); }
+      else void queryClient.invalidateQueries();
+      void router.invalidate();
+    });
+    return () => data.subscription.unsubscribe();
+  }, [queryClient, router]);
 
   return (
     <QueryClientProvider client={queryClient}>

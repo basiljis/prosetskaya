@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowUpRight, X } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/backend/client";
 import { newsKind, type NewsItem } from "@/lib/news";
 
 /** Latest published news; each opens in a modal window. Hidden when there is no news. */

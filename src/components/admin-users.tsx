@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/backend/client";
 import { createUserAccount } from "@/lib/users.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { loadAdminUsers, setAdminUserRole, type AdminUser } from "@/lib/admin";

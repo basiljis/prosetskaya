@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/backend/client";
 import { fallbackProjects, type Project } from "@/lib/projects";
 
 export function useProjects(): readonly Project[] {
