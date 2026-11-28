@@ -214,3 +214,14 @@
 @media (max-width: 380px) { .artist-title { font-size: 44px; } .featured-stage { height: 300px; } .footer-name { font-size: 58px; } }
 
 .room-artwork { box-shadow: 0 1px 1px oklch(0 0 0 / 0.18), 6px 14px 28px -6px oklch(0.25 0.03 60 / 0.45); outline: 1px solid oklch(0 0 0 / 0.08); }
+
+@theme inline {
+  --color-art-red: #b64142;
+  --color-art-orange: #d67e39;
+  --color-art-yellow: #e9c853;
+  --color-art-green: #688b59;
+  --color-art-blue: #497fba;
+  --color-art-violet: #82649c;
+  --color-art-pink: #cc829c;
+  --color-art-neutral: #8e8c87;
+}

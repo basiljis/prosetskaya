@@ -1,3 +1,5 @@
+import { CustomRoom } from "@/components/custom-room";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import type { Artwork, Lang } from "@/lib/artworks";
 import { artworkSizeCm, boutique, hangLiftCm, ROOMS } from "@/lib/boutique";
@@ -12,6 +14,7 @@ const portraitPhotos = { living: livingPortrait.url, dining: diningPortrait.url 
 
 /** Painting hung on a magazine-style interior photo, scaled to the room's real wall width. */
 export function RoomPreview({ work, lang }: { work: Artwork; lang: Lang }) {
+  const [custom, setCustom] = useState(false);
   const [roomIndex, setRoomIndex] = useState(0);
   const base = ROOMS[roomIndex] ?? ROOMS[0];
   const vertical = useIsMobile();
@@ -25,11 +28,12 @@ export function RoomPreview({ work, lang }: { work: Artwork; lang: Lang }) {
         <span className="opacity-60">{lang === "ru" ? "Картина" : "Artwork"} {w} × {h} {lang === "ru" ? "см" : "cm"} · {base.furniture[lang]} · {boutique[lang].roomHint}</span>
         <span className="flex gap-4">
           {ROOMS.map((r, i) => (
-            <button key={r.id} type="button" onClick={() => setRoomIndex(i)} aria-pressed={i === roomIndex} className={`border-b-2 pb-0.5 ${i === roomIndex ? "border-primary" : "border-transparent opacity-60"}`}>{r[lang]}</button>
+            <Button variant="artwork" key={r.id} type="button" onClick={() => { setRoomIndex(i); setCustom(false); }} aria-pressed={i === roomIndex} className={`border-b-2 pb-0.5 ${i === roomIndex ? "border-primary" : "border-transparent opacity-60"}`}>{r[lang]}</Button>
           ))}
+          <Button variant={custom ? "default" : "outline"} size="sm" onClick={() => setCustom(true)}>{lang === "ru" ? "Мой интерьер" : "My interior"}</Button>
         </span>
       </figcaption>
-      <div className={`relative w-full overflow-hidden ${vertical ? "aspect-[1088/1600] max-h-[70vh] max-w-[calc(70vh*0.68)]" : "aspect-[1920/1088] max-w-[calc((100dvh-11rem)*1920/1088)]"}`}>
+      {custom ? <CustomRoom work={work} lang={lang} /> : <div className={`relative w-full overflow-hidden ${vertical ? "aspect-[1088/1600] max-h-[70vh] max-w-[calc(70vh*0.68)]" : "aspect-[1920/1088] max-w-[calc((100dvh-11rem)*1920/1088)]"}`}>
         <img src={(vertical ? portraitPhotos : photos)[room.id]} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div
           className="room-artwork absolute left-1/2 -translate-x-1/2"
@@ -37,7 +41,7 @@ export function RoomPreview({ work, lang }: { work: Artwork; lang: Lang }) {
         >
           <img src={work.image} alt={work[lang]} className="h-full w-full object-cover" />
         </div>
-      </div>
+      </div>}
     </figure>
   );
 }

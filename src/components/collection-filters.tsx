@@ -29,12 +29,12 @@ export function CollectionFilters({ position, lang, genreTerms, styleTerms, genr
       {years && onYears && <Multi icon={<Calendar className="size-4" />} compact={s} onOpen={() => setSearching(false)} label={ru ? "Год" : "Year"} all={ru ? "Все годы" : "All years"} terms={years.map((y) => ({ key: y, ru: y, en: y, hidden: false }))} value={selectedYears} onChange={onYears} lang={lang} />}
       {extra}
       {any && <button type="button" onClick={() => { onGenre([]); onStyle([]); onYears?.([]); }} className="px-2 text-xs text-muted-foreground underline-offset-4 hover:text-primary hover:underline">{ru ? "Сбросить" : "Reset"}</button>}
-      <div className={`relative min-w-0 sm:block sm:w-56 sm:flex-none ${s ? "flex-1" : "hidden"} ${left ? "lg:w-full" : "sm:ml-auto"}`}>
+      <div className={`relative min-w-0 ${s ? "block w-full sm:flex-1" : "hidden"} ${left ? "lg:w-full" : ""}`}>
         <Search className="pointer-events-none absolute left-3 top-2.5 size-4 text-muted-foreground" />
         <Input autoFocus={searching} value={query} onChange={(e) => onQuery(e.target.value)} placeholder={ph} aria-label={ph} className="h-9 rounded-full bg-transparent pl-9 pr-8 text-xs shadow-none" />
         {(query || searching) && <button type="button" onClick={() => { onQuery(""); setSearching(false); }} aria-label={ru ? "Очистить" : "Clear"} className="absolute right-3 top-2.5 text-muted-foreground"><X className="size-4" /></button>}
       </div>
-      {!s && <Button variant="editorial" onClick={() => setSearching(true)} aria-label={ph} className="size-9 shrink-0 rounded-full border border-border p-0 text-muted-foreground sm:hidden"><Search className="size-4" /></Button>}
+      {!s && <Button variant="editorial" onClick={() => setSearching(true)} aria-label={ph} className="size-9 shrink-0 rounded-full border border-border p-0 text-muted-foreground "><Search className="size-4" /></Button>}
     </div>
   </div>;
 }
@@ -46,9 +46,9 @@ function Multi({ icon, compact, onOpen, label, all, terms, value, onChange, lang
   const toggle = (k: string) => onChange(value.includes(k) ? value.filter((v) => v !== k) : [...value, k]);
   return <Popover onOpenChange={(o) => o && onOpen()}>
     <PopoverTrigger asChild>
-      <Button variant="editorial" aria-label={label} className={`h-9 min-w-0 justify-between gap-2 rounded-full border text-xs sm:flex-none sm:min-w-44 sm:px-4 ${compact ? "w-9 shrink-0 px-0 sm:w-auto" : "flex-1 px-4"} ${active ? "border-primary bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "border-border text-muted-foreground hover:border-primary hover:text-primary"}`}><span className={compact ? "mx-auto sm:hidden" : "hidden"}>{icon}</span><span className={`truncate ${compact ? "hidden sm:inline" : ""}`}>{text}</span><ChevronDown className={`size-4 shrink-0 ${compact ? "hidden sm:block" : ""}`} /></Button>
+      <Button variant="editorial" aria-label={label} title={text} className={`h-9 shrink-0 justify-between gap-2 rounded-full border text-xs px-2.5 ${compact ? "sm:w-9 sm:px-0" : "sm:px-3"} ${active ? "border-primary bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground" : "border-border text-muted-foreground hover:border-primary hover:text-primary"}`}><span className="mx-auto">{icon}</span><span className={`max-w-36 truncate ${compact ? "hidden" : "hidden sm:inline"}`}>{text}</span><ChevronDown className={`size-3 shrink-0 ${compact ? "hidden" : "hidden sm:block"}`} /></Button>
     </PopoverTrigger>
-    <PopoverContent align="start" className="w-64 p-2">
+    <PopoverContent align="start" className="z-[110] max-h-[min(420px,var(--radix-popover-content-available-height))] w-64 overflow-y-auto p-2">
       <button type="button" onClick={() => onChange([])} className={`w-full rounded-sm px-2 py-2 text-left text-sm ${!active ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}>{all}</button>
       <div className="my-1 border-t border-border" />
       {terms.map((t) => <label key={t.key} className="flex cursor-pointer items-center gap-3 rounded-sm px-2 py-2 text-sm hover:bg-muted"><Checkbox checked={value.includes(t.key)} onCheckedChange={() => toggle(t.key)} />{t[lang]}</label>)}
